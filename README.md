@@ -12,7 +12,13 @@
 - Cálculo automático del costo por gramo, mililitro o unidad base.
 - Soporte para merma / desperdicio (ej. 10% en cáscaras de frutas).
 
-### 2. 🎂 Fichas Técnicas & Costeo de Recetas
+### 2. 🧾 Importación de Boletas y Facturas
+- Captura una imagen desde el teléfono o carga una boleta/factura.
+- OCR en el navegador para detectar líneas de productos y precios.
+- Revisión y edición manual antes de guardar.
+- Asociación con insumos existentes para actualizar su formato y costo, o creación de nuevos insumos.
+
+### 3. 🎂 Fichas Técnicas & Costeo de Recetas
 - Modelado para todo tipo de repostería:
   - **Por Unidades:** Alfajores, Profiteroles, Galletas, Cupcakes, Tartaletas.
   - **Por Porciones (Tortas):** Tortas enteras con cálculo automático de costo por porción individual.
@@ -22,7 +28,7 @@
   3. **Mano de Obra** (horas de trabajo dedicadas × tarifa horaria).
   4. **Costos Indirectos** (gas del horno, electricidad, agua, arriendo prorrateado).
 
-### 3. 📊 Simulador Dinámico de Precios y Rentabilidad
+### 4. 📊 Simulador Dinámico de Precios y Rentabilidad
 - **Slider interactivo de Precio de Venta:** Mueve el precio y mira de inmediato:
   - Ganancia neta de bolsillo en dinero ($).
   - Margen de ganancia sobre venta (%).
@@ -32,13 +38,13 @@
 - **Simulación de Comisiones por Tarjeta / POS:** Evalúa el impacto de cobrar con Transbank, Redelcom o Mercado Pago (ej. 3.19%).
 - **Matriz de Proyección de Volumen:** Proyecta tus ingresos si vendes 10, 50, 100 o 250 unidades al mes.
 
-### 4. 📋 Generador de Presupuestos / Cotizaciones
+### 5. 📋 Generador de Presupuestos / Cotizaciones
 - Genera cotizaciones para clientes con lista de productos, descuentos y notas.
 - **Cálculo de Abono para Reserva (50%)** y saldo pendiente al entregar.
 - **Botón Enviar a WhatsApp:** Genera un mensaje con formato y emojis listo para enviar.
 - **Exportación a PDF / Impresión:** Formato de comprobante limpio con los datos y redes de tu pastelería.
 
-### 5. 📱 Experiencia Android 100% Offline (PWA)
+### 6. 📱 Experiencia Android 100% Offline (PWA)
 - Funciona sin internet una vez abierta.
 - Instalable como App en la pantalla de inicio de Android con icono propio.
 - Copias de seguridad en formato `.JSON` para respaldar o transferir tus datos.
@@ -80,6 +86,7 @@ pasteleria-app/
 │   ├── app.js              # Controlador principal y navegación
 │   ├── db.js               # Persistencia LocalStorage y motor de cálculo
 │   ├── ingredients.js      # Módulo de catálogo de insumos
+│   ├── receipts.js         # OCR y actualización desde boletas/facturas
 │   ├── recipes.js          # Módulo de recetas y fichas técnicas
 │   ├── simulator.js        # Módulo de simulación de precios y márgenes
 │   ├── quotes.js           # Módulo de presupuestos, WhatsApp y PDF

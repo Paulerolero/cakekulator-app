@@ -29,7 +29,7 @@ const App = {
     this.currentTab = tabName;
 
     // Ocultar todas las vistas
-    const views = ['dashboard-view', 'recipes-view', 'simulator-view', 'quotes-view', 'ingredients-view', 'settings-view'];
+    const views = ['dashboard-view', 'recipes-view', 'simulator-view', 'quotes-view', 'ingredients-view', 'receipts-view', 'settings-view'];
     views.forEach(v => {
       const el = document.getElementById(v);
       if (el) el.classList.add('hidden');
@@ -67,6 +67,9 @@ const App = {
         break;
       case 'ingredients':
         IngredientsModule.render();
+        break;
+      case 'receipts':
+        ReceiptsModule.render();
         break;
       case 'settings':
         this.renderSettings();
