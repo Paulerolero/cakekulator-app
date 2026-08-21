@@ -419,8 +419,9 @@ const QuotesModule = {
           ${allRecipes.map(r => {
             const costs = Calculator.calculateRecipeFullCosts(r);
             const price = costs.recipeType === 'cake' ? costs.suggestedBatchPrice : costs.suggestedUnitPrice;
+            const finalPrice = Calculator.roundUpTo(price, 100);
             return `
-              <option value="${r.id}" data-name="${r.name}" data-price="${Math.round(price)}" ${r.id === selectedRecipeId ? 'selected' : ''}>
+              <option value="${r.id}" data-name="${r.name}" data-price="${finalPrice}" ${r.id === selectedRecipeId ? 'selected' : ''}>
                 ${r.name}
               </option>
             `;
@@ -435,7 +436,7 @@ const QuotesModule = {
       </div>
 
       <div class="col-span-3 sm:col-span-3">
-        <input type="number" step="100" min="0" placeholder="Precio ($)" value="${unitPrice || ''}" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs text-right font-semibold q-item-price focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
+        <input type="number" step="any" min="0" placeholder="Precio ($)" value="${unitPrice || ''}" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs text-right font-semibold q-item-price focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
       </div>
 
       <div class="col-span-2 sm:col-span-2 flex items-center justify-between pl-1">

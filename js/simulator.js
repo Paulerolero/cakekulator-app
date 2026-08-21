@@ -61,7 +61,7 @@ const SimulatorModule = {
     // Inicializar precio de venta si es la primera carga o cambio de modo
     if (!this.currentPrice || this.currentPrice < currentCost) {
       const marginFrac = this.targetMargin >= 100 ? 0.99 : this.targetMargin / 100;
-      this.currentPrice = Math.round(currentCost / (1 - marginFrac));
+      this.currentPrice = Calculator.roundUpTo(currentCost / (1 - marginFrac), 100);
     }
 
     // Rango del slider
@@ -142,7 +142,7 @@ const SimulatorModule = {
               <input 
                 type="number" 
                 min="0" 
-                step="100" 
+                step="any" 
                 value="${this.customCost}" 
                 oninput="SimulatorModule.onCustomCostChange(this.value)"
                 class="w-32 px-3 py-1.5 rounded-xl border border-pink-300 font-bold text-gray-900 text-right focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white"
@@ -238,7 +238,7 @@ const SimulatorModule = {
                   type="number" 
                   id="sim-price-input"
                   min="0"
-                  step="100"
+                  step="any"
                   value="${this.currentPrice}"
                   oninput="SimulatorModule.onPriceInputChange(this.value)"
                   class="w-28 font-black text-xl text-pink-600 text-right focus:outline-none"
@@ -515,14 +515,14 @@ const SimulatorModule = {
   },
 
   roundPriceTo(multiple) {
-    this.currentPrice = Math.round(this.currentPrice / multiple) * multiple;
+    this.currentPrice = Math.ceil(this.currentPrice / multiple) * multiple;
     this.render();
   },
 
   applyTargetMargin(margin, cost) {
     this.targetMargin = margin;
     const marginFraction = margin >= 100 ? 0.99 : margin / 100;
-    this.currentPrice = Math.round(cost / (1 - marginFraction));
+    this.currentPrice = Calculator.roundUpTo(cost / (1 - marginFraction), 100);
     this.render();
   },
 

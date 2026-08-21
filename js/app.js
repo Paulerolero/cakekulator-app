@@ -189,7 +189,7 @@ const App = {
                 type="number" 
                 id="quick-cost" 
                 value="5000" 
-                step="500"
+                step="any"
                 min="0"
                 oninput="App.recalculateQuickPricing()" 
                 class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 font-bold text-gray-900 text-sm"
@@ -273,7 +273,7 @@ const App = {
     const margin = parseFloat(document.getElementById('quick-margin')?.value) || 40;
     const marginFrac = margin >= 100 ? 0.99 : margin / 100;
 
-    const price = cost > 0 ? Math.round(cost / (1 - marginFrac)) : 0;
+    const price = cost > 0 ? Calculator.roundUpTo(cost / (1 - marginFrac), 100) : 0;
     const profit = price - cost;
 
     const priceEl = document.getElementById('quick-result-price');
@@ -312,7 +312,7 @@ const App = {
               </div>
               <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Tarifa Mano de Obra ($/hr)</label>
-                <input type="number" id="set-hourly-rate" value="${settings.defaultHourlyRate || 4000}" step="100" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                <input type="number" id="set-hourly-rate" value="${settings.defaultHourlyRate || 4000}" step="any" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Margen Objetivo (%)</label>

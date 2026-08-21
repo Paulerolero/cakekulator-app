@@ -400,14 +400,18 @@ const Calculator = {
     const directCostPerUnit = (ingredientsCost + packagingCost) / yieldUnits;
     const directCostPerPortion = (ingredientsCost + packagingCost) / yieldPortions;
 
-    // 8. Precios Sugeridos por Margen deseado
+    // 8. Precios Sugeridos por Margen deseado (Aproximados al valor mayor más próximo)
     const targetMargin = Number(recipe.suggestedMargin || DB.getSettings().defaultTargetMargin || 40);
     const marginFraction = targetMargin >= 100 ? 0.99 : targetMargin / 100;
     
     // Precio de venta = Costo / (1 - Margen)
-    const suggestedBatchPrice = marginFraction < 1 ? totalBatchCost / (1 - marginFraction) : totalBatchCost * 2;
-    const suggestedUnitPrice = marginFraction < 1 ? costPerUnit / (1 - marginFraction) : costPerUnit * 2;
-    const suggestedPortionPrice = marginFraction < 1 ? costPerPortion / (1 - marginFraction) : costPerPortion * 2;
+    const rawBatchPrice = marginFraction < 1 ? totalBatchCost / (1 - marginFraction) : totalBatchCost * 2;
+    const rawUnitPrice = marginFraction < 1 ? costPerUnit / (1 - marginFraction) : costPerUnit * 2;
+    const rawPortionPrice = marginFraction < 1 ? costPerPortion / (1 - marginFraction) : costPerPortion * 2;
+
+    const suggestedBatchPrice = this.roundUpTo(rawBatchPrice, 100);
+    const suggestedUnitPrice = this.roundUpTo(rawUnitPrice, 100);
+    const suggestedPortionPrice = this.roundUpTo(rawPortionPrice, 100);
 
     // Markup equivalente (% sobre el costo): (Precio - Costo) / Costo * 100
     const suggestedMarkup = totalBatchCost > 0 ? ((suggestedBatchPrice - totalBatchCost) / totalBatchCost) * 100 : 0;
@@ -489,6 +493,15 @@ const Calculator = {
       isProfitable: netProfit > 0,
       breakEvenMultiplier
     };
+  },
+
+  // Redondeo al valor mayor más próximo (por defecto múltiplo de 100)
+  roundUpTo(value, step = 100) {
+    const num = Number(value) || 0;
+    if (num <= 0) return 0;
+    if (num < 100) return Math.ceil(num);
+    if (num < 1000) return Math.ceil(num / 50) * 50;
+    return Math.ceil(num / step) * step;
   },
 
   // Formato de moneda

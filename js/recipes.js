@@ -315,11 +315,11 @@ const RecipesModule = {
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 mb-1">Tarifa por Hora ($)</label>
-                  <input type="number" step="100" min="0" id="rec-labor-rate" value="4000" oninput="RecipesModule.recalculateLiveSummary()" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="number" step="any" min="0" id="rec-labor-rate" value="4000" oninput="RecipesModule.recalculateLiveSummary()" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 mb-1">Gas / Electricidad / Fijos ($)</label>
-                  <input type="number" step="100" min="0" id="rec-overhead" value="1200" oninput="RecipesModule.recalculateLiveSummary()" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="number" step="any" min="0" id="rec-overhead" value="1200" oninput="RecipesModule.recalculateLiveSummary()" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                   <span class="text-[10px] text-gray-400">Gas del horno y luz</span>
                 </div>
               </div>
@@ -676,9 +676,9 @@ const RecipesModule = {
 
     const targetMargin = parseFloat(document.getElementById('rec-suggested-margin')?.value) || 40;
     const marginFraction = targetMargin >= 100 ? 0.99 : targetMargin / 100;
-    const suggestedBatchPrice = totalBatchCost / (1 - marginFraction);
-    const suggestedUnitPrice = costPerUnit / (1 - marginFraction);
-    const suggestedPortionPrice = costPerPortion / (1 - marginFraction);
+    const suggestedBatchPrice = Calculator.roundUpTo(totalBatchCost / (1 - marginFraction), 100);
+    const suggestedUnitPrice = Calculator.roundUpTo(costPerUnit / (1 - marginFraction), 100);
+    const suggestedPortionPrice = Calculator.roundUpTo(costPerPortion / (1 - marginFraction), 100);
 
     // Actualizar vista
     const totalCostEl = document.getElementById('summary-total-cost');
