@@ -1,0 +1,99 @@
+/* ==========================================
+   Cakekulator - Estilos y Personalizaciones UI
+   ========================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap');
+
+:root {
+  --primary-pink: #ec4899;
+  --primary-rose: #f43f5e;
+  --soft-pink: #fdf2f8;
+  --bakery-cream: #fffaf5;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: #faf5f8;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, h4, .font-heading {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Ocultar barra de scroll en listas horizontales móviles */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Botones principales con gradientes y sombras suaves */
+.btn-primary {
+  background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+  color: white;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 10px 20px -5px rgba(236, 72, 153, 0.4);
+}
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* Inputs táctiles amigables */
+input, select, textarea {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Slider estilizado */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #fbcfe8;
+  border-radius: 9999px;
+  height: 8px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #ec4899;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(236, 72, 153, 0.5);
+  border: 2px solid white;
+}
+
+/* Área de Impresión / PDF */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .no-print {
+    display: none !important;
+  }
+  #quote-print-modal, #quote-print-modal * {
+    visibility: visible;
+  }
+  #quote-print-modal {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: auto;
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+}

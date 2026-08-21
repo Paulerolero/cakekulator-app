@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cakekulator - Costos, Porciones y Precios para Pastelería</title>
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <meta name="theme-color" content="#ec4899">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Cakekulator">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            pink: {
+              50: '#fdf2f8',
+              100: '#fce7f3',
+              200: '#fbcfe8',
+              300: '#f9a8d4',
+              400: '#f472b6',
+              500: '#ec4899',
+              600: '#db2777',
+              700: '#be185d',
+              800: '#9d174d',
+              900: '#831843',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col pb-20 md:pb-6">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-pink-100 px-4 sm:px-6 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-2.5 cursor-pointer select-none group" onclick="App.switchTab('dashboard')">
+        <img src="assets/icons/logo.png" alt="Cakekulator Logo" class="w-10 h-10 rounded-2xl shadow-md shadow-pink-200/70 object-cover ring-1 ring-pink-200/50 group-hover:scale-105 transition-transform duration-200">
+        <div>
+          <span class="font-extrabold text-lg text-gray-900 tracking-tight block leading-none">
+            Cake<span class="text-pink-600">kulator</span>
+          </span>
+          <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Gestión Pastelera</span>
+        </div>
+      </div>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center gap-1 bg-pink-50/50 p-1.5 rounded-2xl border border-pink-100/60">
+        <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+          <span>🏠</span> Inicio
+        </button>
+        <button onclick="App.switchTab('recipes')" data-tab="recipes" class="nav-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+          <span>🎂</span> Recetas & Costeo
+        </button>
+        <button onclick="App.switchTab('simulator')" data-tab="simulator" class="nav-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+          <span>📊</span> Simulador de Precios
+        </button>
+        <button onclick="App.switchTab('quotes')" data-tab="quotes" class="nav-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+          <span>📋</span> Presupuestos
+        </button>
+        <button onclick="App.switchTab('ingredients')" data-tab="ingredients" class="nav-btn px-3.5 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+          <span>📦</span> Insumos
+        </button>
+      </nav>
+
+      <!-- Right Header Actions (Online badge, Install PWA, Settings) -->
+      <div class="flex items-center gap-2">
+        <span id="network-badge" class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full flex items-center gap-1.5 select-none">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Online
+        </span>
+
+        <!-- Botón Instalar PWA (Se muestra en Android / navegadores compatibles) -->
+        <button id="pwa-install-btn" onclick="App.installPWA()" class="hidden bg-pink-100 hover:bg-pink-200 text-pink-700 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+          <span>📲</span> Instalar App
+        </button>
+
+        <button onclick="App.switchTab('settings')" data-tab="settings" title="Configuración" class="nav-btn p-2 text-gray-500 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-6xl w-full mx-auto p-4 sm:p-6">
+    <!-- View Containers -->
+    <section id="dashboard-view"></section>
+    <section id="recipes-view" class="hidden"></section>
+    <section id="simulator-view" class="hidden"></section>
+    <section id="quotes-view" class="hidden"></section>
+    <section id="ingredients-view" class="hidden"></section>
+    <section id="settings-view" class="hidden"></section>
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-pink-100 px-2 py-1.5 flex items-center justify-around shadow-lg">
+    <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-gray-500">
+      <span class="text-lg leading-none">🏠</span>
+      <span class="text-[10px] font-semibold">Inicio</span>
+    </button>
+    <button onclick="App.switchTab('recipes')" data-tab="recipes" class="nav-btn flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-gray-500">
+      <span class="text-lg leading-none">🎂</span>
+      <span class="text-[10px] font-semibold">Recetas</span>
+    </button>
+    <button onclick="App.switchTab('simulator')" data-tab="simulator" class="nav-btn flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-gray-500">
+      <span class="text-lg leading-none">📊</span>
+      <span class="text-[10px] font-semibold">Simulador</span>
+    </button>
+    <button onclick="App.switchTab('quotes')" data-tab="quotes" class="nav-btn flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-gray-500">
+      <span class="text-lg leading-none">📋</span>
+      <span class="text-[10px] font-semibold">Cotizar</span>
+    </button>
+    <button onclick="App.switchTab('ingredients')" data-tab="ingredients" class="nav-btn flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-gray-500">
+      <span class="text-lg leading-none">📦</span>
+      <span class="text-[10px] font-semibold">Insumos</span>
+    </button>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="js/templates.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/ingredients.js"></script>
+  <script src="js/recipes.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/quotes.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
