@@ -27,7 +27,7 @@ const App = {
     console.log('Cakekulator cargado correctamente.');
   },
 
-  switchTab(tabName) {
+  switchTab(tabName, scrollToTop = true) {
     this.currentTab = tabName;
 
     const views = ['dashboard-view', 'recipes-view', 'simulator-view', 'quotes-view', 'ingredients-view', 'market-radar-view', 'receipts-view', 'settings-view'];
@@ -85,7 +85,17 @@ const App = {
     }
 
     // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (scrollToTop) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  },
+
+  renderCurrentTab(maintainScroll = false) {
+    const prevY = window.scrollY;
+    this.switchTab(this.currentTab, !maintainScroll);
+    if (maintainScroll) {
+      window.scrollTo({ top: prevY, behavior: 'instant' });
+    }
   },
 
   renderDashboard() {

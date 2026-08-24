@@ -42,28 +42,69 @@ const DB = {
     }
   },
 
-  // Sincronización en la Nube (Cloud Firestore)
+  // Variables de Estado de Sincronización en la Nube
+  activeListeners: [],
+  periodicSyncInterval: null,
+  lastSyncTimestamp: null,
+  isSavingLocally: false,
+
+  // Sincronización en la Nube (Cloud Firestore) con detección en tiempo real
   async syncDocumentToCloud(collectionName, data) {
     if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured && FirebaseService.db && typeof AuthModule !== 'undefined' && AuthModule.currentUser) {
       try {
         const uid = AuthModule.currentUser.uid;
+        this.isSavingLocally = true;
+        
+        if (AuthModule && AuthModule.updateSyncStatus) {
+          AuthModule.updateSyncStatus('syncing', 'Guardando cambios...');
+        }
+
+        // Convertir datos para asegurar que no contengan objetos no serializables
+        const cleanData = JSON.parse(JSON.stringify(data));
+        const now = Date.now();
+        
         await FirebaseService.db.collection('users').doc(uid).collection('data').doc(collectionName).set({
-          data,
-          updatedAt: Date.now()
+          data: cleanData,
+          updatedAt: now
         }, { merge: true });
-        console.log(`☁️ ${collectionName} guardado en Firestore.`);
+        
+        this.lastSyncTimestamp = now;
+        console.log(`☁️ Sincronizado en Firestore: ${collectionName}`);
+        
+        setTimeout(() => {
+          this.isSavingLocally = false;
+        }, 800);
+
+        if (AuthModule && AuthModule.updateSyncStatus) {
+          AuthModule.updateSyncStatus('synced', 'Sincronizado');
+        }
       } catch (err) {
-        console.warn(`Error al sincronizar ${collectionName} en la nube:`, err);
+        this.isSavingLocally = false;
+        console.error(`❌ Error al sincronizar ${collectionName} en Firestore:`, err);
+        if (AuthModule && AuthModule.updateSyncStatus) {
+          AuthModule.updateSyncStatus('error', 'Error al sincronizar');
+        }
+        if (err.code === 'permission-denied') {
+          console.error('🚨 Permiso denegado en Firestore: Revisa las Reglas de Seguridad en Firebase Console.');
+        }
       }
+    } else {
+      console.log(`ℹ️ ${collectionName} guardado en almacenamiento local.`);
     }
   },
 
+  // Iniciar conexión y sincronización en tiempo real continua con Firestore
   async initCloudSync(uid) {
     if (typeof FirebaseService === 'undefined' || !FirebaseService.db) return;
     try {
-      console.log('🔄 Sincronizando datos con Firestore para:', uid);
+      console.log('🔄 Iniciando sincronización en tiempo real para usuario:', uid);
+      if (AuthModule && AuthModule.updateSyncStatus) {
+        AuthModule.updateSyncStatus('syncing', 'Conectando con Firestore...');
+      }
+
       const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
       
+      // Primera verificación inicial de datos en la nube
       const [settingsDoc, ingDoc, recDoc, quoteDoc] = await Promise.all([
         userDocRef.doc('settings').get(),
         userDocRef.doc('ingredients').get(),
@@ -71,37 +112,148 @@ const DB = {
         userDocRef.doc('quotes').get()
       ]);
 
-      let hasCloudData = false;
+      const hasCloudData = (settingsDoc.exists && settingsDoc.data()?.data) ||
+                           (ingDoc.exists && ingDoc.data()?.data) ||
+                           (recDoc.exists && recDoc.data()?.data) ||
+                           (quoteDoc.exists && quoteDoc.data()?.data);
 
-      if (settingsDoc.exists && settingsDoc.data().data) {
+      if (settingsDoc.exists && settingsDoc.data()?.data) {
         localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(settingsDoc.data().data));
-        hasCloudData = true;
       }
-      if (ingDoc.exists && ingDoc.data().data) {
+      if (ingDoc.exists && ingDoc.data()?.data) {
         localStorage.setItem(DB_KEYS.INGREDIENTS, JSON.stringify(ingDoc.data().data));
-        hasCloudData = true;
       }
-      if (recDoc.exists && recDoc.data().data) {
+      if (recDoc.exists && recDoc.data()?.data) {
         localStorage.setItem(DB_KEYS.RECIPES, JSON.stringify(recDoc.data().data));
-        hasCloudData = true;
       }
-      if (quoteDoc.exists && quoteDoc.data().data) {
+      if (quoteDoc.exists && quoteDoc.data()?.data) {
         localStorage.setItem(DB_KEYS.QUOTES, JSON.stringify(quoteDoc.data().data));
-        hasCloudData = true;
       }
 
-      // Si es primera vez y la nube no tiene datos pero el usuario tiene datos locales, respaldar en Firestore
+      this.lastSyncTimestamp = Date.now();
+
+      // Si es primera vez y no hay datos en la nube pero sí locales, respaldarlos de inmediato
       if (!hasCloudData) {
-        console.log('🚀 Primera sesión: Respaldando datos iniciales en Firestore...');
+        console.log('🚀 Primera sesión: Respaldando datos locales en la nube Firestore...');
         await this.pushLocalToCloud(uid);
-      } else {
-        if (typeof App !== 'undefined' && App.renderCurrentTab) {
-          App.renderCurrentTab();
-        }
+      }
+
+      // Activar Escucha en Tiempo Real (Listeners onSnapshot)
+      this.startRealtimeListeners(uid);
+
+      // Activar Comprobación Periódica en Segundo Plano (cada 20 segundos)
+      this.startPeriodicSync(uid, 20000);
+
+      if (AuthModule && AuthModule.updateSyncStatus) {
+        AuthModule.updateSyncStatus('synced', 'Sincronizado en tiempo real');
+      }
+
+      if (typeof App !== 'undefined' && App.renderCurrentTab) {
+        App.renderCurrentTab(true);
       }
     } catch (error) {
       console.error('Error en initCloudSync:', error);
+      if (AuthModule && AuthModule.updateSyncStatus) {
+        AuthModule.updateSyncStatus('error', 'Error de conexión');
+      }
       throw error;
+    }
+  },
+
+  // Escucha activa de cambios en Firestore en vivo (onSnapshot)
+  startRealtimeListeners(uid) {
+    if (typeof FirebaseService === 'undefined' || !FirebaseService.db) return;
+    this.stopRealtimeListeners();
+
+    const collections = [
+      { name: 'settings', key: DB_KEYS.SETTINGS },
+      { name: 'ingredients', key: DB_KEYS.INGREDIENTS },
+      { name: 'recipes', key: DB_KEYS.RECIPES },
+      { name: 'quotes', key: DB_KEYS.QUOTES }
+    ];
+
+    const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
+
+    collections.forEach(({ name, key }) => {
+      try {
+        const unsubscribe = userDocRef.doc(name).onSnapshot(docSnapshot => {
+          // Si estamos guardando localmente en este milisegundo, ignorar el rebote
+          if (this.isSavingLocally) return;
+
+          if (docSnapshot.exists) {
+            const remoteData = docSnapshot.data()?.data;
+            const remoteUpdatedAt = docSnapshot.data()?.updatedAt || 0;
+
+            if (remoteData) {
+              const currentLocalStr = localStorage.getItem(key);
+              const remoteStr = JSON.stringify(remoteData);
+
+              // Si hay cambios reales que vienen del servidor/otro dispositivo
+              if (currentLocalStr !== remoteStr) {
+                console.log(`⚡ Cambio en vivo detectado en Firestore para [${name}], actualizando localmente...`);
+                localStorage.setItem(key, remoteStr);
+                this.lastSyncTimestamp = Date.now();
+
+                // No interrumpir si el usuario está escribiendo en un input activo
+                const activeEl = document.activeElement;
+                const isUserTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
+
+                if (!isUserTyping && typeof App !== 'undefined' && App.renderCurrentTab) {
+                  App.renderCurrentTab(true);
+                }
+
+                if (AuthModule && AuthModule.updateSyncStatus) {
+                  AuthModule.updateSyncStatus('synced', 'Actualizado desde la nube');
+                }
+              }
+            }
+          }
+        }, err => {
+          console.warn(`Aviso en listener de Firestore [${name}]:`, err);
+        });
+
+        this.activeListeners.push(unsubscribe);
+      } catch (e) {
+        console.error(`Error configurando listener de ${name}:`, e);
+      }
+    });
+
+    console.log(`📡 ${this.activeListeners.length} Listeners de Firestore en tiempo real activos.`);
+  },
+
+  // Detener listeners en tiempo real
+  stopRealtimeListeners() {
+    if (this.activeListeners && this.activeListeners.length) {
+      this.activeListeners.forEach(unsub => {
+        try { if (typeof unsub === 'function') unsub(); } catch (e) {}
+      });
+      this.activeListeners = [];
+      console.log('🛑 Listeners de Firestore detenidos.');
+    }
+  },
+
+  // Sincronización periódica automática (Heartbeat en segundo plano)
+  startPeriodicSync(uid, intervalMs = 20000) {
+    this.stopPeriodicSync();
+
+    this.periodicSyncInterval = setInterval(async () => {
+      if (!AuthModule || !AuthModule.currentUser || !navigator.onLine) return;
+
+      try {
+        // Actualizar etiqueta de estado
+        if (AuthModule && AuthModule.updateSyncStatus && AuthModule.syncStatus === 'synced') {
+          AuthModule.renderAuthUI();
+        }
+      } catch (e) {
+        console.warn('Chequeo periódico de sincronización:', e);
+      }
+    }, intervalMs);
+  },
+
+  stopPeriodicSync() {
+    if (this.periodicSyncInterval) {
+      clearInterval(this.periodicSyncInterval);
+      this.periodicSyncInterval = null;
     }
   },
 
@@ -112,14 +264,16 @@ const DB = {
     const ingredients = this.getIngredients();
     const recipes = this.getRecipes();
     const quotes = this.getQuotes();
+    const now = Date.now();
 
     await Promise.all([
-      userDocRef.doc('settings').set({ data: settings, updatedAt: Date.now() }),
-      userDocRef.doc('ingredients').set({ data: ingredients, updatedAt: Date.now() }),
-      userDocRef.doc('recipes').set({ data: recipes, updatedAt: Date.now() }),
-      userDocRef.doc('quotes').set({ data: quotes, updatedAt: Date.now() })
+      userDocRef.doc('settings').set({ data: settings, updatedAt: now }),
+      userDocRef.doc('ingredients').set({ data: ingredients, updatedAt: now }),
+      userDocRef.doc('recipes').set({ data: recipes, updatedAt: now }),
+      userDocRef.doc('quotes').set({ data: quotes, updatedAt: now })
     ]);
-    console.log('✅ Datos locales subidos a Firestore exitosamente.');
+    this.lastSyncTimestamp = now;
+    console.log('✅ Todos los datos locales respaldados en Firestore.');
   },
 
   async pullCloudToLocal(uid) {
@@ -128,6 +282,9 @@ const DB = {
 
   // Limpiar datos de sesión al cerrar sesión
   clearSessionData() {
+    this.stopRealtimeListeners();
+    this.stopPeriodicSync();
+    this.lastSyncTimestamp = null;
     localStorage.removeItem(DB_KEYS.SETTINGS);
     localStorage.removeItem(DB_KEYS.INGREDIENTS);
     localStorage.removeItem(DB_KEYS.RECIPES);
