@@ -312,7 +312,7 @@ const QuotesModule = {
               </div>
               <div>
                 <h3 class="font-bold text-base leading-tight">Enviar Cotización por WhatsApp & PDF</h3>
-                <p class="text-xs text-emerald-100" id="wa-modal-subtitle">Mensaje personalizado con botones de respuesta</p>
+                <p class="text-xs text-emerald-100" id="wa-modal-subtitle">Mensaje personalizado con PDF formal adjunto</p>
               </div>
             </div>
             <button onclick="QuotesModule.closeWhatsAppModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10">✕</button>
@@ -689,30 +689,17 @@ const QuotesModule = {
   },
 
   // ====================================================
-  // Generador de Mensaje Personalizado con Botones de Aceptar / Rechazar
+  // Generador de Mensaje Personalizado para WhatsApp
   // ====================================================
   buildWhatsAppMessage(quote) {
     const settings = DB.getSettings();
     const customerFirstName = (quote.customerName || 'Cliente').trim().split(' ')[0];
     const businessName = settings.businessName || 'Mi Pastelería';
-    const myPhone = (settings.businessPhone || '').replace(/[^0-9]/g, '');
 
     let itemsText = '';
     (quote.items || []).forEach(item => {
       itemsText += `  • *${item.quantity}x* ${item.recipeName} : ${Calculator.formatCurrency(item.subtotal)}\n`;
     });
-
-    // Enlaces directos de respuesta rapida
-    const acceptText = `Hola ${businessName}! Confirmo y ACEPTO el presupuesto ${quote.code} para ${quote.customerName}. Por favor enviame los datos de transferencia para el abono de ${Calculator.formatCurrency(quote.depositAmount)}`;
-    const rejectText = `Hola ${businessName}! Sobre la cotizacion ${quote.code} para ${quote.customerName}, me gustaria solicitar cambios o consultar algo. Gracias!`;
-
-    const acceptUrl = myPhone 
-      ? `https://api.whatsapp.com/send?phone=${myPhone}&text=${encodeURIComponent(acceptText)}`
-      : `https://api.whatsapp.com/send?text=${encodeURIComponent(acceptText)}`;
-
-    const rejectUrl = myPhone
-      ? `https://api.whatsapp.com/send?phone=${myPhone}&text=${encodeURIComponent(rejectText)}`
-      : `https://api.whatsapp.com/send?text=${encodeURIComponent(rejectText)}`;
 
     let msg = `🎂 *PRESUPUESTO - ${businessName.toUpperCase()}*\n`;
     msg += `--------------------------------\n`;
@@ -734,15 +721,8 @@ const QuotesModule = {
     msg += `• *Saldo restante contra entrega:* ${Calculator.formatCurrency(quote.remainingBalance)}\n`;
     if (quote.notes) msg += `\n📝 *Condiciones:* ${quote.notes}\n`;
     msg += `--------------------------------\n`;
-    msg += `📌 *¿COMO CONFIRMAR TU PEDIDO?*\n\n`;
-    msg += `✅ *1. PARA ACEPTAR Y AGENDAR FECHA:*\n`;
-    msg += `Responde *"ACEPTO"* o toca aquí:\n`;
-    msg += `👉 ${acceptUrl}\n\n`;
-    msg += `❌ *2. PARA MODIFICAR O RECHAZAR:*\n`;
-    msg += `Responde *"MODIFICAR"* o toca aquí:\n`;
-    msg += `👉 ${rejectUrl}\n\n`;
     msg += `📄 *(Te adjunto el documento formal en PDF con el resumen completo)*\n\n`;
-    msg += `¡Gracias por preferir nuestro trabajo artesanal hecho con amor! 💕🎂`;
+    msg += `¡Muchas gracias por preferir nuestro trabajo artesanal hecho con amor! 💕🎂`;
 
     return msg;
   },
