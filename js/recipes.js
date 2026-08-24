@@ -38,6 +38,7 @@ const RecipesModule = {
             <span>🎂</span> Fichas Técnicas y Costeos
           </h2>
           <p class="text-sm text-gray-500">Calcula costos por lote, unidad y porción para tortas, alfajores, galletas y más.</p>
+        </div>
         <div class="flex items-center gap-2">
           <button onclick="RecipeScannerModule.openModal()" class="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer">
             <span>📸</span> Escanear Receta
