@@ -157,27 +157,17 @@ const AuthModule = {
           <button 
             onclick="AuthModule.toggleUserDropdown()" 
             id="user-profile-btn"
-            title="${statusTooltip}"
-            class="flex items-center gap-2 bg-white/90 hover:bg-pink-50/70 border border-pink-100 hover:border-pink-300 px-2 sm:px-3 py-1 rounded-2xl shadow-xs transition duration-200 select-none group"
+            title="Cuenta de ${name}"
+            class="flex items-center gap-2 bg-white/90 hover:bg-pink-50/70 border border-pink-100 hover:border-pink-300 px-2 sm:px-3 py-1.5 rounded-2xl shadow-xs transition duration-200 select-none group"
           >
-            <div class="relative">
-              ${photoURL ? `
-                <img src="${photoURL}" alt="${name}" class="w-7 h-7 rounded-full object-cover ring-1 ring-pink-300 group-hover:ring-pink-400 transition">
-              ` : `
-                <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-pink-500 to-rose-400 text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                  ${firstName.charAt(0).toUpperCase()}
-                </div>
-              `}
-              <div class="absolute -bottom-0.5 -right-0.5">
-                ${syncBadge}
+            ${photoURL ? `
+              <img src="${photoURL}" alt="${name}" class="w-7 h-7 rounded-full object-cover ring-1 ring-pink-300 group-hover:ring-pink-400 transition">
+            ` : `
+              <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-pink-500 to-rose-400 text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                ${firstName.charAt(0).toUpperCase()}
               </div>
-            </div>
-            <div class="text-left hidden sm:block">
-              <span class="text-xs font-bold text-gray-800 block leading-tight max-w-[100px] truncate">${firstName}</span>
-              <span class="text-[9px] font-semibold text-emerald-600 flex items-center gap-0.5">
-                <span>⚡</span> En vivo
-              </span>
-            </div>
+            `}
+            <span class="text-xs font-bold text-gray-800 hidden sm:inline max-w-[120px] truncate">${firstName}</span>
             <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-pink-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
 

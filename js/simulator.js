@@ -17,12 +17,18 @@ const SimulatorModule = {
 
   loadRecipeForSimulation(recipeId) {
     this.selectedRecipeId = recipeId;
-    App.switchTab('simulator');
-    this.render();
+    App.switchTab('dashboard');
+    const el = document.getElementById('dashboard-simulator-container') || document.getElementById('simulator-view');
+    if (el) {
+      this.render();
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 50);
+    }
   },
 
-  render() {
-    const container = document.getElementById('simulator-view');
+  render(targetId = null) {
+    const container = (targetId && document.getElementById(targetId)) ||
+                      document.getElementById('dashboard-simulator-container') ||
+                      document.getElementById('simulator-view');
     if (!container) return;
 
     const allRecipes = DB.getRecipes();
@@ -265,13 +271,21 @@ const SimulatorModule = {
               </div>
             </div>
 
-            <!-- Botones de Ajuste Rápido -->
-            <div class="flex flex-wrap gap-1.5 pt-1">
-              <span class="text-xs text-gray-500 self-center mr-1">Ajuste rápido:</span>
-              <button onclick="SimulatorModule.adjustPriceBy(500)" class="px-2.5 py-1 rounded-lg bg-white hover:bg-pink-100 border border-pink-200 text-xs font-bold text-pink-700 transition">+ $500</button>
-              <button onclick="SimulatorModule.adjustPriceBy(1000)" class="px-2.5 py-1 rounded-lg bg-white hover:bg-pink-100 border border-pink-200 text-xs font-bold text-pink-700 transition">+ $1.000</button>
-              <button onclick="SimulatorModule.adjustPriceBy(5000)" class="px-2.5 py-1 rounded-lg bg-white hover:bg-pink-100 border border-pink-200 text-xs font-bold text-pink-700 transition">+ $5.000</button>
-              <button onclick="SimulatorModule.roundPriceTo(1000)" class="px-2.5 py-1 rounded-lg bg-pink-100 hover:bg-pink-200 text-xs font-bold text-pink-800 transition">Redondear a $1.000</button>
+            <!-- Botones de Ajuste Rápido (+ / - $100, $500, $1.000) -->
+            <div class="flex flex-wrap items-center gap-1.5 pt-1">
+              <span class="text-xs text-gray-500 font-medium mr-1">Ajuste rápido:</span>
+              
+              <!-- Restar -->
+              <button onclick="SimulatorModule.adjustPriceBy(-1000)" title="Restar $1.000" class="px-2.5 py-1 rounded-xl bg-white hover:bg-rose-50 border border-rose-200 text-xs font-bold text-rose-600 transition shadow-2xs active:scale-95">- $1.000</button>
+              <button onclick="SimulatorModule.adjustPriceBy(-500)" title="Restar $500" class="px-2.5 py-1 rounded-xl bg-white hover:bg-rose-50 border border-rose-200 text-xs font-bold text-rose-600 transition shadow-2xs active:scale-95">- $500</button>
+              <button onclick="SimulatorModule.adjustPriceBy(-100)" title="Restar $100" class="px-2.5 py-1 rounded-xl bg-white hover:bg-rose-50 border border-rose-200 text-xs font-bold text-rose-600 transition shadow-2xs active:scale-95">- $100</button>
+              
+              <!-- Sumar -->
+              <button onclick="SimulatorModule.adjustPriceBy(100)" title="Sumar $100" class="px-2.5 py-1 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700 transition shadow-2xs active:scale-95">+ $100</button>
+              <button onclick="SimulatorModule.adjustPriceBy(500)" title="Sumar $500" class="px-2.5 py-1 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700 transition shadow-2xs active:scale-95">+ $500</button>
+              <button onclick="SimulatorModule.adjustPriceBy(1000)" title="Sumar $1.000" class="px-2.5 py-1 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700 transition shadow-2xs active:scale-95">+ $1.000</button>
+
+              <button onclick="SimulatorModule.roundPriceTo(1000)" class="px-2.5 py-1 rounded-xl bg-pink-100 hover:bg-pink-200 text-xs font-bold text-pink-800 transition active:scale-95">Redondear a $1.000</button>
             </div>
           </div>
 
@@ -510,7 +524,7 @@ const SimulatorModule = {
   },
 
   adjustPriceBy(amount) {
-    this.currentPrice += amount;
+    this.currentPrice = Math.max(0, (this.currentPrice || 0) + amount);
     this.render();
   },
 

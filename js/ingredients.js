@@ -40,7 +40,7 @@ const IngredientsModule = {
         </div>
         <div class="flex items-center gap-2">
           <button onclick="ReceiptScannerModule.openModal()" class="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold text-xs shadow-xs transition active:scale-95">
-            <span>🧾</span> Escanear Boleta
+            <span>🧾</span> Agregar Boleta
           </button>
           <button onclick="IngredientsModule.openModal()" class="btn-primary flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white font-bold text-xs shadow-md shadow-pink-200 transition active:scale-95">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -147,15 +147,15 @@ const IngredientsModule = {
         </div>
       `}
 
-      <!-- Botón Flotante (FAB) para Capturar Boleta / Factura -->
+      <!-- Botón Flotante (FAB) para Agregar Boleta / Factura -->
       <div class="fixed bottom-20 md:bottom-8 right-4 sm:right-8 z-30">
         <button 
           onclick="ReceiptScannerModule.openModal()" 
-          title="Capturar Boleta o Factura con Cámara o Imagen"
-          class="group flex items-center gap-2.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-500 hover:from-pink-700 hover:to-rose-700 text-white px-4 py-3.5 rounded-full shadow-xl shadow-pink-500/40 hover:shadow-2xl hover:shadow-pink-500/60 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 ring-4 ring-white/80 select-none"
+          title="Agregar o escanear boleta de compras"
+          class="group flex items-center gap-2.5 bg-gradient-to-r from-pink-600 via-rose-600 to-pink-500 hover:from-pink-700 hover:to-rose-700 text-white px-4.5 py-3.5 rounded-full shadow-xl shadow-pink-500/40 hover:shadow-2xl hover:shadow-pink-500/60 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 ring-4 ring-white/90 select-none cursor-pointer"
         >
           <span class="text-xl group-hover:rotate-12 transition-transform duration-300">🧾</span>
-          <span class="text-xs font-extrabold tracking-wide pr-1">Escanear Boleta</span>
+          <span class="text-xs font-black tracking-wide pr-1">Agregar Boleta</span>
         </button>
       </div>
 

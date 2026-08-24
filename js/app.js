@@ -28,9 +28,18 @@ const App = {
   },
 
   switchTab(tabName, scrollToTop = true) {
+    // Si se pide simulador, abrir inicio y scrollear al simulador
+    if (tabName === 'simulator') {
+      tabName = 'dashboard';
+      setTimeout(() => {
+        const el = document.getElementById('dashboard-simulator-container');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+
     this.currentTab = tabName;
 
-    const views = ['dashboard-view', 'recipes-view', 'simulator-view', 'quotes-view', 'ingredients-view', 'market-radar-view', 'receipts-view', 'settings-view'];
+    const views = ['dashboard-view', 'quotes-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
     views.forEach(v => {
       const el = document.getElementById(v);
       if (el) el.classList.add('hidden');
@@ -57,14 +66,11 @@ const App = {
       case 'dashboard':
         this.renderDashboard();
         break;
-      case 'recipes':
-        RecipesModule.render();
-        break;
-      case 'simulator':
-        SimulatorModule.render();
-        break;
       case 'quotes':
         QuotesModule.render();
+        break;
+      case 'recipes':
+        RecipesModule.render();
         break;
       case 'ingredients':
         IngredientsModule.render();
@@ -72,11 +78,6 @@ const App = {
       case 'market-radar':
         if (typeof MarketRadarModule !== 'undefined') {
           MarketRadarModule.render();
-        }
-        break;
-      case 'receipts':
-        if (typeof ReceiptsModule !== 'undefined') {
-          ReceiptsModule.render();
         }
         break;
       case 'settings':
@@ -136,8 +137,8 @@ const App = {
             <button onclick="QuotesModule.openEditor()" class="bg-pink-700/60 hover:bg-pink-700 text-white font-bold px-4 py-2.5 rounded-2xl text-xs backdrop-blur-sm transition active:scale-95 flex items-center gap-1.5">
               <span>📋</span> Nueva Cotización
             </button>
-            <button onclick="App.switchTab('simulator')" class="bg-pink-700/60 hover:bg-pink-700 text-white font-bold px-4 py-2.5 rounded-2xl text-xs backdrop-blur-sm transition active:scale-95 flex items-center gap-1.5">
-              <span>📊</span> Simulador de Precios
+            <button onclick="document.getElementById('dashboard-simulator-container')?.scrollIntoView({ behavior: 'smooth' })" class="bg-pink-700/60 hover:bg-pink-700 text-white font-bold px-4 py-2.5 rounded-2xl text-xs backdrop-blur-sm transition active:scale-95 flex items-center gap-1.5">
+              <span>📊</span> Simulador de Precios ↓
             </button>
           </div>
         </div>
@@ -191,102 +192,47 @@ const App = {
         </div>
       </div>
 
-      <!-- Sección de Acceso Rápido y Calculadora Exprés -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-        <!-- Calculadora Exprés en 2 pasos -->
-        <div class="lg:col-span-6 bg-white rounded-3xl p-6 border border-pink-100 shadow-sm space-y-4">
-          <div class="flex items-center justify-between">
-            <h3 class="font-bold text-gray-900 text-base flex items-center gap-2">
-              <span>⚡</span> Calculadora Rápida de Precio
-            </h3>
-            <span class="text-[11px] bg-pink-50 text-pink-700 px-2 py-0.5 rounded-full font-semibold">Cálculo al instante</span>
-          </div>
-          <p class="text-xs text-gray-500">¿Cuánto te costó hacer el producto y qué margen deseas ganar?</p>
+      <!-- Simulador de Precios y Rentabilidad Integrado en Inicio -->
+      <div id="dashboard-simulator-container" class="mb-6"></div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Costo Total ($)</label>
-              <input 
-                type="number" 
-                id="quick-cost" 
-                value="5000" 
-                step="any"
-                min="0"
-                oninput="App.recalculateQuickPricing()" 
-                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 font-bold text-gray-900 text-sm"
-              />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Margen Deseado (%)</label>
-              <input 
-                type="number" 
-                id="quick-margin" 
-                value="45" 
-                min="5" 
-                max="90" 
-                oninput="App.recalculateQuickPricing()" 
-                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 font-bold text-pink-600 text-sm"
-              />
-            </div>
-          </div>
-
-          <!-- Resultado Exprés -->
-          <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 p-4 rounded-2xl flex items-center justify-between">
-            <div>
-              <span class="text-xs text-emerald-800 font-semibold block">Debes Cobrar Mínimo:</span>
-              <span id="quick-result-price" class="text-2xl font-black text-emerald-700">$ 9.091</span>
-            </div>
-            <div class="text-right">
-              <span class="text-xs text-emerald-800 font-semibold block">Ganancia Neta:</span>
-              <span id="quick-result-profit" class="text-lg font-bold text-emerald-600">+$ 4.091</span>
-            </div>
-          </div>
+      <!-- Recetas Destacadas y Accesos Rápidos -->
+      <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-bold text-gray-900 text-base flex items-center gap-2">
+            <span>🧁</span> Fichas de Recetas Rápidas
+          </h3>
+          <button onclick="App.switchTab('recipes')" class="text-xs text-pink-600 font-bold hover:underline">
+            Ver todas las recetas →
+          </button>
         </div>
 
-        <!-- Recetas Destacadas -->
-        <div class="lg:col-span-6 bg-white rounded-3xl p-6 border border-pink-100 shadow-sm flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="font-bold text-gray-900 text-base flex items-center gap-2">
-                <span>🧁</span> Fichas de Recetas Rápidas
-              </h3>
-              <button onclick="App.switchTab('recipes')" class="text-xs text-pink-600 font-bold hover:underline">
-                Ver todas →
-              </button>
-            </div>
-
-            <div class="space-y-2">
-              ${recipes.slice(0, 3).map(r => {
-                const costs = Calculator.calculateRecipeFullCosts(r);
-                return `
-                  <div class="flex items-center justify-between p-3 rounded-2xl bg-gray-50/80 hover:bg-pink-50/50 transition cursor-pointer border border-gray-100" onclick="SimulatorModule.loadRecipeForSimulation('${r.id}')">
-                    <div class="flex items-center gap-2.5 truncate">
-                      <span class="text-lg">${r.type === 'cake' ? '🎂' : '🍪'}</span>
-                      <div class="truncate">
-                        <h4 class="font-bold text-xs text-gray-800 truncate">${r.name}</h4>
-                        <span class="text-[10px] text-gray-500">Costo: ${Calculator.formatCurrency(costs.costPerUnit)} / un</span>
-                      </div>
-                    </div>
-                    <div class="text-right shrink-0">
-                      <span class="text-xs font-black text-emerald-600 block">${Calculator.formatCurrency(costs.suggestedUnitPrice)}</span>
-                      <span class="text-[10px] text-gray-400">Sugerido (${costs.targetMargin}%)</span>
-                    </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          ${recipes.slice(0, 6).map(r => {
+            const costs = Calculator.calculateRecipeFullCosts(r);
+            return `
+              <div class="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50/80 hover:bg-pink-50/50 transition cursor-pointer border border-gray-100 group" onclick="SimulatorModule.loadRecipeForSimulation('${r.id}')" title="Simular rentabilidad de esta receta">
+                <div class="flex items-center gap-2.5 truncate">
+                  <span class="text-xl group-hover:scale-110 transition">${r.type === 'cake' ? '🎂' : '🍪'}</span>
+                  <div class="truncate">
+                    <h4 class="font-bold text-xs text-gray-800 truncate group-hover:text-pink-600 transition">${r.name}</h4>
+                    <span class="text-[10px] text-gray-500">Costo: ${Calculator.formatCurrency(costs.costPerUnit)} / un</span>
                   </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-
-          <div class="pt-3">
-            <button onclick="App.switchTab('recipes')" class="w-full py-2.5 rounded-xl border border-pink-200 text-pink-600 hover:bg-pink-50 font-bold text-xs transition text-center">
-              Gestionar Mis Fichas Técnicas
-            </button>
-          </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-xs font-black text-emerald-600 block">${Calculator.formatCurrency(costs.suggestedUnitPrice)}</span>
+                  <span class="text-[10px] text-gray-400">Simular ↗</span>
+                </div>
+              </div>
+            `;
+          }).join('')}
         </div>
       </div>
     `;
 
-    this.recalculateQuickPricing();
+    // Renderizar el Simulador directamente en el contenedor del Dashboard
+    if (typeof SimulatorModule !== 'undefined') {
+      SimulatorModule.render('dashboard-simulator-container');
+    }
   },
 
   recalculateQuickPricing() {
