@@ -5,6 +5,7 @@
 const AuthModule = {
   currentUser: null,
   syncStatus: 'local', // 'local' | 'synced' | 'syncing' | 'error'
+  hasCheckedAuth: false,
 
   init() {
     const isConfigured = FirebaseService.init();
@@ -12,10 +13,12 @@ const AuthModule = {
     if (isConfigured && FirebaseService.auth) {
       FirebaseService.auth.onAuthStateChanged(user => {
         this.currentUser = user;
+        this.hasCheckedAuth = true;
         this.renderAuthUI();
 
         if (user) {
           console.log('👤 Sesión activa:', user.displayName, user.email);
+          this.closeLoginModal();
           this.syncStatus = 'syncing';
           this.renderAuthUI();
           
@@ -32,9 +35,12 @@ const AuthModule = {
         } else {
           this.syncStatus = 'local';
           this.renderAuthUI();
+          // Si no hay sesión iniciada, mostrar modal de bienvenida para pedir login
+          this.showLoginRequiredModal();
         }
       });
     } else {
+      this.hasCheckedAuth = true;
       this.renderAuthUI();
     }
   },
@@ -353,6 +359,76 @@ const AuthModule = {
     };
 
     FirebaseService.saveCustomConfig(config);
+  },
+
+  showLoginRequiredModal() {
+    let modal = document.getElementById('login-prompt-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'login-prompt-modal';
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/70 backdrop-blur-md animate-in fade-in duration-300';
+      document.body.appendChild(modal);
+    }
+
+    modal.innerHTML = `
+      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-pink-100 text-center relative animate-in zoom-in-95 duration-200">
+        <!-- Logo e Icono -->
+        <div class="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 p-0.5 shadow-lg shadow-pink-200 mb-4 flex items-center justify-center">
+          <div class="w-full h-full bg-white rounded-[14px] flex items-center justify-center text-3xl">
+            🎂
+          </div>
+        </div>
+
+        <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-1">¡Bienvenido a Cakekulator!</h3>
+        <p class="text-xs text-gray-500 mb-6 max-w-xs mx-auto">
+          Inicia sesión con tu cuenta de Google para sincronizar tus recetas, costos e insumos en la nube de Firebase.
+        </p>
+
+        <!-- Beneficios -->
+        <div class="bg-pink-50/60 rounded-2xl p-4 text-left space-y-2 mb-6 border border-pink-100/60">
+          <div class="flex items-center gap-2.5 text-xs text-gray-700 font-medium">
+            <span class="text-pink-600 font-bold">✓</span> Tus recetas y cálculos respaldados en Firestore.
+          </div>
+          <div class="flex items-center gap-2.5 text-xs text-gray-700 font-medium">
+            <span class="text-pink-600 font-bold">✓</span> Accede desde tu celular o computadora.
+          </div>
+          <div class="flex items-center gap-2.5 text-xs text-gray-700 font-medium">
+            <span class="text-pink-600 font-bold">✓</span> Sincronización automática de precios e insumos.
+          </div>
+        </div>
+
+        <!-- Botón de inicio de sesión con Google -->
+        <button 
+          onclick="AuthModule.loginWithGoogle()"
+          class="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50 text-gray-800 border-2 border-gray-200 hover:border-pink-300 font-bold py-3 px-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 text-sm mb-3 group"
+        >
+          <svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continuar con Google</span>
+        </button>
+
+        <!-- Opción de continuar como invitado / offline -->
+        <button 
+          onclick="AuthModule.closeLoginModal()"
+          class="text-xs text-gray-400 hover:text-gray-600 font-semibold py-1 transition underline"
+        >
+          Continuar en modo local sin cuenta
+        </button>
+      </div>
+    `;
+
+    modal.classList.remove('hidden');
+  },
+
+  closeLoginModal() {
+    const modal = document.getElementById('login-prompt-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
   }
 };
 
