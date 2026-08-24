@@ -31,7 +31,11 @@ const App = {
     this.currentTab = tabName;
 
     // Ocultar todas las vistas
+<<<<<<< HEAD
     const views = ['dashboard-view', 'recipes-view', 'simulator-view', 'quotes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
+=======
+    const views = ['dashboard-view', 'recipes-view', 'simulator-view', 'quotes-view', 'ingredients-view', 'receipts-view', 'settings-view'];
+>>>>>>> 95608de545525c4ca573a0116b51b548d3d9263c
     views.forEach(v => {
       const el = document.getElementById(v);
       if (el) el.classList.add('hidden');
@@ -70,10 +74,15 @@ const App = {
       case 'ingredients':
         IngredientsModule.render();
         break;
+<<<<<<< HEAD
       case 'market-radar':
         if (typeof MarketRadarModule !== 'undefined') {
           MarketRadarModule.render();
         }
+=======
+      case 'receipts':
+        ReceiptsModule.render();
+>>>>>>> 95608de545525c4ca573a0116b51b548d3d9263c
         break;
       case 'settings':
         this.renderSettings();

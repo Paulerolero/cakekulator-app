@@ -2,7 +2,11 @@
 // Cakekulator - Service Worker para Soporte Offline 100%
 // ==========================================
 
+<<<<<<< HEAD
 const CACHE_NAME = 'cakekulator-v1.4';
+=======
+const CACHE_NAME = 'cakekulator-v1.2';
+>>>>>>> 95608de545525c4ca573a0116b51b548d3d9263c
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -13,8 +17,12 @@ const ASSETS_TO_CACHE = [
   './js/templates.js',
   './js/db.js',
   './js/ingredients.js',
+<<<<<<< HEAD
   './js/receipt-scanner.js',
   './js/market-radar.js',
+=======
+  './js/receipts.js',
+>>>>>>> 95608de545525c4ca573a0116b51b548d3d9263c
   './js/recipes.js',
   './js/simulator.js',
   './js/quotes.js',
