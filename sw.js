@@ -2,15 +2,19 @@
 // Cakekulator - Service Worker para Soporte Offline 100%
 // ==========================================
 
-const CACHE_NAME = 'cakekulator-v1.1';
+const CACHE_NAME = 'cakekulator-v1.4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
   './css/styles.css',
+  './js/firebase-config.js',
+  './js/auth.js',
   './js/templates.js',
   './js/db.js',
   './js/ingredients.js',
+  './js/receipt-scanner.js',
+  './js/market-radar.js',
   './js/recipes.js',
   './js/simulator.js',
   './js/quotes.js',

@@ -16,8 +16,10 @@ const App = {
     // Eventos de instalación PWA
     this.initPWAInstall();
 
-    // Escuchar estado de conexión (Online / Offline)
-    this.initNetworkStatus();
+    // Inicializar autenticación y sesión con Google / Firebase
+    if (typeof AuthModule !== 'undefined') {
+      AuthModule.init();
+    }
 
     // Renderizar pestaña inicial
     this.switchTab('dashboard');
@@ -29,7 +31,7 @@ const App = {
     this.currentTab = tabName;
 
     // Ocultar todas las vistas
-    const views = ['dashboard-view', 'recipes-view', 'simulator-view', 'quotes-view', 'ingredients-view', 'settings-view'];
+    const views = ['dashboard-view', 'recipes-view', 'simulator-view', 'quotes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
     views.forEach(v => {
       const el = document.getElementById(v);
       if (el) el.classList.add('hidden');
@@ -67,6 +69,11 @@ const App = {
         break;
       case 'ingredients':
         IngredientsModule.render();
+        break;
+      case 'market-radar':
+        if (typeof MarketRadarModule !== 'undefined') {
+          MarketRadarModule.render();
+        }
         break;
       case 'settings':
         this.renderSettings();
@@ -127,44 +134,44 @@ const App = {
         </div>
       </div>
 
-      <!-- Métricas Clave (KPIs) -->
+      <!-- Métricas Clave (KPIs) con Acceso Directo -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm flex items-center gap-3.5">
-          <div class="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-xl shrink-0">
+        <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Recetas & Costeo" class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm hover:shadow-md hover:border-pink-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-3.5 group select-none">
+          <div class="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 group-hover:bg-pink-100 transition duration-200">
             🎂
           </div>
           <div>
-            <span class="text-xs text-gray-500 font-medium block">Recetas Creadas</span>
+            <span class="text-xs text-gray-500 font-medium block group-hover:text-pink-600 transition">Recetas Creadas</span>
             <span class="text-xl font-black text-gray-900">${recipes.length}</span>
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm flex items-center gap-3.5">
-          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
+        <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos & Empaques" class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm hover:shadow-md hover:border-amber-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-3.5 group select-none">
+          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 group-hover:bg-amber-100 transition duration-200">
             📦
           </div>
           <div>
-            <span class="text-xs text-gray-500 font-medium block">Insumos Guardados</span>
+            <span class="text-xs text-gray-500 font-medium block group-hover:text-amber-600 transition">Insumos Guardados</span>
             <span class="text-xl font-black text-gray-900">${ingredients.length}</span>
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm flex items-center gap-3.5">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm hover:shadow-md hover:border-emerald-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-3.5 group select-none">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 group-hover:bg-emerald-100 transition duration-200">
             📋
           </div>
           <div>
-            <span class="text-xs text-gray-500 font-medium block">Cotizaciones Activas</span>
+            <span class="text-xs text-gray-500 font-medium block group-hover:text-emerald-600 transition">Cotizaciones Activas</span>
             <span class="text-xl font-black text-gray-900">${pendingQuotes.length}</span>
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm flex items-center gap-3.5">
-          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shrink-0">
+        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones y Presupuestos" class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm hover:shadow-md hover:border-purple-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-3.5 group select-none">
+          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 group-hover:bg-purple-100 transition duration-200">
             💰
           </div>
           <div>
-            <span class="text-xs text-gray-500 font-medium block">Total Presupuestado</span>
+            <span class="text-xs text-gray-500 font-medium block group-hover:text-purple-600 transition">Total Presupuestado</span>
             <span class="text-lg font-black text-gray-900 truncate">${Calculator.formatCurrency(totalQuotedAmount)}</span>
           </div>
         </div>
@@ -370,6 +377,72 @@ const App = {
             Guardar Configuración
           </button>
         </form>
+
+        <!-- Conexión Nube & Cuenta Google -->
+        <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm space-y-4 text-sm">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+              <span>🔥</span> Base de Datos y Sesión en la Nube
+            </h3>
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}">
+              ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'Firebase Conectado' : 'Modo Local'}
+            </span>
+          </div>
+
+          <p class="text-xs text-gray-500">Conecta tu cuenta de Google y Firebase Cloud Firestore para que tus recetas, costos y presupuestos se sincronicen automáticamente en todos tus dispositivos.</p>
+
+          <div class="bg-gradient-to-br from-pink-50/60 to-rose-50/40 p-4 rounded-2xl border border-pink-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div>
+              ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
+                <div class="flex items-center gap-3">
+                  ${AuthModule.currentUser.photoURL ? `
+                    <img src="${AuthModule.currentUser.photoURL}" alt="" class="w-10 h-10 rounded-full ring-2 ring-pink-300">
+                  ` : `
+                    <div class="w-10 h-10 rounded-full bg-pink-500 text-white font-bold flex items-center justify-center">
+                      ${(AuthModule.currentUser.displayName || 'U').charAt(0)}
+                    </div>
+                  `}
+                  <div>
+                    <h4 class="font-bold text-gray-900 text-xs">${AuthModule.currentUser.displayName || 'Usuario'}</h4>
+                    <p class="text-[11px] text-gray-500">${AuthModule.currentUser.email}</p>
+                    <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sincronización en vivo activa
+                    </span>
+                  </div>
+                </div>
+              ` : `
+                <div>
+                  <h4 class="font-bold text-gray-800 text-xs">Sin sesión iniciada</h4>
+                  <p class="text-[11px] text-gray-500">Inicia sesión con Google para respaldar tus datos en la nube.</p>
+                </div>
+              `}
+            </div>
+
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
+                <button onclick="AuthModule.forceSyncNow()" class="flex-1 sm:flex-none px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition">
+                  🔄 Sincronizar
+                </button>
+                <button onclick="AuthModule.logout()" class="flex-1 sm:flex-none px-3 py-2 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 text-xs font-bold rounded-xl transition">
+                  Cerrar Sesión
+                </button>
+              ` : `
+                <button onclick="AuthModule.loginWithGoogle()" class="w-full sm:w-auto px-4 py-2 bg-white hover:bg-pink-50 border border-pink-300 text-pink-700 text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  Iniciar con Google
+                </button>
+              `}
+              <button onclick="AuthModule.showConfigModal()" title="Configurar credenciales de Firebase" class="p-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-gray-500 hover:text-gray-700">
+                ⚙️
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Respaldos y Restauración -->
         <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm space-y-4 text-sm">

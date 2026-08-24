@@ -42,6 +42,99 @@ const DB = {
     }
   },
 
+  // Sincronización en la Nube (Cloud Firestore)
+  async syncDocumentToCloud(collectionName, data) {
+    if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured && FirebaseService.db && typeof AuthModule !== 'undefined' && AuthModule.currentUser) {
+      try {
+        const uid = AuthModule.currentUser.uid;
+        await FirebaseService.db.collection('users').doc(uid).collection('data').doc(collectionName).set({
+          data,
+          updatedAt: Date.now()
+        }, { merge: true });
+        console.log(`☁️ ${collectionName} guardado en Firestore.`);
+      } catch (err) {
+        console.warn(`Error al sincronizar ${collectionName} en la nube:`, err);
+      }
+    }
+  },
+
+  async initCloudSync(uid) {
+    if (typeof FirebaseService === 'undefined' || !FirebaseService.db) return;
+    try {
+      console.log('🔄 Sincronizando datos con Firestore para:', uid);
+      const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
+      
+      const [settingsDoc, ingDoc, recDoc, quoteDoc] = await Promise.all([
+        userDocRef.doc('settings').get(),
+        userDocRef.doc('ingredients').get(),
+        userDocRef.doc('recipes').get(),
+        userDocRef.doc('quotes').get()
+      ]);
+
+      let hasCloudData = false;
+
+      if (settingsDoc.exists && settingsDoc.data().data) {
+        localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(settingsDoc.data().data));
+        hasCloudData = true;
+      }
+      if (ingDoc.exists && ingDoc.data().data) {
+        localStorage.setItem(DB_KEYS.INGREDIENTS, JSON.stringify(ingDoc.data().data));
+        hasCloudData = true;
+      }
+      if (recDoc.exists && recDoc.data().data) {
+        localStorage.setItem(DB_KEYS.RECIPES, JSON.stringify(recDoc.data().data));
+        hasCloudData = true;
+      }
+      if (quoteDoc.exists && quoteDoc.data().data) {
+        localStorage.setItem(DB_KEYS.QUOTES, JSON.stringify(quoteDoc.data().data));
+        hasCloudData = true;
+      }
+
+      // Si es primera vez y la nube no tiene datos pero el usuario tiene datos locales, respaldar en Firestore
+      if (!hasCloudData) {
+        console.log('🚀 Primera sesión: Respaldando datos iniciales en Firestore...');
+        await this.pushLocalToCloud(uid);
+      } else {
+        if (typeof App !== 'undefined' && App.renderCurrentTab) {
+          App.renderCurrentTab();
+        }
+      }
+    } catch (error) {
+      console.error('Error en initCloudSync:', error);
+      throw error;
+    }
+  },
+
+  async pushLocalToCloud(uid) {
+    if (typeof FirebaseService === 'undefined' || !FirebaseService.db) return;
+    const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
+    const settings = this.getSettings();
+    const ingredients = this.getIngredients();
+    const recipes = this.getRecipes();
+    const quotes = this.getQuotes();
+
+    await Promise.all([
+      userDocRef.doc('settings').set({ data: settings, updatedAt: Date.now() }),
+      userDocRef.doc('ingredients').set({ data: ingredients, updatedAt: Date.now() }),
+      userDocRef.doc('recipes').set({ data: recipes, updatedAt: Date.now() }),
+      userDocRef.doc('quotes').set({ data: quotes, updatedAt: Date.now() })
+    ]);
+    console.log('✅ Datos locales subidos a Firestore exitosamente.');
+  },
+
+  async pullCloudToLocal(uid) {
+    return this.initCloudSync(uid);
+  },
+
+  // Limpiar datos de sesión al cerrar sesión
+  clearSessionData() {
+    localStorage.removeItem(DB_KEYS.SETTINGS);
+    localStorage.removeItem(DB_KEYS.INGREDIENTS);
+    localStorage.removeItem(DB_KEYS.RECIPES);
+    localStorage.removeItem(DB_KEYS.QUOTES);
+    this.init();
+  },
+
   // Settings
   getSettings() {
     try {
@@ -55,6 +148,7 @@ const DB = {
 
   saveSettings(settings) {
     localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(settings));
+    this.syncDocumentToCloud('settings', settings);
   },
 
   // Insumos / Ingredientes
@@ -75,6 +169,7 @@ const DB = {
 
   saveIngredients(ingredients) {
     localStorage.setItem(DB_KEYS.INGREDIENTS, JSON.stringify(ingredients));
+    this.syncDocumentToCloud('ingredients', ingredients);
   },
 
   addIngredient(ingredient) {
@@ -122,6 +217,7 @@ const DB = {
 
   saveRecipes(recipes) {
     localStorage.setItem(DB_KEYS.RECIPES, JSON.stringify(recipes));
+    this.syncDocumentToCloud('recipes', recipes);
   },
 
   addRecipe(recipe) {
@@ -178,6 +274,7 @@ const DB = {
 
   saveQuotes(quotes) {
     localStorage.setItem(DB_KEYS.QUOTES, JSON.stringify(quotes));
+    this.syncDocumentToCloud('quotes', quotes);
   },
 
   addQuote(quote) {
