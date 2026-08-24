@@ -7,6 +7,7 @@ const QuotesModule = {
   filterStatus: 'all',
   editingQuoteId: null,
   activeWhatsAppQuoteId: null,
+  viewingPrintId: null,
 
   init() {
     this.render();
@@ -329,14 +330,14 @@ const QuotesModule = {
                   class="flex-1 px-3.5 py-2 rounded-xl border border-emerald-200 bg-white font-semibold text-gray-800 text-sm focus:ring-2 focus:ring-emerald-400"
                 />
               </div>
-              <p class="text-[11px] text-emerald-700">Asegúrate de incluir el código de país (ej. +56 para Chile) para abrir el chat directamente.</p>
+              <p class="text-[11px] text-emerald-700">Incluye el código de país (ej. +56 para Chile) para enviar directo al chat.</p>
             </div>
 
             <!-- Previsualización del Mensaje Editable -->
             <div class="space-y-1.5">
               <div class="flex items-center justify-between">
                 <label class="font-bold text-gray-800 flex items-center gap-1.5">
-                  <span>💬</span> Mensaje Personalizado de WhatsApp:
+                  <span>💬</span> Texto Personalizado del Mensaje:
                 </label>
                 <button onclick="QuotesModule.copyMessageToClipboard()" class="text-pink-600 hover:text-pink-700 font-bold text-[11px] flex items-center gap-1">
                   <span>📋</span> Copiar Texto
@@ -344,7 +345,7 @@ const QuotesModule = {
               </div>
               <textarea 
                 id="wa-message-preview" 
-                rows="10" 
+                rows="11" 
                 class="w-full p-3.5 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 font-mono text-[11px] leading-relaxed focus:ring-2 focus:ring-pink-400 focus:bg-white shadow-inner"
               ></textarea>
             </div>
@@ -355,10 +356,10 @@ const QuotesModule = {
                 <div class="text-2xl">📄</div>
                 <div>
                   <span class="font-bold text-gray-900 block" id="wa-pdf-filename">Cotizacion.pdf</span>
-                  <span class="text-[11px] text-pink-700">Documento formal con logo, desglose y datos bancarios</span>
+                  <span class="text-[11px] text-pink-700">Resumen en PDF con logo, desglose y términos</span>
                 </div>
               </div>
-              <button onclick="QuotesModule.downloadActiveQuotePDF()" class="px-3 py-1.5 bg-white hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold rounded-xl shadow-2xs transition flex items-center gap-1">
+              <button onclick="QuotesModule.downloadActiveQuotePDF()" class="px-3 py-1.5 bg-white hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold rounded-xl shadow-2xs transition flex items-center gap-1 cursor-pointer">
                 <span>⬇️</span> Descargar PDF
               </button>
             </div>
@@ -370,7 +371,7 @@ const QuotesModule = {
               onclick="QuotesModule.openDirectWhatsApp()" 
               class="w-full sm:w-auto py-2.5 px-4 bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 font-bold text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <span>💬</span> Solo Abrir WhatsApp
+              <span>💬</span> Solo Mensaje WhatsApp
             </button>
 
             <button 
@@ -516,7 +517,7 @@ const QuotesModule = {
       </div>
 
       <div class="col-span-2">
-        <input type="number" step="1" min="1" placeholder="Cant." value="${qty}" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs text-center font-bold q-item-qty focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
+        <input type="number" step="1" min="1" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-center font-bold q-item-qty focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
       </div>
 
       <div class="col-span-3">
@@ -698,24 +699,23 @@ const QuotesModule = {
 
     let itemsText = '';
     (quote.items || []).forEach(item => {
-      itemsText += `  • *${item.quantity}x* ${item.recipeName} ➔ ${Calculator.formatCurrency(item.subtotal)}\n`;
+      itemsText += `  • *${item.quantity}x* ${item.recipeName} : ${Calculator.formatCurrency(item.subtotal)}\n`;
     });
 
-    // Enlaces de respuesta rápida
-    const acceptText = `¡Hola ${businessName}! 👋 Confirmo y ACEPTO el presupuesto ${quote.code} a nombre de ${quote.customerName}. Por favor envíame los datos de transferencia para realizar el abono de ${Calculator.formatCurrency(quote.depositAmount)} 🎉`;
-    const rejectText = `¡Hola ${businessName}! Respecto a la cotización ${quote.code} a nombre de ${quote.customerName}, me gustaría solicitar algunos cambios o ajustes. ¡Gracias!`;
+    // Enlaces directos de respuesta rapida
+    const acceptText = `Hola ${businessName}! Confirmo y ACEPTO el presupuesto ${quote.code} para ${quote.customerName}. Por favor enviame los datos de transferencia para el abono de ${Calculator.formatCurrency(quote.depositAmount)}`;
+    const rejectText = `Hola ${businessName}! Sobre la cotizacion ${quote.code} para ${quote.customerName}, me gustaria solicitar cambios o consultar algo. Gracias!`;
 
     const acceptUrl = myPhone 
-      ? `https://wa.me/${myPhone}?text=${encodeURIComponent(acceptText)}`
-      : `https://wa.me/?text=${encodeURIComponent(acceptText)}`;
+      ? `https://api.whatsapp.com/send?phone=${myPhone}&text=${encodeURIComponent(acceptText)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(acceptText)}`;
 
     const rejectUrl = myPhone
-      ? `https://wa.me/${myPhone}?text=${encodeURIComponent(rejectText)}`
-      : `https://wa.me/?text=${encodeURIComponent(rejectText)}`;
+      ? `https://api.whatsapp.com/send?phone=${myPhone}&text=${encodeURIComponent(rejectText)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(rejectText)}`;
 
-    let msg = `🎂 *COTIZACIÓN DE PASTELERÍA* 🎂\n`;
-    msg += `*${businessName.toUpperCase()}*\n`;
-    msg += `──────────────────────────\n`;
+    let msg = `🎂 *PRESUPUESTO - ${businessName.toUpperCase()}*\n`;
+    msg += `--------------------------------\n`;
     msg += `👋 ¡Hola *${customerFirstName}*! Espero que estés muy bien.\n\n`;
     msg += `Con mucho cariño te comparto el presupuesto detallado para tu pedido${quote.eventName ? ` de *${quote.eventName}*` : ''}:\n\n`;
     msg += `📋 *Folio:* ${quote.code}\n`;
@@ -723,26 +723,26 @@ const QuotesModule = {
     if (quote.eventDate) msg += `📅 *Fecha de Entrega:* ${quote.eventDate}\n`;
     if (quote.deliveryOption) msg += `🚚 *Modalidad:* ${quote.deliveryOption}\n`;
     msg += `\n🛒 *DETALLE DEL PEDIDO:*\n${itemsText}`;
-    msg += `──────────────────────────\n`;
+    msg += `--------------------------------\n`;
     msg += `💰 *Subtotal:* ${Calculator.formatCurrency(quote.subtotal)}\n`;
     if (quote.discountAmount > 0) {
       msg += `🏷️ *Descuento (${quote.discountPercent}%):* -${Calculator.formatCurrency(quote.discountAmount)}\n`;
     }
     msg += `✨ *TOTAL A PAGAR:* ${Calculator.formatCurrency(quote.total)}\n\n`;
     msg += `💳 *CONDICIONES DE PAGO:*\n`;
-    msg += `• *Abono para agendar fecha (${quote.depositPercent}%):* ${Calculator.formatCurrency(quote.depositAmount)}\n`;
+    msg += `• *Abono para agendar (${quote.depositPercent}%):* ${Calculator.formatCurrency(quote.depositAmount)}\n`;
     msg += `• *Saldo restante contra entrega:* ${Calculator.formatCurrency(quote.remainingBalance)}\n`;
-    if (quote.notes) msg += `\n📝 *Condiciones especiales:* ${quote.notes}\n`;
-    msg += `──────────────────────────\n`;
-    msg += `📌 *¿CÓMO CONFIRMAR TU PEDIDO?*\n\n`;
+    if (quote.notes) msg += `\n📝 *Condiciones:* ${quote.notes}\n`;
+    msg += `--------------------------------\n`;
+    msg += `📌 *¿COMO CONFIRMAR TU PEDIDO?*\n\n`;
     msg += `✅ *1. PARA ACEPTAR Y AGENDAR FECHA:*\n`;
-    msg += `Responde *"ACEPTO"* o presiona aquí 👇\n`;
-    msg += `${acceptUrl}\n\n`;
+    msg += `Responde *"ACEPTO"* o toca aquí:\n`;
+    msg += `👉 ${acceptUrl}\n\n`;
     msg += `❌ *2. PARA MODIFICAR O RECHAZAR:*\n`;
-    msg += `Responde *"MODIFICAR"* o presiona aquí 👇\n`;
-    msg += `${rejectUrl}\n\n`;
-    msg += `📄 *(Te adjunto el documento formal en PDF con el desglose)*\n\n`;
-    msg += `¡Muchas gracias por preferir nuestro trabajo artesanal hecho con amor! 💕🧁`;
+    msg += `Responde *"MODIFICAR"* o toca aquí:\n`;
+    msg += `👉 ${rejectUrl}\n\n`;
+    msg += `📄 *(Te adjunto el documento formal en PDF con el resumen completo)*\n\n`;
+    msg += `¡Gracias por preferir nuestro trabajo artesanal hecho con amor! 💕🎂`;
 
     return msg;
   },
@@ -798,12 +798,9 @@ const QuotesModule = {
     const message = msgPreview ? msgPreview.value : this.buildWhatsAppMessage(quote);
     const encodedMsg = encodeURIComponent(message);
 
-    let url = `https://wa.me/`;
-    if (phone) {
-      url += `${phone}?text=${encodedMsg}`;
-    } else {
-      url += `?text=${encodedMsg}`;
-    }
+    let url = phone 
+      ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`
+      : `https://api.whatsapp.com/send?text=${encodedMsg}`;
 
     window.open(url, '_blank');
     this.closeWhatsAppModal();
@@ -817,7 +814,7 @@ const QuotesModule = {
     const balance = quote.remainingBalance || (total - deposit);
 
     return `
-      <div style="font-family: Arial, Helvetica, sans-serif; color: #333; padding: 20px; line-height: 1.5; background: #ffffff;">
+      <div style="font-family: Arial, Helvetica, sans-serif; color: #333; padding: 25px; line-height: 1.5; background: #ffffff; width: 100%; box-sizing: border-box;">
         <!-- Header -->
         <table style="width: 100%; border-bottom: 2px solid #fbcfe8; padding-bottom: 15px; margin-bottom: 20px;">
           <tr>
@@ -880,10 +877,10 @@ const QuotesModule = {
         <table style="width: 100%; margin-bottom: 20px;">
           <tr>
             <td style="width: 50%; vertical-align: top; font-size: 11px; color: #666;">
-              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px;">
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px;">
                 <strong style="color: #166534; font-size: 12px; display: block; margin-bottom: 4px;">💳 Condiciones de Reserva:</strong>
-                <div>• Para agendar y reservar tu fecha se requiere un <strong>abono del ${quote.depositPercent || 50}%</strong>.</div>
-                <div>• El saldo restante se cancela al momento de la entrega.</div>
+                <div style="margin-bottom: 2px;">• Para agendar y reservar tu fecha se requiere un <strong>abono del ${quote.depositPercent || 50}%</strong> (${Calculator.formatCurrency(deposit)}).</div>
+                <div>• El saldo restante (${Calculator.formatCurrency(balance)}) se cancela al momento de la entrega.</div>
               </div>
             </td>
             <td style="width: 50%; vertical-align: top;">
@@ -939,10 +936,10 @@ const QuotesModule = {
     const filename = `Cotizacion_${quote.code}_${quote.customerName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
 
     const opt = {
-      margin: [10, 10, 10, 10],
+      margin: [8, 8, 8, 8],
       filename: filename,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
@@ -969,10 +966,10 @@ const QuotesModule = {
     element.innerHTML = this.getQuoteHTMLForPDF(quote);
 
     const opt = {
-      margin: [10, 10, 10, 10],
+      margin: [8, 8, 8, 8],
       filename: filename,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { scale: 2, useCORS: true, letterRendering: true },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
@@ -989,28 +986,30 @@ const QuotesModule = {
             files: [pdfFile]
           });
           this.closeWhatsAppModal();
-          App.showToast('✅ ¡Cotización compartida con PDF adjunto!');
+          App.showToast('✅ ¡Cotización compartida con PDF adjunto en WhatsApp!');
           return;
         }
       }
     } catch (e) {
-      console.log('WebShare no disponible o cancelado por usuario:', e);
+      console.log('WebShare no disponible o cancelado:', e);
     }
 
-    // Fallback para computadores de escritorio o navegadores sin WebShare de archivos:
+    // Fallback para computadores de escritorio:
     // 1. Descargar el PDF automáticamente
     if (typeof html2pdf !== 'undefined') {
       html2pdf().set(opt).from(element).save();
     }
 
-    // 2. Abrir WhatsApp con el mensaje personalizado pre-cargado
+    // 2. Copiar mensaje al portapapeles
+    try {
+      await navigator.clipboard.writeText(message);
+    } catch (err) {}
+
+    // 3. Abrir WhatsApp con el mensaje pre-cargado
     const encodedMsg = encodeURIComponent(message);
-    let url = `https://wa.me/`;
-    if (phone) {
-      url += `${phone}?text=${encodedMsg}`;
-    } else {
-      url += `?text=${encodedMsg}`;
-    }
+    let url = phone 
+      ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`
+      : `https://api.whatsapp.com/send?text=${encodedMsg}`;
 
     window.open(url, '_blank');
     this.closeWhatsAppModal();

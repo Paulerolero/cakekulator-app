@@ -38,11 +38,15 @@ const RecipesModule = {
             <span>🎂</span> Fichas Técnicas y Costeos
           </h2>
           <p class="text-sm text-gray-500">Calcula costos por lote, unidad y porción para tortas, alfajores, galletas y más.</p>
+        <div class="flex items-center gap-2">
+          <button onclick="RecipeScannerModule.openModal()" class="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer">
+            <span>📸</span> Escanear Receta
+          </button>
+          <button onclick="RecipesModule.openEditor()" class="btn-primary flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white font-bold text-xs shadow-md shadow-pink-200 transition active:scale-95 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nueva Receta
+          </button>
         </div>
-        <button onclick="RecipesModule.openEditor()" class="btn-primary flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium shadow-md shadow-pink-200 transition active:scale-95">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          Nueva Receta
-        </button>
       </div>
 
       <!-- Barra de Búsqueda y Categorías -->
@@ -183,6 +187,18 @@ const RecipesModule = {
           }).join('')}
         </div>
       `}
+
+      <!-- Botón Flotante (FAB) para Escanear Receta con Cámara o Foto -->
+      <div class="fixed bottom-20 md:bottom-8 right-4 sm:right-8 z-30">
+        <button 
+          onclick="RecipeScannerModule.openModal()" 
+          title="Escanear receta con cámara o foto"
+          class="group flex items-center gap-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:from-purple-700 hover:to-rose-600 text-white px-4.5 py-3.5 rounded-full shadow-xl shadow-purple-500/40 hover:shadow-2xl hover:shadow-purple-500/60 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 ring-4 ring-white/90 select-none cursor-pointer"
+        >
+          <span class="text-xl group-hover:rotate-12 transition-transform duration-300">📸</span>
+          <span class="text-xs font-black tracking-wide pr-1">Escanear Receta</span>
+        </button>
+      </div>
 
       <!-- Modal Editor / Creador de Ficha Técnica -->
       <div id="recipe-editor-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
@@ -503,6 +519,36 @@ const RecipesModule = {
   closeEditor() {
     const modal = document.getElementById('recipe-editor-modal');
     if (modal) modal.classList.add('hidden');
+  },
+
+  openEditorWithData(data) {
+    this.openEditor();
+    if (!data) return;
+
+    document.getElementById('rec-id').value = '';
+    document.getElementById('rec-name').value = data.name || '';
+    document.getElementById('rec-category').value = data.category || 'Tortas';
+    document.getElementById('rec-type').value = data.type || 'cake';
+    document.getElementById('rec-yield-units').value = data.yieldUnits || 1;
+    document.getElementById('rec-yield-portions').value = data.yieldPortions || 16;
+    document.getElementById('rec-prep-time').value = data.prepTimeMinutes || 45;
+    document.getElementById('rec-bake-time').value = data.bakeTimeMinutes || 35;
+    if (data.notes) document.getElementById('rec-notes').value = data.notes;
+
+    this.onTypeChange(data.type || 'cake');
+
+    // Limpiar filas de ingredientes e insertar las extraídas del escaneo
+    const ingTable = document.getElementById('recipe-ingredients-table');
+    if (ingTable) ingTable.innerHTML = '';
+
+    (data.ingredients || []).forEach(item => {
+      this.addIngredientRow(item.ingredientId || item.matchedIngredientId || '', item.quantity, item.unit);
+    });
+
+    this.recalculateLiveSummary();
+    if (typeof App !== 'undefined' && App.showToast) {
+      App.showToast(`✨ Receta "${data.name}" precargada con éxito.`);
+    }
   },
 
   scaleFormIngredients(factor) {
