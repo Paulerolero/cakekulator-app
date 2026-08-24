@@ -1,11 +1,12 @@
 // ==========================================
-// Cakekulator - Módulo de Presupuestos y Cotizaciones
+// Cakekulator - Módulo de Presupuestos y Cotizaciones con WhatsApp Personalizado y PDF
 // ==========================================
 
 const QuotesModule = {
   searchQuery: '',
   filterStatus: 'all',
   editingQuoteId: null,
+  activeWhatsAppQuoteId: null,
 
   init() {
     this.render();
@@ -35,7 +36,7 @@ const QuotesModule = {
           <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
             <span>📋</span> Presupuestos & Cotizaciones
           </h2>
-          <p class="text-sm text-gray-500">Crea cotizaciones profesionales, calcula abonos y envíalas directo a WhatsApp o PDF.</p>
+          <p class="text-sm text-gray-500">Crea cotizaciones profesionales, calcula abonos y envíalas directo a WhatsApp con PDF adjunto y botones de respuesta.</p>
         </div>
         <button onclick="QuotesModule.openEditor()" class="btn-primary flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium shadow-md shadow-pink-200 transition active:scale-95">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
@@ -147,11 +148,11 @@ const QuotesModule = {
 
                 <!-- Footer Botones de Exportar -->
                 <div class="p-3 bg-gray-50/80 border-t border-gray-100 grid grid-cols-2 gap-2">
-                  <button onclick="QuotesModule.sendWhatsApp('${q.id}')" class="py-2 px-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-200 transition">
-                    <span>💬</span> Enviar WhatsApp
+                  <button onclick="QuotesModule.openWhatsAppModal('${q.id}')" class="py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-200 transition active:scale-95">
+                    <span>💬</span> WhatsApp & PDF
                   </button>
-                  <button onclick="QuotesModule.viewPrintModal('${q.id}')" class="py-2 px-3 bg-white hover:bg-gray-100 border border-gray-200 text-gray-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
-                    <span>🖨️</span> Ver / PDF
+                  <button onclick="QuotesModule.viewPrintModal('${q.id}')" class="py-2 px-2.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                    <span>📄</span> Ver / PDF
                   </button>
                 </div>
               </div>
@@ -300,6 +301,88 @@ const QuotesModule = {
         </div>
       </div>
 
+      <!-- Modal de Envío WhatsApp & PDF Personalizado -->
+      <div id="quote-whatsapp-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+          <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 p-4 text-white flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-xs">
+                📲
+              </div>
+              <div>
+                <h3 class="font-bold text-base leading-tight">Enviar Cotización por WhatsApp & PDF</h3>
+                <p class="text-xs text-emerald-100" id="wa-modal-subtitle">Mensaje personalizado con botones de respuesta</p>
+              </div>
+            </div>
+            <button onclick="QuotesModule.closeWhatsAppModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10">✕</button>
+          </div>
+
+          <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs flex-1">
+            <!-- Teléfono Destino -->
+            <div class="bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-100 space-y-1.5">
+              <label class="block font-bold text-emerald-900">Número de WhatsApp del Cliente:</label>
+              <div class="flex items-center gap-2">
+                <input 
+                  type="tel" 
+                  id="wa-recipient-phone" 
+                  placeholder="Ej: +56 9 8765 4321" 
+                  class="flex-1 px-3.5 py-2 rounded-xl border border-emerald-200 bg-white font-semibold text-gray-800 text-sm focus:ring-2 focus:ring-emerald-400"
+                />
+              </div>
+              <p class="text-[11px] text-emerald-700">Asegúrate de incluir el código de país (ej. +56 para Chile) para abrir el chat directamente.</p>
+            </div>
+
+            <!-- Previsualización del Mensaje Editable -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label class="font-bold text-gray-800 flex items-center gap-1.5">
+                  <span>💬</span> Mensaje Personalizado de WhatsApp:
+                </label>
+                <button onclick="QuotesModule.copyMessageToClipboard()" class="text-pink-600 hover:text-pink-700 font-bold text-[11px] flex items-center gap-1">
+                  <span>📋</span> Copiar Texto
+                </button>
+              </div>
+              <textarea 
+                id="wa-message-preview" 
+                rows="10" 
+                class="w-full p-3.5 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 font-mono text-[11px] leading-relaxed focus:ring-2 focus:ring-pink-400 focus:bg-white shadow-inner"
+              ></textarea>
+            </div>
+
+            <!-- Estado del Archivo PDF -->
+            <div class="bg-pink-50/70 p-3.5 rounded-2xl border border-pink-100 flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <div class="text-2xl">📄</div>
+                <div>
+                  <span class="font-bold text-gray-900 block" id="wa-pdf-filename">Cotizacion.pdf</span>
+                  <span class="text-[11px] text-pink-700">Documento formal con logo, desglose y datos bancarios</span>
+                </div>
+              </div>
+              <button onclick="QuotesModule.downloadActiveQuotePDF()" class="px-3 py-1.5 bg-white hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold rounded-xl shadow-2xs transition flex items-center gap-1">
+                <span>⬇️</span> Descargar PDF
+              </button>
+            </div>
+          </div>
+
+          <!-- Footer Botones de Envío -->
+          <div class="p-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
+            <button 
+              onclick="QuotesModule.openDirectWhatsApp()" 
+              class="w-full sm:w-auto py-2.5 px-4 bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 font-bold text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>💬</span> Solo Abrir WhatsApp
+            </button>
+
+            <button 
+              onclick="QuotesModule.shareQuoteWithPDF()" 
+              class="w-full sm:w-auto py-3 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs rounded-xl shadow-md shadow-emerald-200 transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>🚀</span> Enviar por WhatsApp con PDF Adjunto
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Modal de Vista Imprimible / PDF de Cotización -->
       <div id="quote-print-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
         <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
@@ -308,8 +391,11 @@ const QuotesModule = {
               <span>🖨️</span> Vista Previa de Presupuesto para Cliente
             </h3>
             <div class="flex items-center gap-2">
-              <button onclick="window.print()" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 rounded-xl text-xs font-bold transition flex items-center gap-1">
-                <span>🖨️</span> Imprimir / Guardar PDF
+              <button onclick="QuotesModule.downloadActiveQuotePDF(QuotesModule.viewingPrintId)" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                <span>⬇️</span> Descargar PDF
+              </button>
+              <button onclick="window.print()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                <span>🖨️</span> Imprimir
               </button>
               <button onclick="QuotesModule.closePrintModal()" class="text-white/80 hover:text-white p-1 rounded-full">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -349,48 +435,48 @@ const QuotesModule = {
     this.render();
   },
 
-  filterByStatus(st) {
-    this.filterStatus = st;
+  filterByStatus(status) {
+    this.filterStatus = status;
     this.render();
   },
 
-  openEditor(id = null) {
+  openEditor(quoteId = null) {
+    this.editingQuoteId = quoteId;
     const modal = document.getElementById('quote-editor-modal');
-    const title = document.getElementById('quote-editor-title');
     const form = document.getElementById('quote-form');
-    const settings = DB.getSettings();
+    const title = document.getElementById('quote-editor-title');
+    const itemsTable = document.getElementById('quote-items-table');
 
-    const itemsContainer = document.getElementById('quote-items-table');
-    itemsContainer.innerHTML = '';
+    itemsTable.innerHTML = '';
+    form.reset();
 
-    if (id) {
-      const q = DB.getQuoteById(id);
-      if (!q) return;
-      title.innerHTML = '<span>✏️</span> Editar Cotización ' + (q.code || '');
-      document.getElementById('q-id').value = q.id;
-      document.getElementById('q-code').value = q.code || '';
-      document.getElementById('q-customer-name').value = q.customerName || '';
-      document.getElementById('q-customer-phone').value = q.customerPhone || '';
-      document.getElementById('q-event-name').value = q.eventName || '';
-      document.getElementById('q-event-date').value = q.eventDate || '';
-      document.getElementById('q-status').value = q.status || 'draft';
-      document.getElementById('q-discount-pct').value = q.discountPercent || 0;
-      document.getElementById('q-deposit-pct').value = q.depositPercent || 50;
-      document.getElementById('q-delivery').value = q.deliveryOption || 'Retiro en taller';
-      document.getElementById('q-notes').value = q.notes || settings.quoteNote;
+    if (quoteId) {
+      const quote = DB.getQuoteById(quoteId);
+      if (!quote) return;
 
-      (q.items || []).forEach(item => {
-        this.addItemRow(item.recipeId, item.recipeName, item.quantity, item.unitPrice);
+      title.innerHTML = `<span>📋</span> Editar Cotización <span class="font-mono text-pink-200">#${quote.code}</span>`;
+      document.getElementById('q-id').value = quote.id;
+      document.getElementById('q-code').value = quote.code;
+      document.getElementById('q-customer-name').value = quote.customerName || '';
+      document.getElementById('q-customer-phone').value = quote.customerPhone || '';
+      document.getElementById('q-event-name').value = quote.eventName || '';
+      document.getElementById('q-event-date').value = quote.eventDate || '';
+      document.getElementById('q-status').value = quote.status || 'draft';
+      document.getElementById('q-discount-pct').value = quote.discountPercent || 0;
+      document.getElementById('q-deposit-pct').value = quote.depositPercent || 50;
+      document.getElementById('q-delivery').value = quote.deliveryOption || 'Retiro en taller';
+      document.getElementById('q-notes').value = quote.notes || '';
+
+      (quote.items || []).forEach(item => {
+        this.addItemRow(item.recipeId, item.quantity, item.unitPrice, item.recipeName);
       });
     } else {
-      title.innerHTML = '<span>📋</span> Nueva Cotización para Cliente';
-      form.reset();
+      title.innerHTML = `<span>📋</span> Nueva Cotización para Cliente`;
       document.getElementById('q-id').value = '';
-      document.getElementById('q-code').value = '';
-      document.getElementById('q-deposit-pct').value = settings.defaultDepositPercent || 50;
-      document.getElementById('q-discount-pct').value = 0;
-      document.getElementById('q-notes').value = settings.quoteNote;
-
+      document.getElementById('q-code').value = 'COT-' + (DB.getQuotes().length + 1).toString().padStart(3, '0');
+      document.getElementById('q-discount-pct').value = '0';
+      document.getElementById('q-deposit-pct').value = '50';
+      document.getElementById('q-notes').value = DB.getSettings().quoteNote || 'Para confirmar la fecha se solicita el 50% de abono. Saldo contra entrega.';
       this.addItemRow();
     }
 
@@ -403,43 +489,44 @@ const QuotesModule = {
     if (modal) modal.classList.add('hidden');
   },
 
-  addItemRow(selectedRecipeId = '', customName = '', qty = 1, unitPrice = 0) {
+  addItemRow(selectedRecipeId = '', qty = 1, unitPrice = '', customName = '') {
     const container = document.getElementById('quote-items-table');
     const allRecipes = DB.getRecipes();
-    const rowId = 'qitem_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+    const rowId = 'q_item_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
 
     const row = document.createElement('div');
     row.id = rowId;
     row.className = 'grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-xl border border-gray-100 shadow-xs';
-    
+
     row.innerHTML = `
-      <div class="col-span-5 sm:col-span-5">
-        <select class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium focus:ring-1 focus:ring-pink-400 q-item-select bg-white" onchange="QuotesModule.onItemSelectChange('${rowId}')">
-          <option value="">-- Seleccionar Receta o Personalizado --</option>
+      <div class="col-span-5">
+        <select class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium focus:ring-1 focus:ring-pink-400 q-item-recipe bg-white" onchange="QuotesModule.onRecipeSelect('${rowId}')">
+          <option value="">-- Producto Personalizado --</option>
           ${allRecipes.map(r => {
             const costs = Calculator.calculateRecipeFullCosts(r);
-            const price = costs.recipeType === 'cake' ? costs.suggestedBatchPrice : costs.suggestedUnitPrice;
-            const finalPrice = Calculator.roundUpTo(price, 100);
+            const sugPrice = r.type === 'cake' ? costs.suggestedBatchPrice : costs.suggestedUnitPrice;
             return `
-              <option value="${r.id}" data-name="${r.name}" data-price="${finalPrice}" ${r.id === selectedRecipeId ? 'selected' : ''}>
-                ${r.name}
+              <option value="${r.id}" data-price="${sugPrice}" ${r.id === selectedRecipeId ? 'selected' : ''}>
+                ${r.name} (${Calculator.formatCurrency(sugPrice)})
               </option>
             `;
           }).join('')}
-          <option value="custom" ${selectedRecipeId === 'custom' || (!selectedRecipeId && customName) ? 'selected' : ''}>✍️ Ítem Personalizado</option>
         </select>
-        <input type="text" placeholder="Nombre ítem personalizado..." value="${customName}" class="w-full mt-1 px-2 py-1 rounded-lg border border-gray-200 text-xs q-item-custom-name ${selectedRecipeId === 'custom' || (!selectedRecipeId && customName) ? '' : 'hidden'}" oninput="QuotesModule.recalculateTotals()">
+        <input type="text" placeholder="Nombre personalizado" value="${customName}" class="w-full mt-1 px-2 py-1 rounded-lg border border-gray-200 text-[11px] q-item-custom-name ${selectedRecipeId ? 'hidden' : ''}" oninput="QuotesModule.recalculateTotals()">
       </div>
 
-      <div class="col-span-2 sm:col-span-2">
-        <input type="number" step="1" min="1" placeholder="Cant" value="${qty || 1}" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs text-center q-item-qty focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
+      <div class="col-span-2">
+        <input type="number" step="1" min="1" placeholder="Cant." value="${qty}" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs text-center font-bold q-item-qty focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
       </div>
 
-      <div class="col-span-3 sm:col-span-3">
-        <input type="number" step="any" min="0" placeholder="Precio ($)" value="${unitPrice || ''}" class="w-full px-2 py-1.5 rounded-lg border border-gray-200 text-xs text-right font-semibold q-item-price focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
+      <div class="col-span-3">
+        <div class="relative">
+          <span class="absolute left-2 top-1.5 text-gray-400 text-xs">$</span>
+          <input type="number" step="100" min="0" placeholder="Precio" value="${unitPrice}" class="w-full pl-5 pr-2 py-1.5 rounded-lg border border-gray-200 text-xs text-right font-bold text-gray-800 q-item-price focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
+        </div>
       </div>
 
-      <div class="col-span-2 sm:col-span-2 flex items-center justify-between pl-1">
+      <div class="col-span-2 flex items-center justify-between pl-1">
         <span class="text-[11px] font-black text-pink-600 q-item-subtotal truncate">$ 0</span>
         <button type="button" onclick="document.getElementById('${rowId}').remove(); QuotesModule.recalculateTotals();" class="text-gray-300 hover:text-red-500 p-1">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -449,33 +536,26 @@ const QuotesModule = {
 
     container.appendChild(row);
     if (selectedRecipeId && !unitPrice) {
-      this.onItemSelectChange(rowId);
+      this.onRecipeSelect(rowId);
     } else {
       this.recalculateTotals();
     }
   },
 
-  onItemSelectChange(rowId) {
+  onRecipeSelect(rowId) {
     const row = document.getElementById(rowId);
     if (!row) return;
-
-    const select = row.querySelector('.q-item-select');
-    const customInput = row.querySelector('.q-item-custom-name');
+    const select = row.querySelector('.q-item-recipe');
+    const customNameInput = row.querySelector('.q-item-custom-name');
     const priceInput = row.querySelector('.q-item-price');
 
-    const selectedOption = select.options[select.selectedIndex];
-    const val = select.value;
-
-    if (val === 'custom') {
-      customInput.classList.remove('hidden');
-    } else if (val) {
-      customInput.classList.add('hidden');
-      const suggestedPrice = selectedOption.dataset.price;
-      if (suggestedPrice && (!priceInput.value || parseFloat(priceInput.value) === 0)) {
-        priceInput.value = suggestedPrice;
-      }
+    if (select.value) {
+      customNameInput.classList.add('hidden');
+      const option = select.selectedOptions[0];
+      const price = option.dataset.price || 0;
+      priceInput.value = price;
     } else {
-      customInput.classList.add('hidden');
+      customNameInput.classList.remove('hidden');
     }
 
     this.recalculateTotals();
@@ -483,26 +563,24 @@ const QuotesModule = {
 
   recalculateTotals() {
     let subtotal = 0;
-
     document.querySelectorAll('#quote-items-table > div').forEach(row => {
       const qty = parseFloat(row.querySelector('.q-item-qty')?.value) || 0;
       const price = parseFloat(row.querySelector('.q-item-price')?.value) || 0;
-      const rowSubtotal = qty * price;
-      subtotal += rowSubtotal;
+      const itemSubtotal = qty * price;
+      subtotal += itemSubtotal;
 
-      const subtotalSpan = row.querySelector('.q-item-subtotal');
-      if (subtotalSpan) subtotalSpan.textContent = Calculator.formatCurrency(rowSubtotal);
+      const subtotalEl = row.querySelector('.q-item-subtotal');
+      if (subtotalEl) subtotalEl.textContent = Calculator.formatCurrency(itemSubtotal);
     });
 
     const discountPct = parseFloat(document.getElementById('q-discount-pct')?.value) || 0;
+    const depositPct = parseFloat(document.getElementById('q-deposit-pct')?.value) || 50;
+
     const discountAmount = subtotal * (discountPct / 100);
     const total = Math.max(0, subtotal - discountAmount);
-
-    const depositPct = parseFloat(document.getElementById('q-deposit-pct')?.value) || 50;
     const depositAmount = total * (depositPct / 100);
-    const remainingBalance = total - depositAmount;
+    const balance = total - depositAmount;
 
-    // Actualizar vista previa en vivo
     const subtotalEl = document.getElementById('q-live-subtotal');
     const discountEl = document.getElementById('q-live-discount');
     const totalEl = document.getElementById('q-live-total');
@@ -510,10 +588,10 @@ const QuotesModule = {
     const balanceEl = document.getElementById('q-live-balance');
 
     if (subtotalEl) subtotalEl.textContent = Calculator.formatCurrency(subtotal);
-    if (discountEl) discountEl.textContent = `-${Calculator.formatCurrency(discountAmount)} (${discountPct}%)`;
+    if (discountEl) discountEl.textContent = '-' + Calculator.formatCurrency(discountAmount);
     if (totalEl) totalEl.textContent = Calculator.formatCurrency(total);
-    if (depositEl) depositEl.textContent = `${Calculator.formatCurrency(depositAmount)} (${depositPct}%)`;
-    if (balanceEl) balanceEl.textContent = Calculator.formatCurrency(remainingBalance);
+    if (depositEl) depositEl.textContent = Calculator.formatCurrency(depositAmount);
+    if (balanceEl) balanceEl.textContent = Calculator.formatCurrency(balance);
   },
 
   saveQuoteForm(e) {
@@ -531,22 +609,18 @@ const QuotesModule = {
     const deliveryOption = document.getElementById('q-delivery').value;
     const notes = document.getElementById('q-notes').value.trim();
 
-    // Recolectar ítems
     const items = [];
     let subtotal = 0;
 
     document.querySelectorAll('#quote-items-table > div').forEach(row => {
-      const select = row.querySelector('.q-item-select');
-      const customInput = row.querySelector('.q-item-custom-name');
-      const qty = parseFloat(row.querySelector('.q-item-qty')?.value) || 1;
+      const recipeId = row.querySelector('.q-item-recipe')?.value || null;
+      const customName = row.querySelector('.q-item-custom-name')?.value?.trim();
+      const qty = parseFloat(row.querySelector('.q-item-qty')?.value) || 0;
       const unitPrice = parseFloat(row.querySelector('.q-item-price')?.value) || 0;
 
-      let recipeId = select?.value;
       let recipeName = '';
-
-      if (recipeId === 'custom' || (!recipeId && customInput?.value)) {
-        recipeId = 'custom';
-        recipeName = customInput?.value.trim() || 'Ítem especial';
+      if (customName) {
+        recipeName = customName;
       } else if (recipeId) {
         const rec = DB.getRecipeById(recipeId);
         recipeName = rec ? rec.name : 'Producto';
@@ -613,146 +687,344 @@ const QuotesModule = {
     }
   },
 
-  // Generador de Mensaje Formateado para WhatsApp
-  sendWhatsApp(id) {
-    const quote = DB.getQuoteById(id);
-    if (!quote) return;
+  // ====================================================
+  // Generador de Mensaje Personalizado con Botones de Aceptar / Rechazar
+  // ====================================================
+  buildWhatsAppMessage(quote) {
     const settings = DB.getSettings();
+    const customerFirstName = (quote.customerName || 'Cliente').trim().split(' ')[0];
+    const businessName = settings.businessName || 'Mi Pastelería';
+    const myPhone = (settings.businessPhone || '').replace(/[^0-9]/g, '');
 
     let itemsText = '';
     (quote.items || []).forEach(item => {
-      itemsText += `• *${item.quantity}x* ${item.recipeName} 👉 ${Calculator.formatCurrency(item.subtotal)}\n`;
+      itemsText += `  • *${item.quantity}x* ${item.recipeName} ➔ ${Calculator.formatCurrency(item.subtotal)}\n`;
     });
 
-    let msg = `🧁 *PRESUPUESTO - ${settings.businessName || 'Pastelería'}*\n`;
-    msg += `📄 *Folio:* ${quote.code}\n`;
+    // Enlaces de respuesta rápida
+    const acceptText = `¡Hola ${businessName}! 👋 Confirmo y ACEPTO el presupuesto ${quote.code} a nombre de ${quote.customerName}. Por favor envíame los datos de transferencia para realizar el abono de ${Calculator.formatCurrency(quote.depositAmount)} 🎉`;
+    const rejectText = `¡Hola ${businessName}! Respecto a la cotización ${quote.code} a nombre de ${quote.customerName}, me gustaría solicitar algunos cambios o ajustes. ¡Gracias!`;
+
+    const acceptUrl = myPhone 
+      ? `https://wa.me/${myPhone}?text=${encodeURIComponent(acceptText)}`
+      : `https://wa.me/?text=${encodeURIComponent(acceptText)}`;
+
+    const rejectUrl = myPhone
+      ? `https://wa.me/${myPhone}?text=${encodeURIComponent(rejectText)}`
+      : `https://wa.me/?text=${encodeURIComponent(rejectText)}`;
+
+    let msg = `🎂 *COTIZACIÓN DE PASTELERÍA* 🎂\n`;
+    msg += `*${businessName.toUpperCase()}*\n`;
+    msg += `──────────────────────────\n`;
+    msg += `👋 ¡Hola *${customerFirstName}*! Espero que estés muy bien.\n\n`;
+    msg += `Con mucho cariño te comparto el presupuesto detallado para tu pedido${quote.eventName ? ` de *${quote.eventName}*` : ''}:\n\n`;
+    msg += `📋 *Folio:* ${quote.code}\n`;
     msg += `👤 *Cliente:* ${quote.customerName}\n`;
-    if (quote.eventName) msg += `🎉 *Evento:* ${quote.eventName}\n`;
-    if (quote.eventDate) msg += `📅 *Fecha:* ${quote.eventDate}\n`;
-    msg += `\n🛒 *Detalle del Pedido:*\n${itemsText}\n`;
-    msg += `-----------------------------\n`;
+    if (quote.eventDate) msg += `📅 *Fecha de Entrega:* ${quote.eventDate}\n`;
+    if (quote.deliveryOption) msg += `🚚 *Modalidad:* ${quote.deliveryOption}\n`;
+    msg += `\n🛒 *DETALLE DEL PEDIDO:*\n${itemsText}`;
+    msg += `──────────────────────────\n`;
     msg += `💰 *Subtotal:* ${Calculator.formatCurrency(quote.subtotal)}\n`;
     if (quote.discountAmount > 0) {
       msg += `🏷️ *Descuento (${quote.discountPercent}%):* -${Calculator.formatCurrency(quote.discountAmount)}\n`;
     }
     msg += `✨ *TOTAL A PAGAR:* ${Calculator.formatCurrency(quote.total)}\n\n`;
-    msg += `📌 *Abono para reservar (${quote.depositPercent}%):* ${Calculator.formatCurrency(quote.depositAmount)}\n`;
-    msg += `💵 *Saldo pendiente al entregar:* ${Calculator.formatCurrency(quote.remainingBalance)}\n`;
-    if (quote.deliveryOption) msg += `🚚 *Entrega:* ${quote.deliveryOption}\n`;
-    if (quote.notes) msg += `\n📝 *Condiciones:* ${quote.notes}\n`;
-    msg += `\n¡Gracias por preferir nuestro trabajo hecho con amor! 💕🎂`;
+    msg += `💳 *CONDICIONES DE PAGO:*\n`;
+    msg += `• *Abono para agendar fecha (${quote.depositPercent}%):* ${Calculator.formatCurrency(quote.depositAmount)}\n`;
+    msg += `• *Saldo restante contra entrega:* ${Calculator.formatCurrency(quote.remainingBalance)}\n`;
+    if (quote.notes) msg += `\n📝 *Condiciones especiales:* ${quote.notes}\n`;
+    msg += `──────────────────────────\n`;
+    msg += `📌 *¿CÓMO CONFIRMAR TU PEDIDO?*\n\n`;
+    msg += `✅ *1. PARA ACEPTAR Y AGENDAR FECHA:*\n`;
+    msg += `Responde *"ACEPTO"* o presiona aquí 👇\n`;
+    msg += `${acceptUrl}\n\n`;
+    msg += `❌ *2. PARA MODIFICAR O RECHAZAR:*\n`;
+    msg += `Responde *"MODIFICAR"* o presiona aquí 👇\n`;
+    msg += `${rejectUrl}\n\n`;
+    msg += `📄 *(Te adjunto el documento formal en PDF con el desglose)*\n\n`;
+    msg += `¡Muchas gracias por preferir nuestro trabajo artesanal hecho con amor! 💕🧁`;
 
-    const encodedMsg = encodeURIComponent(msg);
+    return msg;
+  },
+
+  // Modal para Enviar WhatsApp & PDF
+  openWhatsAppModal(quoteId) {
+    const quote = DB.getQuoteById(quoteId);
+    if (!quote) return;
+
+    this.activeWhatsAppQuoteId = quoteId;
+    const modal = document.getElementById('quote-whatsapp-modal');
+    if (!modal) return;
+
+    const phoneInput = document.getElementById('wa-recipient-phone');
+    const msgPreview = document.getElementById('wa-message-preview');
+    const pdfFilename = document.getElementById('wa-pdf-filename');
+    const subtitle = document.getElementById('wa-modal-subtitle');
+
+    if (phoneInput) phoneInput.value = quote.customerPhone || '';
+    if (msgPreview) msgPreview.value = this.buildWhatsAppMessage(quote);
+    if (pdfFilename) pdfFilename.textContent = `Cotizacion_${quote.code}_${quote.customerName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+    if (subtitle) subtitle.textContent = `Presupuesto ${quote.code} para ${quote.customerName}`;
+
+    modal.classList.remove('hidden');
+  },
+
+  closeWhatsAppModal() {
+    const modal = document.getElementById('quote-whatsapp-modal');
+    if (modal) modal.classList.add('hidden');
+  },
+
+  copyMessageToClipboard() {
+    const msgPreview = document.getElementById('wa-message-preview');
+    if (!msgPreview) return;
+
+    navigator.clipboard.writeText(msgPreview.value).then(() => {
+      App.showToast('📋 ¡Mensaje copiado al portapapeles!');
+    }).catch(() => {
+      msgPreview.select();
+      document.execCommand('copy');
+      App.showToast('📋 ¡Mensaje copiado!');
+    });
+  },
+
+  openDirectWhatsApp() {
+    const quote = DB.getQuoteById(this.activeWhatsAppQuoteId);
+    if (!quote) return;
+
+    const phoneInput = document.getElementById('wa-recipient-phone');
+    const msgPreview = document.getElementById('wa-message-preview');
+
+    const phone = (phoneInput ? phoneInput.value : quote.customerPhone || '').replace(/[^0-9]/g, '');
+    const message = msgPreview ? msgPreview.value : this.buildWhatsAppMessage(quote);
+    const encodedMsg = encodeURIComponent(message);
+
     let url = `https://wa.me/`;
-    if (quote.customerPhone) {
-      const cleanPhone = quote.customerPhone.replace(/[^0-9]/g, '');
-      url += `${cleanPhone}?text=${encodedMsg}`;
+    if (phone) {
+      url += `${phone}?text=${encodedMsg}`;
     } else {
       url += `?text=${encodedMsg}`;
     }
 
     window.open(url, '_blank');
+    this.closeWhatsAppModal();
   },
 
-  // Vista imprimible / PDF
-  viewPrintModal(id) {
-    const quote = DB.getQuoteById(id);
-    if (!quote) return;
+  // Generador de HTML para PDF de alta fidelidad
+  getQuoteHTMLForPDF(quote) {
     const settings = DB.getSettings();
+    const total = quote.total || quote.subtotal || 0;
+    const deposit = quote.depositAmount || (total * 0.5);
+    const balance = quote.remainingBalance || (total - deposit);
 
-    const container = document.getElementById('printable-quote-content');
-    container.innerHTML = `
-      <div class="space-y-6">
-        <!-- Encabezado de la Pastelería -->
-        <div class="flex justify-between items-start border-b border-gray-200 pb-5">
-          <div>
-            <div class="text-2xl font-black text-pink-600 flex items-center gap-2">
-              <span>🍰</span> ${settings.businessName || 'Mi Pastelería'}
-            </div>
-            <p class="text-xs text-gray-500 mt-1">${settings.businessInstagram || ''} · ${settings.businessPhone || ''}</p>
-            <p class="text-xs text-gray-500">${settings.businessEmail || ''}</p>
-          </div>
-          <div class="text-right">
-            <span class="text-xs uppercase font-bold text-gray-400 tracking-wider">Presupuesto</span>
-            <h2 class="text-xl font-black text-gray-900 font-mono">${quote.code}</h2>
-            <span class="text-xs text-gray-500">Fecha: ${new Date(quote.createdAt).toLocaleDateString('es-CL')}</span>
-          </div>
-        </div>
+    return `
+      <div style="font-family: Arial, Helvetica, sans-serif; color: #333; padding: 20px; line-height: 1.5; background: #ffffff;">
+        <!-- Header -->
+        <table style="width: 100%; border-bottom: 2px solid #fbcfe8; padding-bottom: 15px; margin-bottom: 20px;">
+          <tr>
+            <td style="vertical-align: top;">
+              <h1 style="margin: 0; color: #db2777; font-size: 24px; font-weight: 800;">🍰 ${settings.businessName || 'Mi Pastelería'}</h1>
+              <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">
+                ${settings.businessInstagram ? `Instagram: ${settings.businessInstagram} · ` : ''}
+                ${settings.businessPhone ? `Tel: ${settings.businessPhone}` : ''}
+              </p>
+              ${settings.businessEmail ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: #666;">${settings.businessEmail}</p>` : ''}
+            </td>
+            <td style="vertical-align: top; text-align: right;">
+              <span style="font-size: 10px; text-transform: uppercase; color: #999; font-weight: 700; letter-spacing: 1px;">PRESUPUESTO FORMAL</span>
+              <h2 style="margin: 2px 0 0 0; font-size: 20px; color: #111; font-family: monospace; font-weight: 800;">${quote.code}</h2>
+              <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">Fecha: ${new Date(quote.createdAt || Date.now()).toLocaleDateString('es-CL')}</p>
+            </td>
+          </tr>
+        </table>
 
-        <!-- Info Cliente -->
-        <div class="grid grid-cols-2 gap-4 bg-pink-50/40 p-4 rounded-2xl border border-pink-100 text-xs">
-          <div>
-            <span class="text-gray-400 font-semibold uppercase text-[10px] block">Cliente:</span>
-            <span class="font-bold text-gray-900 text-sm">${quote.customerName}</span>
-            <p class="text-gray-600 mt-0.5">${quote.customerPhone || 'Sin teléfono'}</p>
-          </div>
-          <div class="text-right">
-            <span class="text-gray-400 font-semibold uppercase text-[10px] block">Evento / Fecha:</span>
-            <span class="font-bold text-gray-900">${quote.eventName || 'Evento especial'}</span>
-            <p class="text-gray-600 mt-0.5">📅 ${quote.eventDate || 'A coordinar'}</p>
-          </div>
-        </div>
+        <!-- Datos del Cliente y Evento -->
+        <table style="width: 100%; background: #fdf2f8; border: 1px solid #fbcfe8; border-radius: 12px; padding: 12px; margin-bottom: 20px; font-size: 12px;">
+          <tr>
+            <td style="width: 50%; vertical-align: top;">
+              <span style="font-size: 10px; font-weight: bold; color: #db2777; text-transform: uppercase;">CLIENTE:</span>
+              <div style="font-size: 14px; font-weight: bold; color: #111; margin-top: 2px;">${quote.customerName}</div>
+              <div style="color: #666; font-size: 11px;">📞 ${quote.customerPhone || 'Sin teléfono'}</div>
+            </td>
+            <td style="width: 50%; vertical-align: top; text-align: right;">
+              <span style="font-size: 10px; font-weight: bold; color: #db2777; text-transform: uppercase;">EVENTO & ENTREGA:</span>
+              <div style="font-size: 13px; font-weight: bold; color: #111; margin-top: 2px;">${quote.eventName || 'Pedido Especial'}</div>
+              <div style="color: #666; font-size: 11px;">📅 Fecha: <strong>${quote.eventDate || 'A coordinar'}</strong></div>
+              <div style="color: #666; font-size: 11px;">🚚 ${quote.deliveryOption || 'Retiro en taller'}</div>
+            </td>
+          </tr>
+        </table>
 
         <!-- Tabla de Productos -->
-        <div>
-          <table class="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr class="bg-gray-100 text-gray-700 font-bold border-b border-gray-200">
-                <th class="p-2.5 rounded-l-lg">Descripción del Producto</th>
-                <th class="p-2.5 text-center">Cant.</th>
-                <th class="p-2.5 text-right">Precio Unit.</th>
-                <th class="p-2.5 text-right rounded-r-lg">Subtotal</th>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+          <thead>
+            <tr style="background: #f3f4f6; color: #374151; font-weight: bold; text-align: left;">
+              <th style="padding: 10px 12px; border-bottom: 2px solid #e5e7eb;">Descripción del Producto</th>
+              <th style="padding: 10px 12px; text-align: center; border-bottom: 2px solid #e5e7eb;">Cant.</th>
+              <th style="padding: 10px 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Precio Unit.</th>
+              <th style="padding: 10px 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(quote.items || []).map((item, idx) => `
+              <tr style="background: ${idx % 2 === 0 ? '#ffffff' : '#fafafa'}; border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 10px 12px; font-weight: 600; color: #1f2937;">${item.recipeName}</td>
+                <td style="padding: 10px 12px; text-align: center; font-weight: bold; color: #4b5563;">${item.quantity}</td>
+                <td style="padding: 10px 12px; text-align: right; color: #4b5563;">${Calculator.formatCurrency(item.unitPrice)}</td>
+                <td style="padding: 10px 12px; text-align: right; font-weight: bold; color: #111;">${Calculator.formatCurrency(item.subtotal)}</td>
               </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              ${(quote.items || []).map(item => `
-                <tr>
-                  <td class="p-2.5 font-semibold text-gray-900">${item.recipeName}</td>
-                  <td class="p-2.5 text-center font-medium text-gray-700">${item.quantity}</td>
-                  <td class="p-2.5 text-right text-gray-700">${Calculator.formatCurrency(item.unitPrice)}</td>
-                  <td class="p-2.5 text-right font-bold text-gray-900">${Calculator.formatCurrency(item.subtotal)}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-        </div>
+            `).join('')}
+          </tbody>
+        </table>
 
-        <!-- Totales -->
-        <div class="flex justify-end pt-2">
-          <div class="w-64 space-y-2 text-xs">
-            <div class="flex justify-between text-gray-600">
-              <span>Subtotal:</span>
-              <span class="font-semibold text-gray-900">${Calculator.formatCurrency(quote.subtotal)}</span>
-            </div>
-            ${quote.discountAmount > 0 ? `
-              <div class="flex justify-between text-rose-600">
-                <span>Descuento (${quote.discountPercent}%):</span>
-                <span class="font-semibold">-${Calculator.formatCurrency(quote.discountAmount)}</span>
+        <!-- Desglose de Totales y Abono -->
+        <table style="width: 100%; margin-bottom: 20px;">
+          <tr>
+            <td style="width: 50%; vertical-align: top; font-size: 11px; color: #666;">
+              <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 10px;">
+                <strong style="color: #166534; font-size: 12px; display: block; margin-bottom: 4px;">💳 Condiciones de Reserva:</strong>
+                <div>• Para agendar y reservar tu fecha se requiere un <strong>abono del ${quote.depositPercent || 50}%</strong>.</div>
+                <div>• El saldo restante se cancela al momento de la entrega.</div>
               </div>
-            ` : ''}
-            <div class="flex justify-between text-base font-black text-gray-900 pt-2 border-t border-gray-200">
-              <span>TOTAL:</span>
-              <span class="text-pink-600">${Calculator.formatCurrency(quote.total)}</span>
-            </div>
-            <div class="flex justify-between text-emerald-800 font-bold bg-emerald-50 p-2 rounded-xl text-xs">
-              <span>Abono para Reserva (${quote.depositPercent}%):</span>
-              <span>${Calculator.formatCurrency(quote.depositAmount)}</span>
-            </div>
-            <div class="flex justify-between text-gray-600 text-xs px-2">
-              <span>Saldo al Entregar:</span>
-              <span class="font-semibold">${Calculator.formatCurrency(quote.remainingBalance)}</span>
-            </div>
-          </div>
-        </div>
+            </td>
+            <td style="width: 50%; vertical-align: top;">
+              <table style="width: 100%; font-size: 12px;">
+                <tr>
+                  <td style="padding: 4px 10px; color: #666;">Subtotal:</td>
+                  <td style="padding: 4px 10px; text-align: right; font-weight: bold; color: #111;">${Calculator.formatCurrency(quote.subtotal)}</td>
+                </tr>
+                ${quote.discountAmount > 0 ? `
+                  <tr>
+                    <td style="padding: 4px 10px; color: #e11d48;">Descuento (${quote.discountPercent}%):</td>
+                    <td style="padding: 4px 10px; text-align: right; font-weight: bold; color: #e11d48;">-${Calculator.formatCurrency(quote.discountAmount)}</td>
+                  </tr>
+                ` : ''}
+                <tr style="border-top: 2px solid #e5e7eb;">
+                  <td style="padding: 8px 10px; font-size: 15px; font-weight: 800; color: #111;">TOTAL:</td>
+                  <td style="padding: 8px 10px; text-align: right; font-size: 16px; font-weight: 800; color: #db2777;">${Calculator.formatCurrency(total)}</td>
+                </tr>
+                <tr style="background: #ecfdf5; border-radius: 8px;">
+                  <td style="padding: 6px 10px; font-weight: bold; color: #065f46;">Abono Reserva (${quote.depositPercent || 50}%):</td>
+                  <td style="padding: 6px 10px; text-align: right; font-weight: 800; color: #065f46;">${Calculator.formatCurrency(deposit)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 6px 10px; color: #666;">Saldo al Entregar:</td>
+                  <td style="padding: 6px 10px; text-align: right; font-weight: bold; color: #111;">${Calculator.formatCurrency(balance)}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
 
-        <!-- Notas al Pie -->
-        <div class="pt-4 border-t border-gray-100 text-xs text-gray-500 space-y-1">
-          <p class="font-semibold text-gray-700">Términos y Condiciones:</p>
-          <p>${quote.notes || settings.quoteNote}</p>
-          <p class="pt-2 text-center text-pink-600 font-semibold text-[11px]">¡Gracias por endulzar tus momentos especiales con nosotros!</p>
+        <!-- Notas y Términos -->
+        <div style="border-top: 1px solid #e5e7eb; padding-top: 12px; font-size: 11px; color: #666;">
+          <strong style="color: #374151;">Términos & Condiciones:</strong>
+          <p style="margin: 4px 0;">${quote.notes || settings.quoteNote || 'Los pedidos se confirman con comprobante de transferencia bancaria. Cambios sujetos a disponibilidad.'}</p>
+          <p style="text-align: center; color: #db2777; font-weight: bold; margin-top: 15px; font-size: 12px;">
+            ¡Gracias por preferir nuestro trabajo hecho con amor y dedicación! 💕🎂
+          </p>
         </div>
       </div>
     `;
+  },
+
+  // Descarga directa del archivo PDF
+  downloadActiveQuotePDF(quoteId = null) {
+    const id = quoteId || this.activeWhatsAppQuoteId;
+    const quote = DB.getQuoteById(id);
+    if (!quote) return;
+
+    const element = document.createElement('div');
+    element.innerHTML = this.getQuoteHTMLForPDF(quote);
+
+    const filename = `Cotizacion_${quote.code}_${quote.customerName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    if (typeof html2pdf !== 'undefined') {
+      html2pdf().set(opt).from(element).save();
+      App.showToast(`📄 Descargando ${filename}...`);
+    } else {
+      window.print();
+    }
+  },
+
+  // Compartir por WhatsApp con PDF Adjunto
+  async shareQuoteWithPDF() {
+    const quote = DB.getQuoteById(this.activeWhatsAppQuoteId);
+    if (!quote) return;
+
+    const phoneInput = document.getElementById('wa-recipient-phone');
+    const msgPreview = document.getElementById('wa-message-preview');
+    const phone = (phoneInput ? phoneInput.value : quote.customerPhone || '').replace(/[^0-9]/g, '');
+    const message = msgPreview ? msgPreview.value : this.buildWhatsAppMessage(quote);
+    const filename = `Cotizacion_${quote.code}_${quote.customerName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+
+    const element = document.createElement('div');
+    element.innerHTML = this.getQuoteHTMLForPDF(quote);
+
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: filename,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      if (typeof html2pdf !== 'undefined' && navigator.share) {
+        // Generar Blob del PDF
+        const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+        const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          await navigator.share({
+            title: `Cotización ${quote.code} - ${quote.customerName}`,
+            text: message,
+            files: [pdfFile]
+          });
+          this.closeWhatsAppModal();
+          App.showToast('✅ ¡Cotización compartida con PDF adjunto!');
+          return;
+        }
+      }
+    } catch (e) {
+      console.log('WebShare no disponible o cancelado por usuario:', e);
+    }
+
+    // Fallback para computadores de escritorio o navegadores sin WebShare de archivos:
+    // 1. Descargar el PDF automáticamente
+    if (typeof html2pdf !== 'undefined') {
+      html2pdf().set(opt).from(element).save();
+    }
+
+    // 2. Abrir WhatsApp con el mensaje personalizado pre-cargado
+    const encodedMsg = encodeURIComponent(message);
+    let url = `https://wa.me/`;
+    if (phone) {
+      url += `${phone}?text=${encodedMsg}`;
+    } else {
+      url += `?text=${encodedMsg}`;
+    }
+
+    window.open(url, '_blank');
+    this.closeWhatsAppModal();
+    App.showToast('📄 PDF descargado y WhatsApp abierto. ¡Listo para adjuntar!');
+  },
+
+  // Vista imprimible en pantalla
+  viewPrintModal(id) {
+    const quote = DB.getQuoteById(id);
+    if (!quote) return;
+
+    this.viewingPrintId = id;
+    const container = document.getElementById('printable-quote-content');
+    container.innerHTML = this.getQuoteHTMLForPDF(quote);
 
     document.getElementById('quote-print-modal').classList.remove('hidden');
   },
