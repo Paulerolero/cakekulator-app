@@ -252,3 +252,130 @@ const DEFAULT_QUOTES = [
     notes: 'Decoración temática colores pastel. Entregar a las 11:00 AM.'
   }
 ];
+
+const DEFAULT_MARKET_STORES = [
+  // --- PRINCIPALES SUPERMERCADOS EN CHILE ---
+  {
+    id: 'store_lider',
+    name: 'Líder',
+    category: 'Supermercados',
+    icon: '🛒',
+    description: 'Gran presencia nacional y precios bajos.',
+    portalUrl: 'https://www.lider.cl/supermercado',
+    searchUrl: 'https://www.lider.cl/supermercado/search?query=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_jumbo',
+    name: 'Jumbo',
+    category: 'Supermercados',
+    icon: '🐘',
+    description: 'Excelente variedad de productos gourmet y repostería fina.',
+    portalUrl: 'https://www.jumbo.cl',
+    searchUrl: 'https://www.jumbo.cl/busca?ft=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_tottus',
+    name: 'Tottus',
+    category: 'Supermercados',
+    icon: '🟢',
+    description: 'Oferta equilibrada en pasillos de repostería y abarrotes.',
+    portalUrl: 'https://www.tottus.cl',
+    searchUrl: 'https://www.tottus.cl/tottus-cl/search?Ntt=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_unimarc',
+    name: 'Unimarc',
+    category: 'Supermercados',
+    icon: '🔴',
+    description: 'Cobertura amplia en barrios y regiones.',
+    portalUrl: 'https://www.unimarc.cl',
+    searchUrl: 'https://www.unimarc.cl/search?q=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_santaisabel',
+    name: 'Santa Isabel',
+    category: 'Supermercados',
+    icon: '🏪',
+    description: 'Alternativa económica y accesible de Cencosud.',
+    portalUrl: 'https://www.santaisabel.cl',
+    searchUrl: 'https://www.santaisabel.cl/busca?ft=',
+    enabled: true,
+    isDefault: true
+  },
+
+  // --- TIENDAS Y DISTRIBUIDORAS DE INSUMOS DE PASTELERÍA ---
+  {
+    id: 'store_clubrepostero',
+    name: 'Club Repostero',
+    category: 'Distribuidoras de Pastelería',
+    icon: '🎂',
+    description: 'Especialistas en moldes, chocolates, fondant y colorantes.',
+    portalUrl: 'https://clubrepostero.cl/',
+    searchUrl: 'https://clubrepostero.cl/?s=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_laoferta',
+    name: 'La Oferta',
+    category: 'Distribuidoras de Pastelería',
+    icon: '🏷️',
+    description: 'Múltiples sucursales en Santiago (La Florida, Cerrillos) con gran variedad.',
+    portalUrl: 'https://laoferta.cl/',
+    searchUrl: 'https://laoferta.cl/?s=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_centroabasto',
+    name: 'Centro Abasto',
+    category: 'Distribuidoras de Pastelería',
+    icon: '🏢',
+    description: 'Venta de cremas para batir, coberturas y premezclas.',
+    portalUrl: 'https://centroabasto.cl/',
+    searchUrl: 'https://centroabasto.cl/?s=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_franklin',
+    name: 'Distribuidoras Franklin',
+    category: 'Distribuidoras de Pastelería',
+    icon: '📦',
+    description: 'Insumos por mayor y detalle en el centro de Santiago.',
+    portalUrl: 'https://distribuidorasfranklin.com/',
+    searchUrl: 'https://distribuidorasfranklin.com/?s=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_leehebo',
+    name: 'Leehebo Oficial',
+    category: 'Distribuidoras de Pastelería',
+    icon: '🎀',
+    description: 'Proveedor muy concurrido en Meiggs y La Vega para moldes, cajas y bases.',
+    portalUrl: 'https://leehebo.cl/',
+    searchUrl: 'https://leehebo.cl/?s=',
+    enabled: true,
+    isDefault: true
+  },
+  {
+    id: 'store_duce',
+    name: 'Repostería Duce',
+    category: 'Distribuidoras de Pastelería',
+    icon: '🧁',
+    description: 'Proveedor en sector de Meiggs y La Vega para moldes, cajas y bases.',
+    portalUrl: 'https://www.instagram.com/reposteriaduce/',
+    searchUrl: 'https://www.google.com/search?q=reposteria+duce+chile+',
+    enabled: true,
+    isDefault: true
+  }
+];

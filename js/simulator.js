@@ -1,10 +1,11 @@
 // ==========================================
-// Cakekulator - Módulo Simulador de Precios y Márgenes
+// Cakekulator - Módulo Simulador de Precios y Márgenes con Escalador de Tortas
 // ==========================================
 
 const SimulatorModule = {
   selectedRecipeId: null,
   simMode: 'unit', // 'unit' | 'portion' | 'batch'
+  simTargetPortions: null, // Porciones meta para escalar tortas o lotes
   customCost: 5000,
   currentPrice: 8500,
   targetMargin: 40,
@@ -15,8 +16,10 @@ const SimulatorModule = {
     this.render();
   },
 
-  loadRecipeForSimulation(recipeId) {
+  loadRecipeForSimulation(recipeId, customTargetPortions = null) {
     this.selectedRecipeId = recipeId;
+    this.simTargetPortions = customTargetPortions;
+    this.currentPrice = 0; // Forzar cálculo de precio sugerido
     App.switchTab('dashboard');
     const el = document.getElementById('dashboard-simulator-container') || document.getElementById('simulator-view');
     if (el) {
@@ -35,26 +38,43 @@ const SimulatorModule = {
     const settings = DB.getSettings();
     this.cardFeePercent = settings.defaultPaymentCommission || 3.19;
 
-    // Si hay receta seleccionada, obtener costos
+    // Si hay receta seleccionada, obtener costos y posible escalado
     let currentCost = this.customCost;
     let recipeName = 'Cálculo Libre / Manual';
     let currentYieldUnits = 1;
     let currentYieldPortions = 1;
+    let basePortions = 1;
     let isCake = false;
     let recipeCostData = null;
+    let isScaled = false;
+    let activeRecipe = null;
 
     if (this.selectedRecipeId) {
-      const rec = DB.getRecipeById(this.selectedRecipeId);
-      if (rec) {
-        recipeCostData = Calculator.calculateRecipeFullCosts(rec);
-        recipeName = rec.name;
-        isCake = rec.type === 'cake';
-        currentYieldUnits = rec.yieldUnits || 1;
-        currentYieldPortions = rec.yieldPortions || 1;
+      activeRecipe = DB.getRecipeById(this.selectedRecipeId);
+      if (activeRecipe) {
+        isCake = activeRecipe.type === 'cake';
+        basePortions = Math.max(1, activeRecipe.yieldPortions || activeRecipe.yieldUnits || 1);
+        
+        // Si no se ha definido target, usar el base de la receta
+        if (!this.simTargetPortions) {
+          this.simTargetPortions = basePortions;
+        }
 
-        if (this.simMode === 'batch') {
+        isScaled = this.simTargetPortions !== basePortions;
+
+        // Calcular costo escalado
+        const scaleResult = Calculator.scaleRecipe(activeRecipe, {
+          targetPortions: this.simTargetPortions
+        });
+
+        recipeCostData = scaleResult.costs;
+        recipeName = isScaled ? `${activeRecipe.name} (${this.simTargetPortions} Personas)` : activeRecipe.name;
+        currentYieldUnits = scaleResult.recipe.yieldUnits || 1;
+        currentYieldPortions = scaleResult.recipe.yieldPortions || 1;
+
+        if (this.simMode === 'batch' || (isCake && this.simMode === 'unit')) {
           currentCost = recipeCostData.totalBatchCost;
-        } else if (this.simMode === 'portion' || (isCake && this.simMode === 'unit')) {
+        } else if (this.simMode === 'portion') {
           currentCost = recipeCostData.costPerPortion;
         } else {
           currentCost = recipeCostData.costPerUnit;
@@ -64,7 +84,7 @@ const SimulatorModule = {
       }
     }
 
-    // Inicializar precio de venta si es la primera carga o cambio de modo
+    // Inicializar precio de venta sugerido
     if (!this.currentPrice || this.currentPrice < currentCost) {
       const marginFrac = this.targetMargin >= 100 ? 0.99 : this.targetMargin / 100;
       this.currentPrice = Calculator.roundUpTo(currentCost / (1 - marginFrac), 100);
@@ -87,7 +107,7 @@ const SimulatorModule = {
         <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <span>📊</span> Simulador de Precios y Rentabilidad
         </h2>
-        <p class="text-sm text-gray-500">Ajusta el precio de venta en tiempo real para conocer tus ganancias netas y márgenes.</p>
+        <p class="text-sm text-gray-500">Calcula precios para cualquier tamaño de torta o cantidad de personas conociendo tus costos y margen real.</p>
       </div>
 
       <!-- Selector de Receta y Modo -->
@@ -115,7 +135,7 @@ const SimulatorModule = {
               <button 
                 onclick="SimulatorModule.setSimMode('unit')" 
                 class="py-2 rounded-xl text-xs font-bold transition ${this.simMode === 'unit' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
-                Por Unidad
+                ${isCake ? 'Torta Completa' : 'Por Unidad'}
               </button>
               <button 
                 onclick="SimulatorModule.setSimMode('portion')" 
@@ -131,14 +151,64 @@ const SimulatorModule = {
           </div>
         </div>
 
-        <!-- Input de Costo Base -->
+        <!-- Barra de Escalado Inteligente por Personas (Si hay receta seleccionada) -->
+        ${activeRecipe ? `
+          <div class="bg-gradient-to-r from-pink-50/70 to-rose-50/70 p-4 rounded-2xl border border-pink-200/80 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <span class="text-xs font-bold text-pink-900 flex items-center gap-1.5">
+                  <span>📏</span> Ajustar Tamaño / Personas de la Torta
+                </span>
+                <span class="text-[11px] text-pink-700">Receta base formulada para: <strong>${basePortions} personas</strong></span>
+              </div>
+              
+              <div class="flex items-center gap-1.5">
+                <span class="text-xs font-bold text-gray-700">Simular para:</span>
+                <input 
+                  type="number" 
+                  min="1" 
+                  max="500" 
+                  value="${this.simTargetPortions || basePortions}" 
+                  oninput="SimulatorModule.onTargetPortionsChange(this.value)"
+                  class="w-20 px-2.5 py-1 text-center rounded-xl border border-pink-300 font-black text-pink-700 text-sm bg-white shadow-2xs focus:ring-2 focus:ring-pink-400"
+                />
+                <span class="text-xs font-bold text-pink-800">${isCake ? 'personas' : 'unidades'}</span>
+              </div>
+            </div>
+
+            <!-- Botones de Tallas Rápidas -->
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-[11px] text-gray-500 font-medium mr-1">Tallas rápidas:</span>
+              ${(isCake ? [10, 12, 15, 16, 20, 25, 30, 35, 40, 50] : [6, 12, 24, 36, 48, 60, 100]).map(p => `
+                <button 
+                  onclick="SimulatorModule.onTargetPortionsChange(${p})"
+                  class="px-2.5 py-1 rounded-xl text-xs font-bold transition ${ (this.simTargetPortions || basePortions) === p ? 'bg-pink-600 text-white shadow-xs scale-105' : 'bg-white text-gray-700 hover:bg-pink-100 border border-pink-200'}"
+                >
+                  ${p} ${isCake ? 'pers.' : 'un.'}
+                </button>
+              `).join('')}
+
+              ${isScaled ? `
+                <button 
+                  onclick="SimulatorModule.saveScaledAsNewRecipe()" 
+                  class="ml-auto px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 active:scale-95 cursor-pointer"
+                  title="Guardar esta torta de ${this.simTargetPortions} personas como nueva receta en tu catálogo"
+                >
+                  <span>💾</span> Guardar Ficha (${this.simTargetPortions}p)
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Costo de Fabricación Calculado -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-gray-100 bg-pink-50/40 p-3 rounded-2xl">
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-bold text-xs">
               💰
             </div>
             <div>
-              <span class="text-xs text-gray-500 block">Costo de Fabricación (${this.getModeLabel(isCake)}):</span>
+              <span class="text-xs text-gray-500 block">Costo de Fabricación (${isCake ? `Torta ${this.simTargetPortions || basePortions} personas` : this.getModeLabel(isCake)}):</span>
               <span class="text-xs font-semibold text-gray-700">${recipeName}</span>
             </div>
           </div>
@@ -172,7 +242,7 @@ const SimulatorModule = {
             <div class="text-xl sm:text-2xl font-black ${simResult.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}">
               ${Calculator.formatCurrency(simResult.netProfit)}
             </div>
-            <span class="text-[11px] text-gray-400 font-medium">Por ${this.getModeLabel(isCake)}</span>
+            <span class="text-[11px] text-gray-400 font-medium">Por ${isCake ? `Torta (${this.simTargetPortions || basePortions}p)` : this.getModeLabel(isCake)}</span>
           </div>
         </div>
 
@@ -223,50 +293,44 @@ const SimulatorModule = {
         </div>
       </div>
 
-      <!-- Panel Central de Ajuste de Precio y Margen -->
+      <!-- Controles Dinámicos de Fijación de Precio -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-        <!-- Columna Izquierda: Controles Interactivos -->
+        
+        <!-- Panel Izquierdo: Slider y Ajustes Rápidos -->
         <div class="lg:col-span-7 bg-white rounded-3xl p-6 border border-pink-100 shadow-sm space-y-6">
-          <h3 class="font-bold text-gray-800 text-base flex items-center gap-2">
-            <span>🎚️</span> Simulador Dinámico de Precio de Venta
-          </h3>
-
-          <!-- Control de Precio de Venta -->
-          <div class="bg-gradient-to-br from-pink-50/70 to-rose-50/40 p-5 rounded-2xl border border-pink-100 space-y-4">
-            <div class="flex justify-between items-center">
-              <div>
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">Precio de Venta Simulado</label>
-                <span class="text-xs text-gray-500">¿Cuánto deseas cobrar?</span>
-              </div>
-              <div class="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-xl border border-pink-300 shadow-xs">
-                <span class="text-sm font-bold text-gray-500">${settings.currencySymbol}</span>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-sm font-bold text-gray-900">
+                Precio de Venta al Público (${isCake ? `Torta ${this.simTargetPortions || basePortions}p` : this.getModeLabel(isCake)})
+              </label>
+              <div class="relative">
+                <span class="absolute left-3 top-2 text-gray-400 font-bold">$</span>
                 <input 
                   type="number" 
-                  id="sim-price-input"
+                  id="sim-price-input" 
+                  value="${this.currentPrice}" 
+                  step="100" 
                   min="0"
-                  step="any"
-                  value="${this.currentPrice}"
                   oninput="SimulatorModule.onPriceInputChange(this.value)"
-                  class="w-28 font-black text-xl text-pink-600 text-right focus:outline-none"
+                  class="w-36 pl-7 pr-3 py-1.5 text-right font-black text-xl text-pink-600 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-pink-50/50"
                 />
               </div>
             </div>
 
-            <!-- Slider de Precio -->
-            <div class="space-y-1">
+            <!-- Slider Interactivo de Precio -->
+            <div class="py-2">
               <input 
                 type="range" 
-                id="sim-price-slider"
                 min="${minSliderPrice}" 
                 max="${maxSliderPrice}" 
-                step="50" 
-                value="${this.currentPrice}"
+                step="100" 
+                value="${this.currentPrice}" 
                 oninput="SimulatorModule.onPriceSliderChange(this.value)"
-                class="w-full accent-pink-500 cursor-pointer h-2.5 bg-pink-200 rounded-lg"
+                class="w-full h-3 bg-pink-100 rounded-lg appearance-none cursor-pointer accent-pink-600"
               />
-              <div class="flex justify-between text-[11px] text-gray-400 font-medium">
+              <div class="flex justify-between text-[11px] text-gray-400 mt-1 font-medium">
                 <span>Mín: ${Calculator.formatCurrency(minSliderPrice)}</span>
-                <span>Sugerido (40%): ${Calculator.formatCurrency(Math.round(currentCost / 0.6))}</span>
+                <span class="text-pink-600 font-bold">Precio Actual: ${Calculator.formatCurrency(this.currentPrice)}</span>
                 <span>Máx: ${Calculator.formatCurrency(maxSliderPrice)}</span>
               </div>
             </div>
@@ -302,93 +366,81 @@ const SimulatorModule = {
             </div>
 
             <div class="grid grid-cols-4 gap-2">
-              ${[30, 40, 50, 60].map(pct => `
+              ${[30, 40, 50, 60].map(m => `
                 <button 
-                  onclick="SimulatorModule.applyTargetMargin(${pct}, ${currentCost})" 
-                  class="py-2 rounded-xl text-xs font-bold transition ${this.targetMargin === pct ? 'bg-pink-500 text-white shadow-sm' : 'bg-white text-gray-700 border border-gray-200 hover:bg-pink-50'}">
-                  ${pct}% Margen
+                  onclick="SimulatorModule.applyTargetMargin(${m}, ${currentCost})"
+                  class="py-2 px-2 rounded-xl text-xs font-bold transition ${this.targetMargin === m ? 'bg-pink-600 text-white shadow-sm' : 'bg-white text-gray-700 hover:bg-pink-50 border border-gray-200'}">
+                  ${m}% Margen
                 </button>
               `).join('')}
             </div>
           </div>
 
-          <!-- Toggle de Comisión por Tarjeta -->
-          <div class="flex items-center justify-between p-3.5 bg-gray-50 rounded-2xl border border-gray-100">
-            <div class="flex items-center gap-2.5">
+          <!-- Comisión por Pago con Tarjeta / POS -->
+          <div class="p-3.5 bg-amber-50/50 rounded-2xl border border-amber-100 flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
               <input 
                 type="checkbox" 
-                id="sim-card-toggle" 
-                ${this.includeCardFee ? 'checked' : ''} 
+                ${this.includeCardFee ? 'checked' : ''}
                 onchange="SimulatorModule.toggleCardFee(this.checked)"
-                class="w-4 h-4 text-pink-600 rounded border-gray-300 focus:ring-pink-400"
+                class="w-4 h-4 rounded text-pink-600 focus:ring-pink-400 accent-pink-600 cursor-pointer"
               />
-              <div>
-                <label for="sim-card-toggle" class="text-xs font-bold text-gray-800 cursor-pointer block">
-                  Cobro con Tarjeta / POS / Webpay
-                </label>
-                <span class="text-[11px] text-gray-500">Descuenta la comisión de pasarela de pago</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-1">
+              <span class="text-xs font-bold text-gray-800">Incluir Comisión POS / Tarjeta</span>
+            </label>
+
+            <div class="flex items-center gap-1 text-xs">
               <input 
                 type="number" 
                 step="0.01" 
-                value="${this.cardFeePercent}" 
+                min="0" 
+                max="15" 
+                value="${this.cardFeePercent}"
+                ${!this.includeCardFee ? 'disabled' : ''}
                 onchange="SimulatorModule.onFeeChange(this.value)"
-                class="w-14 px-2 py-1 text-xs font-bold text-right rounded-lg border border-gray-200 bg-white"
+                class="w-16 px-2 py-1 text-right text-xs font-bold border border-gray-300 rounded-lg bg-white ${!this.includeCardFee ? 'opacity-50' : ''}"
               />
-              <span class="text-xs text-gray-500 font-bold">%</span>
+              <span class="text-gray-500 font-bold">%</span>
             </div>
           </div>
         </div>
 
-        <!-- Columna Derecha: Gráfico de Desglose y Análisis Visual -->
-        <div class="lg:col-span-5 bg-white rounded-3xl p-6 border border-pink-100 shadow-sm flex flex-col justify-between">
+        <!-- Panel Derecho: Desglose Visual y Consejos -->
+        <div class="lg:col-span-5 bg-white rounded-3xl p-6 border border-pink-100 shadow-sm flex flex-col justify-between space-y-4">
           <div>
-            <h3 class="font-bold text-gray-800 text-base mb-4 flex items-center gap-2">
-              <span>🥧</span> ¿A dónde va cada peso que cobras?
-            </h3>
+            <h3 class="font-bold text-gray-900 text-base mb-1">Estructura del Precio de Venta</h3>
+            <p class="text-xs text-gray-500 mb-4">Descubre en qué se divide cada peso que le cobras a tu cliente:</p>
 
-            <!-- Barra Visual de Desglose -->
-            <div class="space-y-3 mb-5">
-              <div class="h-6 w-full rounded-xl overflow-hidden flex shadow-inner bg-gray-100 text-[10px] font-bold text-white text-center leading-6">
-                ${this.renderBreakdownBar(currentCost, simResult, recipeCostData)}
+            <!-- Barra Gráfica de Porcentajes -->
+            <div class="w-full h-8 bg-gray-100 rounded-2xl overflow-hidden flex font-bold text-[10px] text-white shadow-inner mb-4">
+              ${this.renderBreakdownBar(currentCost, simResult, recipeCostData)}
+            </div>
+
+            <!-- Leyenda Detallada -->
+            <div class="space-y-2 text-xs">
+              <div class="flex justify-between items-center p-2 rounded-xl bg-gray-50">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-rose-400"></span>
+                  <span class="font-medium text-gray-700">Costo de Fabricación:</span>
+                </div>
+                <span class="font-bold text-gray-900">${Calculator.formatCurrency(currentCost)}</span>
               </div>
 
-              <!-- Leyenda de Costos -->
-              <div class="space-y-2 text-xs">
-                <div class="flex justify-between items-center">
-                  <span class="flex items-center gap-1.5 text-gray-600">
-                    <span class="w-3 h-3 rounded-full bg-pink-400"></span> Costo de Insumos:
-                  </span>
-                  <span class="font-bold text-gray-900">${Calculator.formatCurrency(recipeCostData ? (this.simMode === 'batch' ? recipeCostData.ingredientsCost : recipeCostData.ingredientsCost / currentYieldUnits) : currentCost * 0.6)}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="flex items-center gap-1.5 text-gray-600">
-                    <span class="w-3 h-3 rounded-full bg-emerald-400"></span> Empaque & Presentación:
-                  </span>
-                  <span class="font-bold text-gray-900">${Calculator.formatCurrency(recipeCostData ? (this.simMode === 'batch' ? recipeCostData.packagingCost : recipeCostData.packagingCost / currentYieldUnits) : currentCost * 0.1)}</span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="flex items-center gap-1.5 text-gray-600">
-                    <span class="w-3 h-3 rounded-full bg-blue-400"></span> Mano de Obra & Horno:
-                  </span>
-                  <span class="font-bold text-gray-900">${Calculator.formatCurrency(recipeCostData ? (this.simMode === 'batch' ? (recipeCostData.laborCost + recipeCostData.overheadCost) : (recipeCostData.laborCost + recipeCostData.overheadCost) / currentYieldUnits) : currentCost * 0.3)}</span>
-                </div>
-                ${this.includeCardFee ? `
-                  <div class="flex justify-between items-center">
-                    <span class="flex items-center gap-1.5 text-gray-600">
-                      <span class="w-3 h-3 rounded-full bg-amber-400"></span> Comisión POS / Pasarela:
-                    </span>
-                    <span class="font-bold text-amber-700">${Calculator.formatCurrency(simResult.commissionAmount)}</span>
+              ${this.includeCardFee ? `
+                <div class="flex justify-between items-center p-2 rounded-xl bg-amber-50">
+                  <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                    <span class="font-medium text-amber-900">Comisión POS (${this.cardFeePercent}%):</span>
                   </div>
-                ` : ''}
-                <div class="flex justify-between items-center pt-2 border-t border-gray-100 font-bold">
-                  <span class="flex items-center gap-1.5 text-emerald-700">
-                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Ganancia Neta de Bolsillo:
-                  </span>
-                  <span class="text-emerald-700 text-sm">${Calculator.formatCurrency(simResult.netProfit)}</span>
+                  <span class="font-bold text-amber-700">-${Calculator.formatCurrency(simResult.commissionAmount)}</span>
                 </div>
+              ` : ''}
+
+              <div class="flex justify-between items-center p-2 rounded-xl bg-emerald-50">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                  <span class="font-bold text-emerald-900">Ganancia Neta en tu Bolsillo:</span>
+                </div>
+                <span class="font-black text-emerald-600 text-sm">${Calculator.formatCurrency(simResult.netProfit)}</span>
               </div>
             </div>
           </div>
@@ -404,7 +456,7 @@ const SimulatorModule = {
       <!-- Proyección de Ventas y Ganancias por Volumen -->
       <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm">
         <h3 class="font-bold text-gray-800 text-base mb-2 flex items-center gap-2">
-          <span>🚀</span> Proyección de Ganancias por Volumen de Venta
+          <span>🚀</span> Proyección de Ganancias por Volumen de Venta (${isCake ? `Tortas de ${this.simTargetPortions || basePortions}p` : this.getModeLabel(isCake)}s)
         </h3>
         <p class="text-xs text-gray-500 mb-4">Descubre cuánto dinero ganas según la cantidad de unidades vendidas al mes con este precio.</p>
 
@@ -427,7 +479,7 @@ const SimulatorModule = {
                 const totalProfit = totalSales - totalCostBatch - totalComm;
                 return `
                   <tr class="hover:bg-pink-50/30 transition">
-                    <td class="p-3 font-bold text-gray-900">${qty} ${this.getModeLabel(isCake)}s</td>
+                    <td class="p-3 font-bold text-gray-900">${qty} ${isCake ? 'tortas' : this.getModeLabel(isCake) + 's'}</td>
                     <td class="p-3">${Calculator.formatCurrency(totalSales)}</td>
                     <td class="p-3 text-gray-500">${Calculator.formatCurrency(totalCostBatch)}</td>
                     <td class="p-3 text-amber-600">${totalComm > 0 ? '-' + Calculator.formatCurrency(totalComm) : '$ 0'}</td>
@@ -451,15 +503,15 @@ const SimulatorModule = {
     const commPct = sim.commissionPercent || 0;
 
     return `
-      <div style="width: ${Math.max(10, costPct)}%" class="bg-rose-400 truncate px-1" title="Costo de Fabricación: ${costPct.toFixed(0)}%">
+      <div style="width: ${Math.max(10, costPct)}%" class="bg-rose-400 truncate px-1 flex items-center justify-center" title="Costo de Fabricación: ${costPct.toFixed(0)}%">
         Costo ${costPct.toFixed(0)}%
       </div>
       ${commPct > 0 ? `
-        <div style="width: ${commPct}%" class="bg-amber-400 truncate px-0.5" title="Comisión POS">
+        <div style="width: ${commPct}%" class="bg-amber-400 truncate px-0.5 flex items-center justify-center" title="Comisión POS">
           ${commPct.toFixed(1)}%
         </div>
       ` : ''}
-      <div style="width: ${Math.max(10, profitPct)}%" class="bg-emerald-500 truncate px-1" title="Ganancia Neta: ${profitPct.toFixed(0)}%">
+      <div style="width: ${Math.max(10, profitPct)}%" class="bg-emerald-500 truncate px-1 flex items-center justify-center" title="Ganancia Neta: ${profitPct.toFixed(0)}%">
         Ganancia ${profitPct.toFixed(0)}%
       </div>
     `;
@@ -467,8 +519,8 @@ const SimulatorModule = {
 
   getModeLabel(isCake) {
     if (this.simMode === 'batch') return 'Lote';
-    if (this.simMode === 'portion' || isCake) return 'Porción';
-    return 'Unidad';
+    if (this.simMode === 'portion') return 'Porción';
+    return isCake ? 'Torta' : 'Unidad';
   },
 
   getMarginHealth(margin) {
@@ -497,7 +549,40 @@ const SimulatorModule = {
 
   onRecipeSelect(recipeId) {
     this.selectedRecipeId = recipeId || null;
+    this.simTargetPortions = null;
+    this.currentPrice = 0;
     this.render();
+  },
+
+  onTargetPortionsChange(val) {
+    this.simTargetPortions = Math.max(1, parseInt(val) || 1);
+    this.currentPrice = 0;
+    this.render();
+  },
+
+  saveScaledAsNewRecipe() {
+    if (!this.selectedRecipeId || !this.simTargetPortions) return;
+    const recipe = DB.getRecipeById(this.selectedRecipeId);
+    if (!recipe) return;
+
+    const scaleResult = Calculator.scaleRecipe(recipe, {
+      targetPortions: this.simTargetPortions
+    });
+
+    const newRecipeData = {
+      ...scaleResult.recipe,
+      id: null
+    };
+
+    const saved = DB.addRecipe(newRecipeData);
+    this.selectedRecipeId = saved.id;
+    this.simTargetPortions = saved.yieldPortions;
+    this.render();
+    if (typeof App !== 'undefined' && App.showToast) {
+      App.showToast(`🎉 ¡Nueva ficha técnica "${saved.name}" guardada en tu catálogo!`);
+    } else {
+      alert(`🎉 ¡Ficha técnica "${saved.name}" guardada!`);
+    }
   },
 
   setSimMode(mode) {

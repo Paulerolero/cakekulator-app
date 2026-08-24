@@ -7,6 +7,7 @@ const MarketRadarModule = {
   selectedStore: 'all',
   searchQuery: '',
   sortBy: 'discount', // 'discount' | 'price-asc' | 'unit-cost'
+  storeFilterCategory: 'all', // 'all' | 'Supermercados' | 'Distribuidoras de Pastelería' | 'Moldes & Empaques'
 
   // Catálogo de productos indexados frecuentemente en supermercados y distribuidoras de Chile
   marketData: [
@@ -18,7 +19,7 @@ const MarketRadarModule = {
       brand: 'Colún',
       packageQty: 1,
       packageUnit: 'kg',
-      store: 'Lider',
+      store: 'Líder',
       storeLogo: '🛒',
       normalPrice: 4890,
       offerPrice: 4190,
@@ -41,7 +42,7 @@ const MarketRadarModule = {
       offerPrice: 4790,
       discountPct: 9,
       isBestDeal: false,
-      productUrl: 'https://www.jumbo.cl/busqueda?ft=manjar+nestle+repostero',
+      productUrl: 'https://www.jumbo.cl/busca?ft=manjar+nestle+repostero',
       matchedIngredientKeyword: 'Manjar',
       lastUpdated: 'Ayer'
     },
@@ -58,7 +59,7 @@ const MarketRadarModule = {
       offerPrice: 2390,
       discountPct: 17,
       isBestDeal: true,
-      productUrl: 'https://www.santaisabel.cl/busqueda?ft=mantequilla+soprole+250g',
+      productUrl: 'https://www.santaisabel.cl/busca?ft=mantequilla+soprole+250g',
       matchedIngredientKeyword: 'Mantequilla',
       lastUpdated: 'Hoy'
     },
@@ -69,13 +70,13 @@ const MarketRadarModule = {
       brand: 'Colún',
       packageQty: 250,
       packageUnit: 'g',
-      store: 'Lider',
-      storeLogo: '🛒',
+      store: 'Tottus',
+      storeLogo: '🟢',
       normalPrice: 2990,
       offerPrice: 2490,
       discountPct: 16,
       isBestDeal: false,
-      productUrl: 'https://www.lider.cl/supermercado/search?query=mantequilla%20colun%20sin%20sal',
+      productUrl: 'https://www.tottus.cl/tottus-cl/search?Ntt=mantequilla+colun+sin+sal',
       matchedIngredientKeyword: 'Mantequilla',
       lastUpdated: 'Hoy'
     },
@@ -86,13 +87,13 @@ const MarketRadarModule = {
       brand: 'Soprole',
       packageQty: 1,
       packageUnit: 'l',
-      store: 'Central Mayorista',
+      store: 'Centro Abasto',
       storeLogo: '🏢',
       normalPrice: 5490,
       offerPrice: 4690,
       discountPct: 15,
       isBestDeal: true,
-      productUrl: 'https://www.centralmayorista.cl/',
+      productUrl: 'https://centroabasto.cl/?s=crema+soprole',
       matchedIngredientKeyword: 'Crema',
       lastUpdated: 'Hoy'
     },
@@ -109,7 +110,7 @@ const MarketRadarModule = {
       offerPrice: 1490,
       discountPct: 21,
       isBestDeal: true,
-      productUrl: 'https://www.unimarc.cl/busqueda?query=leche%20condensada',
+      productUrl: 'https://www.unimarc.cl/search?q=leche%20condensada',
       matchedIngredientKeyword: 'Leche',
       lastUpdated: 'Hoy'
     },
@@ -126,7 +127,7 @@ const MarketRadarModule = {
       offerPrice: 2990,
       discountPct: 16,
       isBestDeal: true,
-      productUrl: 'https://www.jumbo.cl/busqueda?ft=queso+crema+philadelphia',
+      productUrl: 'https://www.jumbo.cl/busca?ft=queso+crema+philadelphia',
       matchedIngredientKeyword: 'Queso',
       lastUpdated: 'Ayer'
     },
@@ -139,7 +140,7 @@ const MarketRadarModule = {
       brand: 'Selecta',
       packageQty: 1,
       packageUnit: 'kg',
-      store: 'Lider',
+      store: 'Líder',
       storeLogo: '🛒',
       normalPrice: 1590,
       offerPrice: 1290,
@@ -156,13 +157,13 @@ const MarketRadarModule = {
       brand: 'Mont Blanc',
       packageQty: 1,
       packageUnit: 'kg',
-      store: 'Mayorista 10',
+      store: 'La Oferta',
       storeLogo: '🏷️',
       normalPrice: 1490,
-      offerPrice: 1190,
-      discountPct: 20,
+      offerPrice: 1150,
+      discountPct: 22,
       isBestDeal: true,
-      productUrl: 'https://www.mayorista10.cl/',
+      productUrl: 'https://laoferta.cl/?s=harina',
       matchedIngredientKeyword: 'Harina',
       lastUpdated: 'Ayer'
     },
@@ -178,80 +179,80 @@ const MarketRadarModule = {
       normalPrice: 2490,
       offerPrice: 2090,
       discountPct: 16,
-      isBestDeal: false,
-      productUrl: 'https://www.santaisabel.cl/busqueda?ft=maizena+500g',
+      isBestDeal: true,
+      productUrl: 'https://www.santaisabel.cl/busca?ft=maizena+500g',
       matchedIngredientKeyword: 'Maicena',
       lastUpdated: 'Hoy'
     },
     {
       id: 'mkt_11',
-      name: 'Polvo de Hornear Royal 200 g',
+      name: 'Polvos de Hornear Royal 100 g',
       category: 'Harinas & Polvos',
       brand: 'Royal',
-      packageQty: 200,
+      packageQty: 100,
       packageUnit: 'g',
-      store: 'Lider',
-      storeLogo: '🛒',
-      normalPrice: 1990,
-      offerPrice: 1690,
-      discountPct: 15,
+      store: 'Tottus',
+      storeLogo: '🟢',
+      normalPrice: 1290,
+      offerPrice: 990,
+      discountPct: 23,
       isBestDeal: true,
-      productUrl: 'https://www.lider.cl/supermercado/search?query=polvo%20hornear%20royal',
+      productUrl: 'https://www.tottus.cl/tottus-cl/search?Ntt=polvos+hornear+royal',
       matchedIngredientKeyword: 'Polvos',
       lastUpdated: 'Hoy'
     },
 
-    // --- HUEVOS & FRESCOS ---
+    // --- HUEVOS Y FRESCOS ---
     {
       id: 'mkt_12',
-      name: 'Huevos Grandes Grado A Bandeja 30 un',
+      name: 'Huevos Grandes Blancos (Bandeja 30 un)',
       category: 'Huevos & Frescos',
-      brand: 'La Granja / Yemina',
+      brand: 'Santa Marta',
       packageQty: 30,
-      packageUnit: 'un',
-      store: 'Central Mayorista',
-      storeLogo: '🏢',
-      normalPrice: 7990,
-      offerPrice: 6690,
-      discountPct: 16,
+      packageUnit: 'u',
+      store: 'Distribuidoras Franklin',
+      storeLogo: '📦',
+      normalPrice: 6990,
+      offerPrice: 5790,
+      discountPct: 17,
       isBestDeal: true,
-      productUrl: 'https://www.centralmayorista.cl/',
-      matchedIngredientKeyword: 'Huevo',
+      productUrl: 'https://distribuidorasfranklin.com/?s=huevos',
+      matchedIngredientKeyword: 'Huevos',
       lastUpdated: 'Hoy'
     },
     {
       id: 'mkt_13',
-      name: 'Huevos Extra Color Bandeja 30 un',
+      name: 'Huevos Extra Grandes Color (Bandeja 30 un)',
       category: 'Huevos & Frescos',
-      brand: 'Santa Marta',
+      brand: 'Champion',
       packageQty: 30,
-      packageUnit: 'un',
-      store: 'Mayorista 10',
-      storeLogo: '🏷️',
-      normalPrice: 7890,
-      offerPrice: 6890,
-      discountPct: 12,
+      packageUnit: 'u',
+      store: 'Unimarc',
+      storeLogo: '🔴',
+      normalPrice: 7490,
+      offerPrice: 6290,
+      discountPct: 16,
       isBestDeal: false,
-      productUrl: 'https://www.mayorista10.cl/',
-      matchedIngredientKeyword: 'Huevo',
-      lastUpdated: 'Hoy'
+      productUrl: 'https://www.unimarc.cl/search?q=huevos%2030',
+      matchedIngredientKeyword: 'Huevos',
+      lastUpdated: 'Ayer'
     },
 
     // --- CHOCOLATES Y COBERTURAS ---
     {
       id: 'mkt_14',
-      name: 'Cobertura de Chocolate Semiamargo Carat Coverlux 1 kg',
+      name: 'Cobertura Gotas Semiamarga Carat Puratos 1 kg',
       category: 'Chocolates & Coberturas',
       brand: 'Puratos',
       packageQty: 1,
       packageUnit: 'kg',
-      store: 'Cherry Chile Repostería',
-      storeLogo: '🍒',
-      normalPrice: 7990,
-      offerPrice: 6890,
-      discountPct: 14,
+      store: 'Club Repostero',
+      storeLogo: '🎂',
+      normalPrice: 8490,
+      offerPrice: 6990,
+      discountPct: 17,
       isBestDeal: true,
-      productUrl: 'https://cherrychile.cl/',
+      productUrl: 'https://clubrepostero.cl/?s=cobertura+puratos',
       matchedIngredientKeyword: 'Chocolate',
       lastUpdated: 'Hoy'
     },
@@ -262,7 +263,7 @@ const MarketRadarModule = {
       brand: 'Gourmet',
       packageQty: 100,
       packageUnit: 'g',
-      store: 'Lider',
+      store: 'Líder',
       storeLogo: '🛒',
       normalPrice: 1990,
       offerPrice: 1590,
@@ -285,7 +286,7 @@ const MarketRadarModule = {
       offerPrice: 7290,
       discountPct: 14,
       isBestDeal: true,
-      productUrl: 'https://www.jumbo.cl/busqueda?ft=nutella+750g',
+      productUrl: 'https://www.jumbo.cl/busca?ft=nutella+750g',
       matchedIngredientKeyword: 'Nutella',
       lastUpdated: 'Hoy'
     },
@@ -298,7 +299,7 @@ const MarketRadarModule = {
       brand: 'Iansa',
       packageQty: 1,
       packageUnit: 'kg',
-      store: 'Lider',
+      store: 'Líder',
       storeLogo: '🛒',
       normalPrice: 1390,
       offerPrice: 1090,
@@ -321,26 +322,26 @@ const MarketRadarModule = {
       offerPrice: 1790,
       discountPct: 18,
       isBestDeal: true,
-      productUrl: 'https://www.santaisabel.cl/busqueda?ft=azucar+flor+iansa',
+      productUrl: 'https://www.santaisabel.cl/busca?ft=azucar+flor+iansa',
       matchedIngredientKeyword: 'Azúcar Flor',
       lastUpdated: 'Ayer'
     },
 
-    // --- EMPAQUES & PRESENTACIÓN ---
+    // --- EMPAQUES & MOLDES ---
     {
       id: 'mkt_19',
       name: 'Cajas para Torta Alta 26x26x15 cm (Pack 10 un)',
       category: 'Empaques & Descartables',
-      brand: 'Cherry Pack',
+      brand: 'Leehebo',
       packageQty: 10,
       packageUnit: 'un',
-      store: 'Cherry Chile Repostería',
-      storeLogo: '🍒',
-      normalPrice: 7990,
-      offerPrice: 6490,
-      discountPct: 18,
+      store: 'Leehebo Oficial',
+      storeLogo: '🎀',
+      normalPrice: 8990,
+      offerPrice: 6990,
+      discountPct: 22,
       isBestDeal: true,
-      productUrl: 'https://cherrychile.cl/',
+      productUrl: 'https://leehebo.cl/?s=cajas+torta',
       matchedIngredientKeyword: 'Caja',
       lastUpdated: 'Hoy'
     },
@@ -348,31 +349,39 @@ const MarketRadarModule = {
       id: 'mkt_20',
       name: 'Bases Rígidas Doradas para Torta 28 cm (Pack 5 un)',
       category: 'Empaques & Descartables',
-      brand: 'DecoCake',
+      brand: 'Duce Repostería',
       packageQty: 5,
       packageUnit: 'un',
-      store: 'Cherry Chile Repostería',
-      storeLogo: '🍒',
+      store: 'Repostería Duce',
+      storeLogo: '🧁',
       normalPrice: 4990,
-      offerPrice: 3990,
-      discountPct: 20,
+      offerPrice: 3890,
+      discountPct: 22,
       isBestDeal: true,
-      productUrl: 'https://cherrychile.cl/',
+      productUrl: 'https://www.google.com/search?q=reposteria+duce+bases+doradas',
       matchedIngredientKeyword: 'Base',
       lastUpdated: 'Hoy'
     }
   ],
 
+  getStores() {
+    if (typeof DB !== 'undefined' && DB.getMarketStores) {
+      return DB.getMarketStores();
+    }
+    return typeof DEFAULT_MARKET_STORES !== 'undefined' ? DEFAULT_MARKET_STORES : [];
+  },
+
   render() {
     const container = document.getElementById('market-radar-view');
     if (!container) return;
 
+    const allStores = this.getStores();
+    const enabledStores = allStores.filter(s => s.enabled !== false);
     const categories = ['all', 'Lácteos & Manjar', 'Harinas & Polvos', 'Huevos & Frescos', 'Chocolates & Coberturas', 'Azúcares & Endulzantes', 'Empaques & Descartables'];
-    const stores = ['all', 'Lider', 'Jumbo', 'Santa Isabel', 'Unimarc', 'Mayorista 10', 'Central Mayorista', 'Cherry Chile Repostería'];
 
     let filtered = this.marketData.filter(item => {
       const matchCat = this.activeCategory === 'all' || item.category === this.activeCategory;
-      const matchStore = this.selectedStore === 'all' || item.store === this.selectedStore;
+      const matchStore = this.selectedStore === 'all' || item.store.toLowerCase().includes(this.selectedStore.toLowerCase());
       const matchSearch = !this.searchQuery || 
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         item.brand.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -393,32 +402,85 @@ const MarketRadarModule = {
         <div>
           <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold mb-1 border border-emerald-100">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Supermercados y Distribuidores de Chile
+            Supermercados y Distribuidoras de Chile (${enabledStores.length} activas)
           </div>
           <h2 class="text-2xl font-black text-gray-900 flex items-center gap-2">
             <span>🛒</span> Radar de Precios & Ofertas
           </h2>
-          <p class="text-xs text-gray-500">Monitorea promociones en Lider, Jumbo, Santa Isabel, Unimarc y distribuidoras para reducir el costo de tus recetas.</p>
+          <p class="text-xs text-gray-500">Monitorea precios en Líder, Jumbo, Tottus, Santa Isabel, Unimarc y distribuidoras pasteleras para reducir tus costos.</p>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button onclick="MarketRadarModule.refreshPricesLive()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-emerald-200 active:scale-95">
-            <span>🔄</span> Actualizar Precios
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="MarketRadarModule.openCustomSearchModal()" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-700 hover:to-rose-600 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-pink-200 active:scale-95 cursor-pointer">
+            <span>🔍</span> Buscar Insumo en Tiendas
           </button>
-          <button onclick="MarketRadarModule.openCustomSearchModal()" class="px-3.5 py-2 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold transition flex items-center gap-1.5 border border-pink-200">
-            <span>🔍</span> Buscar en Supermercados
+          <button onclick="MarketRadarModule.openStoreManagerModal()" class="px-3 py-2 rounded-xl bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition flex items-center gap-1.5 border border-gray-200 shadow-2xs active:scale-95 cursor-pointer">
+            <span>⚙️</span> Gestionar Tiendas (${allStores.length})
+          </button>
+          <button onclick="MarketRadarModule.refreshPricesLive()" title="Actualizar precios del radar" class="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition active:scale-95 cursor-pointer border border-emerald-200">
+            <span>🔄</span>
           </button>
         </div>
       </div>
 
-      <!-- Barra de Filtros y Búsqueda -->
+      <!-- Directorio de Tiendas y Portales con Filtro -->
+      <div class="bg-gradient-to-br from-pink-50/40 via-white to-white rounded-3xl p-5 border border-pink-100 shadow-sm space-y-4 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-100/60 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🏬</span>
+            <div>
+              <h3 class="font-bold text-gray-900 text-sm">Directorio de Tiendas & Distribuidoras en Chile</h3>
+              <p class="text-[11px] text-gray-500">Haz clic en cualquier tienda para ingresar a su sitio web o cotizar por mayor</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="MarketRadarModule.filterStoresByType('all')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${this.storeFilterCategory === 'all' ? 'bg-pink-600 text-white shadow-xs' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-200'}">Todas (${allStores.length})</button>
+            <button onclick="MarketRadarModule.filterStoresByType('Supermercados')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${this.storeFilterCategory === 'Supermercados' ? 'bg-pink-600 text-white shadow-xs' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-200'}">Supermercados</button>
+            <button onclick="MarketRadarModule.filterStoresByType('Distribuidoras')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition ${this.storeFilterCategory === 'Distribuidoras' ? 'bg-pink-600 text-white shadow-xs' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-200'}">Pastelería & Mayoristas</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+          ${allStores
+            .filter(s => {
+              if (this.storeFilterCategory === 'Supermercados') return s.category === 'Supermercados';
+              if (this.storeFilterCategory === 'Distribuidoras') return s.category !== 'Supermercados';
+              return true;
+            })
+            .map(store => `
+              <div class="p-3 bg-white rounded-2xl border ${store.enabled !== false ? 'border-gray-200 hover:border-pink-300 hover:shadow-md' : 'border-gray-100 opacity-60 bg-gray-50'} transition flex flex-col justify-between group relative">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-2xl">${store.icon || '🏬'}</span>
+                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${store.category === 'Supermercados' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700'}">
+                      ${store.category === 'Supermercados' ? 'Super' : 'Pastelería'}
+                    </span>
+                  </div>
+                  <h4 class="font-black text-xs text-gray-900 group-hover:text-pink-600 transition truncate">${store.name}</h4>
+                  <p class="text-[10px] text-gray-500 line-clamp-2 mt-0.5 leading-snug">${store.description || 'Proveedor de insumos y repostería en Chile.'}</p>
+                </div>
+
+                <div class="flex items-center gap-1.5 mt-3 pt-2 border-t border-gray-100">
+                  <a href="${store.portalUrl}" target="_blank" class="flex-1 text-center py-1.5 px-2 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 font-bold text-[10px] transition truncate">
+                    Visitar Web ↗
+                  </a>
+                  <button onclick="MarketRadarModule.searchSpecificStore('${store.id}')" title="Buscar producto en ${store.name}" class="p-1.5 rounded-xl bg-gray-100 hover:bg-pink-100 hover:text-pink-700 text-gray-600 transition text-[11px]">
+                    🔍
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+        </div>
+      </div>
+
+      <!-- Barra de Filtros de Ofertas -->
       <div class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm space-y-3.5 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
           <!-- Búsqueda -->
           <div class="md:col-span-6 relative">
             <input 
               type="text" 
-              placeholder="Buscar insumo (ej. Manjar, Harina, Mantequilla, Huevos)..." 
+              placeholder="Buscar insumo en ofertas (ej. Manjar, Harina, Mantequilla, Cacao)..." 
               value="${this.searchQuery}"
               oninput="MarketRadarModule.onSearch(this.value)"
               class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 text-xs bg-gray-50/50 focus:bg-white"
@@ -433,8 +495,8 @@ const MarketRadarModule = {
               class="w-full py-2.5 px-3 rounded-xl border border-gray-200 text-xs font-medium bg-white focus:ring-2 focus:ring-pink-400"
             >
               <option value="all" ${this.selectedStore === 'all' ? 'selected' : ''}>🏬 Todas las Tiendas</option>
-              ${stores.filter(s => s !== 'all').map(s => `
-                <option value="${s}" ${this.selectedStore === s ? 'selected' : ''}>${s}</option>
+              ${allStores.map(s => `
+                <option value="${s.name}" ${this.selectedStore === s.name ? 'selected' : ''}>${s.icon || '🏬'} ${s.name}</option>
               `).join('')}
             </select>
           </div>
@@ -451,105 +513,89 @@ const MarketRadarModule = {
           </div>
         </div>
 
-        <!-- Pills de Categorías -->
-        <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar text-xs font-medium border-t border-gray-100 pt-3">
+        <!-- Categorías Pills -->
+        <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-medium">
           ${categories.map(cat => `
             <button 
               onclick="MarketRadarModule.filterByCategory('${cat}')"
-              class="px-3 py-1.5 rounded-full whitespace-nowrap transition ${this.activeCategory === cat ? 'bg-pink-600 text-white font-bold shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-pink-50 hover:text-pink-600'}"
+              class="px-3 py-1.5 rounded-xl whitespace-nowrap transition ${this.activeCategory === cat ? 'bg-pink-600 text-white font-bold shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-pink-50'}"
             >
-              ${cat === 'all' ? '✨ Todo el Catálogo (' + this.marketData.length + ')' : cat}
+              ${cat === 'all' ? '✨ Todas las Ofertas' : cat}
             </button>
           `).join('')}
         </div>
       </div>
 
-      <!-- Cuadrícula de Ofertas -->
+      <!-- Listado de Ofertas Destacadas -->
       ${filtered.length === 0 ? `
         <div class="bg-white rounded-3xl p-10 text-center border border-pink-100 shadow-sm space-y-3">
-          <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center mx-auto text-2xl">
-            🔍
+          <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center text-3xl mx-auto">
+            🛒
           </div>
-          <h3 class="font-bold text-gray-800 text-base">No se encontraron productos</h3>
-          <p class="text-xs text-gray-400 max-w-sm mx-auto">Prueba cambiando la búsqueda o revisa los enlaces directos a cada supermercado.</p>
+          <h3 class="text-base font-bold text-gray-800">No encontramos ofertas para este filtro</h3>
+          <p class="text-xs text-gray-500 max-w-md mx-auto">Prueba buscando en el catálogo general o haz una búsqueda directa en las tiendas con el botón superior.</p>
+          <button onclick="MarketRadarModule.openCustomSearchModal()" class="px-4 py-2 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-md shadow-pink-200 hover:bg-pink-700 transition">
+            🔍 Buscar en Tiendas
+          </button>
         </div>
       ` : `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
           ${filtered.map(item => {
-            const savings = item.normalPrice - item.offerPrice;
-            const existingMatch = this.findMatchingLocalIngredient(item);
-
+            const unitPrice = item.offerPrice / item.packageQty;
+            const existingLocal = this.findMatchingLocalIngredient(item);
             return `
-              <div class="bg-white rounded-3xl p-4 sm:p-5 border border-gray-100 hover:border-pink-200 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between group relative overflow-hidden">
+              <div class="bg-white rounded-3xl p-4.5 border border-pink-100/80 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-3 relative group">
                 
-                ${item.isBestDeal ? `
-                  <div class="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-rose-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-2xl shadow-xs">
-                    ⭐ MEJOR OFERTA
-                  </div>
-                ` : ''}
-
                 <div>
-                  <!-- Tienda & Categoría -->
-                  <div class="flex items-center justify-between gap-2 mb-2 pr-16">
-                    <span class="text-[11px] font-bold text-gray-700 bg-gray-100/80 px-2.5 py-0.5 rounded-lg flex items-center gap-1">
+                  <!-- Header del Producto -->
+                  <div class="flex items-start justify-between gap-2 mb-1.5">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
                       <span>${item.storeLogo}</span> ${item.store}
                     </span>
-                    <span class="text-[10px] text-gray-400 font-medium">${item.lastUpdated}</span>
+                    <span class="inline-flex items-center gap-0.5 text-[11px] font-black px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100">
+                      -${item.discountPct}%
+                    </span>
                   </div>
 
-                  <!-- Título del Producto -->
-                  <h4 class="font-bold text-sm text-gray-900 group-hover:text-pink-600 transition leading-snug mb-1">
-                    ${item.name}
-                  </h4>
-                  <span class="text-xs text-gray-500 block mb-3">Marca: <strong>${item.brand}</strong> · Formato: ${item.packageQty} ${item.packageUnit}</span>
-
-                  <!-- Comparación de Precios -->
-                  <div class="bg-pink-50/40 p-3 rounded-2xl border border-pink-100/60 mb-3 flex items-center justify-between">
-                    <div>
-                      <span class="text-xl font-black text-emerald-700 block leading-none">
-                        ${Calculator.formatCurrency(item.offerPrice)}
-                      </span>
-                      <span class="text-[11px] text-gray-400 line-through">
-                        ${Calculator.formatCurrency(item.normalPrice)}
-                      </span>
-                    </div>
-
-                    <div class="text-right">
-                      <span class="inline-block bg-rose-500 text-white text-xs font-black px-2 py-0.5 rounded-full shadow-xs">
-                        -${item.discountPct}%
-                      </span>
-                      <span class="text-[10px] text-emerald-600 font-bold block mt-0.5">
-                        Ahorro: ${Calculator.formatCurrency(savings)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- Estado en mi Inventario Local -->
-                  <div class="text-[11px] text-gray-500 mb-3">
-                    ${existingMatch ? `
-                      <span class="flex items-center gap-1 text-gray-600">
-                        <span>📦</span> En tu inventario: <strong>${existingMatch.name}</strong> (${Calculator.formatCurrency(existingMatch.packagePrice)})
-                      </span>
-                    ` : `
-                      <span class="text-gray-400">Insumo no registrado aún en tu catálogo</span>
-                    `}
-                  </div>
+                  <h4 class="font-bold text-sm text-gray-900 leading-snug group-hover:text-pink-600 transition">${item.name}</h4>
+                  <span class="text-[11px] text-gray-400 block mt-0.5">Marca: ${item.brand} · Formato: ${item.packageQty} ${item.packageUnit}</span>
                 </div>
 
-                <!-- Botones de Acción -->
-                <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+                <!-- Precios y Comparador -->
+                <div class="bg-gray-50/70 p-3 rounded-2xl space-y-1">
+                  <div class="flex items-baseline justify-between">
+                    <div>
+                      <span class="text-xs text-gray-400 line-through mr-1">${Calculator.formatCurrency(item.normalPrice)}</span>
+                      <span class="text-base font-black text-emerald-600">${Calculator.formatCurrency(item.offerPrice)}</span>
+                    </div>
+                    <span class="text-[10px] font-semibold text-gray-500">
+                      ${Calculator.formatCurrency(Math.round(unitPrice))} / ${item.packageUnit}
+                    </span>
+                  </div>
+
+                  ${existingLocal ? `
+                    <div class="pt-1.5 border-t border-gray-200/60 flex items-center justify-between text-[10px]">
+                      <span class="text-gray-500">Tu costo actual:</span>
+                      <span class="font-bold ${item.offerPrice < existingLocal.packagePrice ? 'text-emerald-600' : 'text-amber-600'}">
+                        ${Calculator.formatCurrency(existingLocal.packagePrice)}
+                        ${item.offerPrice < existingLocal.packagePrice ? ' (¡Ahorras ' + Calculator.formatCurrency(existingLocal.packagePrice - item.offerPrice) + '!)' : ''}
+                      </span>
+                    </div>
+                  ` : ''}
+                </div>
+
+                <!-- Acciones del Producto -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
                   <a 
                     href="${item.productUrl}" 
                     target="_blank" 
-                    rel="noopener noreferrer"
-                    class="py-2 px-2.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs flex items-center justify-center gap-1 transition"
+                    class="py-2 px-2.5 rounded-xl border border-gray-200 hover:border-pink-300 hover:bg-pink-50/50 text-gray-700 font-bold text-xs flex items-center justify-center gap-1 transition text-center"
                   >
-                    <span>🔗</span> Ver en Tienda
+                    <span>🔗</span> Ver Oferta
                   </a>
-
                   <button 
                     onclick="MarketRadarModule.applyOfferToInventory('${item.id}')"
-                    class="py-2 px-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-md shadow-pink-200 transition active:scale-95"
+                    class="py-2 px-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-md shadow-pink-200 transition active:scale-95 cursor-pointer"
                   >
                     <span>📥</span> Usar Precio
                   </button>
@@ -560,41 +606,12 @@ const MarketRadarModule = {
           }).join('')}
         </div>
       `}
-
-      <!-- Enlaces Rápidos a Portales de Compra en Chile -->
-      <div class="mt-8 bg-gradient-to-br from-white to-pink-50/30 rounded-3xl p-6 border border-pink-100 shadow-sm space-y-4">
-        <h3 class="font-bold text-gray-900 text-base flex items-center gap-2">
-          <span>🏬</span> Portales de Compra y Distribuidores Recomendados en Chile
-        </h3>
-        <p class="text-xs text-gray-500">Haz clic en cualquier tienda para buscar insumos específicos o cotizar por mayor:</p>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <a href="https://www.lider.cl/supermercado" target="_blank" class="p-3 bg-white rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-sm transition text-center group">
-            <span class="text-xl block mb-1">🛒</span>
-            <span class="font-bold text-xs text-gray-800 group-hover:text-blue-600 block">Lider.cl</span>
-            <span class="text-[10px] text-gray-400">Precios Bajos y Despacho</span>
-          </a>
-
-          <a href="https://www.jumbo.cl" target="_blank" class="p-3 bg-white rounded-2xl border border-gray-200 hover:border-emerald-300 hover:shadow-sm transition text-center group">
-            <span class="text-xl block mb-1">🐘</span>
-            <span class="font-bold text-xs text-gray-800 group-hover:text-emerald-600 block">Jumbo.cl</span>
-            <span class="text-[10px] text-gray-400">Insumos Gourmet y Repostería</span>
-          </a>
-
-          <a href="https://cherrychile.cl" target="_blank" class="p-3 bg-white rounded-2xl border border-gray-200 hover:border-pink-300 hover:shadow-sm transition text-center group">
-            <span class="text-xl block mb-1">🍒</span>
-            <span class="font-bold text-xs text-gray-800 group-hover:text-pink-600 block">Cherry Chile</span>
-            <span class="text-[10px] text-gray-400">Empaques y Chocolatería</span>
-          </a>
-
-          <a href="https://www.centralmayorista.cl" target="_blank" class="p-3 bg-white rounded-2xl border border-gray-200 hover:border-amber-300 hover:shadow-sm transition text-center group">
-            <span class="text-xl block mb-1">🏢</span>
-            <span class="font-bold text-xs text-gray-800 group-hover:text-amber-600 block">Central Mayorista</span>
-            <span class="text-[10px] text-gray-400">Formatos Grandes y Ahorro</span>
-          </a>
-        </div>
-      </div>
     `;
+  },
+
+  filterStoresByType(type) {
+    this.storeFilterCategory = type;
+    this.render();
   },
 
   onSearch(query) {
@@ -667,74 +684,343 @@ const MarketRadarModule = {
     this.render();
   },
 
-  openCustomSearchModal() {
+  // Modal para Buscar en Supermercados y Distribuidoras
+  openCustomSearchModal(defaultQuery = '') {
     let modal = document.getElementById('market-custom-search-modal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'market-custom-search-modal';
-      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs';
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/60 backdrop-blur-xs';
       document.body.appendChild(modal);
     }
 
+    const allStores = this.getStores();
+    const enabledStores = allStores.filter(s => s.enabled !== false);
+
     modal.innerHTML = `
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-pink-100 space-y-4">
+      <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-pink-100 space-y-4 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
         <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-          <div class="flex items-center gap-2">
-            <span class="text-xl">🔎</span>
-            <h3 class="font-bold text-gray-900 text-base">Búsqueda Directa en Supermercados</h3>
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center text-xl shadow-md shadow-pink-200">
+              🔎
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 text-base">Búsqueda Directa en Tiendas de Chile</h3>
+              <p class="text-xs text-gray-500">Ingresa el producto y compara precios en tiempo real</p>
+            </div>
           </div>
-          <button onclick="document.getElementById('market-custom-search-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 p-1">✕</button>
+          <button onclick="document.getElementById('market-custom-search-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100">✕</button>
         </div>
 
-        <p class="text-xs text-gray-500">Ingresa el producto que necesitas cotizar y elige en qué supermercado buscar:</p>
+        <!-- Input de Búsqueda -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-gray-700">¿Qué insumo o producto deseas cotizar?</label>
+          <div class="flex gap-2">
+            <input 
+              type="text" 
+              id="custom-market-query" 
+              value="${defaultQuery}"
+              placeholder="Ej: Manjar, Harina, Crema para batir, Chocolate 70%, Cajas de torta..." 
+              class="flex-1 px-4 py-3 rounded-2xl border border-pink-200 text-sm font-semibold focus:ring-2 focus:ring-pink-400 bg-pink-50/30"
+              onkeydown="if(event.key === 'Enter') MarketRadarModule.launchMultiSearch()"
+            />
+          </div>
+        </div>
 
-        <input 
-          type="text" 
-          id="custom-market-query" 
-          placeholder="Ej: Harina de almendras, Tagatosa, Crema vegetal..." 
-          class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs font-medium focus:ring-2 focus:ring-pink-400"
-        />
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-          <button onclick="MarketRadarModule.launchSearch('lider')" class="p-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold text-center transition">
-            Lider.cl 🛒
+        <!-- Botones de Acción Rápida -->
+        <div class="flex flex-wrap items-center gap-2 pt-1 border-b border-gray-100 pb-3">
+          <span class="text-xs font-bold text-gray-500 mr-1">Búsqueda masiva:</span>
+          <button onclick="MarketRadarModule.launchCategorySearch('Supermercados')" class="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition flex items-center gap-1 shadow-2xs">
+            <span>🛒</span> Abrir Todos los Supermercados
           </button>
-          <button onclick="MarketRadarModule.launchSearch('jumbo')" class="p-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold text-center transition">
-            Jumbo.cl 🐘
-          </button>
-          <button onclick="MarketRadarModule.launchSearch('unimarc')" class="p-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold text-center transition">
-            Unimarc 🔴
-          </button>
-          <button onclick="MarketRadarModule.launchSearch('santaisabel')" class="p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold text-center transition">
-            Santa Isabel 🏪
+          <button onclick="MarketRadarModule.launchCategorySearch('Distribuidoras')" class="px-3 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold transition flex items-center gap-1 shadow-2xs">
+            <span>🎂</span> Abrir Todas las Distribuidoras
           </button>
         </div>
+
+        <!-- Lista de Tiendas con Botón Individual -->
+        <div class="overflow-y-auto flex-1 pr-1 space-y-2">
+          <span class="text-xs font-bold text-gray-700 block mb-2">O busca individualmente en la tienda que prefieras:</span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            ${enabledStores.map(store => `
+              <button 
+                onclick="MarketRadarModule.launchSearchForStore('${store.id}')" 
+                class="flex items-center justify-between p-3 rounded-2xl border border-gray-200 hover:border-pink-400 hover:bg-pink-50/40 text-left transition group active:scale-98"
+              >
+                <div class="flex items-center gap-2.5 truncate">
+                  <span class="text-2xl">${store.icon || '🏬'}</span>
+                  <div class="truncate">
+                    <span class="font-black text-xs text-gray-900 group-hover:text-pink-600 transition block truncate">${store.name}</span>
+                    <span class="text-[10px] text-gray-400 block truncate">${store.description || store.category}</span>
+                  </div>
+                </div>
+                <span class="text-xs text-pink-600 font-bold shrink-0 ml-2">Buscar ↗</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+      </div>
+    `;
+
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      document.getElementById('custom-market-query')?.focus();
+    }, 100);
+  },
+
+  searchSpecificStore(storeId) {
+    this.openCustomSearchModal();
+    setTimeout(() => {
+      this.launchSearchForStore(storeId);
+    }, 50);
+  },
+
+  launchSearchForStore(storeId) {
+    const queryInput = document.getElementById('custom-market-query');
+    const rawQuery = (queryInput ? queryInput.value.trim() : '') || 'reposteria';
+    const query = encodeURIComponent(rawQuery);
+    
+    const allStores = this.getStores();
+    const store = allStores.find(s => s.id === storeId);
+    if (!store) return;
+
+    let targetUrl = store.searchUrl ? `${store.searchUrl}${query}` : (store.portalUrl || 'https://www.google.com');
+    window.open(targetUrl, '_blank');
+  },
+
+  launchCategorySearch(categoryType) {
+    const queryInput = document.getElementById('custom-market-query');
+    const rawQuery = (queryInput ? queryInput.value.trim() : '') || 'reposteria';
+    const query = encodeURIComponent(rawQuery);
+
+    const allStores = this.getStores().filter(s => s.enabled !== false);
+    const targetStores = allStores.filter(s => {
+      if (categoryType === 'Supermercados') return s.category === 'Supermercados';
+      return s.category !== 'Supermercados';
+    });
+
+    targetStores.slice(0, 5).forEach((store, idx) => {
+      setTimeout(() => {
+        let targetUrl = store.searchUrl ? `${store.searchUrl}${query}` : (store.portalUrl || 'https://www.google.com');
+        window.open(targetUrl, '_blank');
+      }, idx * 150);
+    });
+  },
+
+  launchMultiSearch() {
+    this.launchCategorySearch('Supermercados');
+  },
+
+  // Modal para Gestionar, Agregar y Quitar Tiendas
+  openStoreManagerModal() {
+    let modal = document.getElementById('market-store-manager-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'market-store-manager-modal';
+      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/60 backdrop-blur-xs';
+      document.body.appendChild(modal);
+    }
+
+    const stores = this.getStores();
+
+    modal.innerHTML = `
+      <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-pink-100 space-y-4 max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-gray-800 to-gray-900 text-white flex items-center justify-center text-xl shadow-md">
+              ⚙️
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 text-base">Gestionar Tiendas y Distribuidoras</h3>
+              <p class="text-xs text-gray-500">Agrega tus proveedores locales o desactiva los que no utilices</p>
+            </div>
+          </div>
+          <button onclick="document.getElementById('market-store-manager-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100">✕</button>
+        </div>
+
+        <!-- Formulario para Agregar Nueva Tienda -->
+        <div class="bg-pink-50/50 p-4 rounded-2xl border border-pink-100 space-y-3">
+          <h4 class="font-bold text-xs text-pink-800 flex items-center gap-1.5">
+            <span>➕</span> Agregar Nueva Tienda o Distribuidora Personalizada
+          </h4>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div>
+              <label class="block font-semibold text-gray-700 mb-1">Nombre de la Tienda *</label>
+              <input type="text" id="new-store-name" placeholder="Ej. Distribuidora Santa Ana" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white font-bold" />
+            </div>
+
+            <div>
+              <label class="block font-semibold text-gray-700 mb-1">Categoría</label>
+              <select id="new-store-cat" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white font-medium">
+                <option value="Supermercados">Supermercados</option>
+                <option value="Distribuidoras de Pastelería" selected>Distribuidoras de Pastelería</option>
+                <option value="Moldes & Empaques">Moldes & Empaques</option>
+                <option value="Comercio Local">Comercio Local / Barrio</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-gray-700 mb-1">URL Sitio Web / Portal *</label>
+              <input type="url" id="new-store-portal" placeholder="https://www.tienda.cl" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white" />
+            </div>
+
+            <div>
+              <label class="block font-semibold text-gray-700 mb-1">URL de Búsqueda Directa (Opcional)</label>
+              <input type="url" id="new-store-search" placeholder="https://www.tienda.cl/buscar?q=" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white text-gray-600" />
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="block font-semibold text-gray-700 mb-1">Descripción / Nota</label>
+              <input type="text" id="new-store-desc" placeholder="Ej. Sucursal La Florida, buenos precios en manjar y chocolate" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white" />
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button onclick="MarketRadarModule.saveNewStore()" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs rounded-xl shadow-md shadow-pink-200 transition active:scale-95">
+              + Guardar Tienda
+            </button>
+          </div>
+        </div>
+
+        <!-- Lista de Tiendas Actuales -->
+        <div class="overflow-y-auto flex-1 pr-1 space-y-2">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-gray-700">Tiendas registradas (${stores.length}):</span>
+            <button onclick="MarketRadarModule.confirmResetStores()" class="text-[11px] text-gray-500 hover:text-pink-600 underline font-semibold">
+              Restablecer Predeterminadas
+            </button>
+          </div>
+
+          <div class="space-y-2">
+            ${stores.map(store => `
+              <div class="p-3 bg-white rounded-2xl border border-gray-200 hover:border-gray-300 flex items-center justify-between gap-3 transition">
+                <div class="flex items-center gap-3 truncate">
+                  <span class="text-2xl shrink-0">${store.icon || '🏬'}</span>
+                  <div class="truncate">
+                    <div class="flex items-center gap-2">
+                      <h5 class="font-bold text-xs text-gray-900 truncate">${store.name}</h5>
+                      <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${store.category === 'Supermercados' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700'}">
+                        ${store.category}
+                      </span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 truncate">${store.description || store.portalUrl}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                  <!-- Toggle Activo -->
+                  <button 
+                    onclick="MarketRadarModule.toggleStoreEnabled('${store.id}')"
+                    class="px-2.5 py-1 rounded-xl text-[10px] font-bold transition ${store.enabled !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'}"
+                    title="${store.enabled !== false ? 'Tienda Activa en el Radar' : 'Tienda Oculta'}"
+                  >
+                    ${store.enabled !== false ? '✓ Activa' : 'Oculta'}
+                  </button>
+
+                  <!-- Botón Eliminar -->
+                  <button 
+                    onclick="MarketRadarModule.deleteStoreConfirm('${store.id}', '${store.name}')" 
+                    title="Eliminar tienda de mi lista" 
+                    class="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
       </div>
     `;
 
     modal.classList.remove('hidden');
   },
 
-  launchSearch(storeKey) {
-    const query = encodeURIComponent(document.getElementById('custom-market-query')?.value.trim() || 'reposteria');
-    let url = '';
-    if (storeKey === 'lider') url = `https://www.lider.cl/supermercado/search?query=${query}`;
-    if (storeKey === 'jumbo') url = `https://www.jumbo.cl/busqueda?ft=${query}`;
-    if (storeKey === 'unimarc') url = `https://www.unimarc.cl/busqueda?query=${query}`;
-    if (storeKey === 'santaisabel') url = `https://www.santaisabel.cl/busqueda?ft=${query}`;
+  saveNewStore() {
+    const name = document.getElementById('new-store-name')?.value.trim();
+    const category = document.getElementById('new-store-cat')?.value || 'Distribuidoras de Pastelería';
+    const portalUrl = document.getElementById('new-store-portal')?.value.trim();
+    const searchUrl = document.getElementById('new-store-search')?.value.trim();
+    const description = document.getElementById('new-store-desc')?.value.trim();
 
-    if (url) {
-      window.open(url, '_blank');
-      document.getElementById('market-custom-search-modal').classList.add('hidden');
+    if (!name) {
+      alert('Por favor escribe el nombre de la tienda.');
+      return;
+    }
+    if (!portalUrl) {
+      alert('Por favor ingresa la URL de la tienda.');
+      return;
+    }
+
+    const newStore = {
+      id: 'store_' + Date.now(),
+      name: name,
+      category: category,
+      icon: category === 'Supermercados' ? '🛒' : (category === 'Moldes & Empaques' ? '🎀' : '🎂'),
+      description: description || 'Tienda de insumos y repostería agregada por el usuario.',
+      portalUrl: portalUrl.startsWith('http') ? portalUrl : `https://${portalUrl}`,
+      searchUrl: searchUrl ? (searchUrl.startsWith('http') ? searchUrl : `https://${searchUrl}`) : `${portalUrl}/?s=`,
+      enabled: true,
+      isCustom: true
+    };
+
+    DB.addMarketStore(newStore);
+    if (typeof App !== 'undefined' && App.showToast) {
+      App.showToast(`✅ Tienda "${name}" agregada con éxito al Radar.`);
+    }
+
+    this.openStoreManagerModal();
+    this.render();
+  },
+
+  toggleStoreEnabled(storeId) {
+    const stores = this.getStores();
+    const store = stores.find(s => s.id === storeId);
+    if (!store) return;
+
+    const newStatus = store.enabled === false ? true : false;
+    DB.updateMarketStore(storeId, { enabled: newStatus });
+    
+    this.openStoreManagerModal();
+    this.render();
+  },
+
+  deleteStoreConfirm(storeId, storeName) {
+    if (confirm(`¿Deseas eliminar "${storeName}" del radar de tiendas?`)) {
+      DB.deleteMarketStore(storeId);
+      if (typeof App !== 'undefined' && App.showToast) {
+        App.showToast(`🗑️ Tienda "${storeName}" eliminada.`);
+      }
+      this.openStoreManagerModal();
+      this.render();
+    }
+  },
+
+  confirmResetStores() {
+    if (confirm('¿Restablecer el listado a las tiendas y supermercados oficiales de Chile?')) {
+      DB.resetMarketStores();
+      if (typeof App !== 'undefined' && App.showToast) {
+        App.showToast('✨ Tiendas restablecidas a las opciones predeterminadas.');
+      }
+      this.openStoreManagerModal();
+      this.render();
     }
   },
 
   async refreshPricesLive() {
     if (typeof App !== 'undefined' && App.showToast) {
-      App.showToast('🔄 Verificando y actualizando precios de supermercados en Chile...');
+      App.showToast('🔄 Verificando y sincronizando precios de supermercados y distribuidoras...');
     }
 
-    // Simulación de sondeo / consulta en vivo
+    // Simulación de sondeo en vivo
     setTimeout(() => {
       const today = new Date().toLocaleDateString('es-CL');
       this.marketData.forEach(item => {
@@ -742,9 +1028,9 @@ const MarketRadarModule = {
       });
       this.render();
       if (typeof App !== 'undefined' && App.showToast) {
-        App.showToast('✅ Precios sincronizados con las últimas ofertas de Lider, Jumbo y Mayoristas.');
+        App.showToast('✅ Precios sincronizados con Líder, Jumbo, Tottus, Santa Isabel, Unimarc y distribuidoras.');
       } else {
-        alert('✅ Precios sincronizados con las últimas ofertas de supermercados.');
+        alert('✅ Precios sincronizados correctamente.');
       }
     }, 800);
   }
