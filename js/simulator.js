@@ -1,11 +1,11 @@
 // ==========================================
-// Cakekulator - Módulo Simulador de Precios y Márgenes con Escalador de Tortas
+// Cakekulator - Módulo Simulador de Precios y Márgenes con Modos Adaptativos
 // ==========================================
 
 const SimulatorModule = {
   selectedRecipeId: null,
-  simMode: 'unit', // 'unit' | 'portion' | 'batch'
-  simTargetPortions: null, // Porciones meta para escalar tortas o lotes
+  simMode: 'batch', // 'unit' | 'portion' | 'batch'
+  simTargetPortions: null, // Porciones meta para escalar tortas, tartaletas o lotes
   customCost: 5000,
   currentPrice: 8500,
   targetMargin: 40,
@@ -16,9 +16,24 @@ const SimulatorModule = {
     this.render();
   },
 
+  isCakeOrPie(recipe) {
+    if (!recipe) return false;
+    if (recipe.type === 'cake') return true;
+    const cat = (recipe.category || '').toLowerCase();
+    const name = (recipe.name || '').toLowerCase();
+    const keywords = ['torta', 'tartaleta', 'pie', 'kuchen', 'cheesecake', 'pastel', 'bizcocho', 'tarta'];
+    return keywords.some(k => cat.includes(k) || name.includes(k));
+  },
+
   loadRecipeForSimulation(recipeId, customTargetPortions = null) {
     this.selectedRecipeId = recipeId;
     this.simTargetPortions = customTargetPortions;
+    const rec = DB.getRecipeById(recipeId);
+    if (rec) {
+      const isCakeOrPie = this.isCakeOrPie(rec);
+      // Para tortas/tartaletas iniciar por defecto en Pastel Completo, para otros en Por Unidad
+      this.simMode = isCakeOrPie ? 'batch' : 'unit';
+    }
     this.currentPrice = 0; // Forzar cálculo de precio sugerido
     App.switchTab('dashboard');
     const el = document.getElementById('dashboard-simulator-container') || document.getElementById('simulator-view');
@@ -44,7 +59,7 @@ const SimulatorModule = {
     let currentYieldUnits = 1;
     let currentYieldPortions = 1;
     let basePortions = 1;
-    let isCake = false;
+    let isCakeOrPie = false;
     let recipeCostData = null;
     let isScaled = false;
     let activeRecipe = null;
@@ -52,9 +67,20 @@ const SimulatorModule = {
     if (this.selectedRecipeId) {
       activeRecipe = DB.getRecipeById(this.selectedRecipeId);
       if (activeRecipe) {
-        isCake = activeRecipe.type === 'cake';
+        isCakeOrPie = this.isCakeOrPie(activeRecipe);
         basePortions = Math.max(1, activeRecipe.yieldPortions || activeRecipe.yieldUnits || 1);
         
+        // Ajustar modo según el tipo de producto
+        if (isCakeOrPie) {
+          if (this.simMode !== 'portion' && this.simMode !== 'batch') {
+            this.simMode = 'batch'; // Pastel Completo por defecto
+          }
+        } else {
+          if (this.simMode !== 'unit' && this.simMode !== 'batch') {
+            this.simMode = 'unit'; // Por Unidad por defecto
+          }
+        }
+
         // Si no se ha definido target, usar el base de la receta
         if (!this.simTargetPortions) {
           this.simTargetPortions = basePortions;
@@ -68,14 +94,15 @@ const SimulatorModule = {
         });
 
         recipeCostData = scaleResult.costs;
-        recipeName = isScaled ? `${activeRecipe.name} (${this.simTargetPortions} Personas)` : activeRecipe.name;
+        const cleanRecipeName = activeRecipe.name.replace(/\s*\(\d+\s*porc[a-zA-Z.]*\)/gi, '').replace(/\s*\(\d+\s*personas\)/gi, '').replace(/\s*\(x\d+\)/gi, '').trim();
+        recipeName = isScaled ? `${cleanRecipeName} (${this.simTargetPortions} Personas)` : cleanRecipeName;
         currentYieldUnits = scaleResult.recipe.yieldUnits || 1;
         currentYieldPortions = scaleResult.recipe.yieldPortions || 1;
 
-        if (this.simMode === 'batch' || (isCake && this.simMode === 'unit')) {
-          currentCost = recipeCostData.totalBatchCost;
-        } else if (this.simMode === 'portion') {
+        if (this.simMode === 'portion') {
           currentCost = recipeCostData.costPerPortion;
+        } else if (this.simMode === 'batch') {
+          currentCost = recipeCostData.totalBatchCost;
         } else {
           currentCost = recipeCostData.costPerUnit;
         }
@@ -84,7 +111,7 @@ const SimulatorModule = {
       }
     }
 
-    // Inicializar precio de venta sugerido
+    // Inicializar precio de venta sugerido si no está seteado o es menor al costo
     if (!this.currentPrice || this.currentPrice < currentCost) {
       const marginFrac = this.targetMargin >= 100 ? 0.99 : this.targetMargin / 100;
       this.currentPrice = Calculator.roundUpTo(currentCost / (1 - marginFrac), 100);
@@ -107,10 +134,10 @@ const SimulatorModule = {
         <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
           <span>📊</span> Simulador de Precios y Rentabilidad
         </h2>
-        <p class="text-sm text-gray-500">Calcula precios para cualquier tamaño de torta o cantidad de personas conociendo tus costos y margen real.</p>
+        <p class="text-sm text-gray-500">Ajusta el precio de venta en tiempo real para conocer tus ganancias netas y márgenes.</p>
       </div>
 
-      <!-- Selector de Receta y Modo -->
+      <!-- Selector de Receta y Modo Adaptativo -->
       <div class="bg-white rounded-3xl p-5 border border-pink-100 shadow-sm space-y-4 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
           <div>
@@ -120,44 +147,60 @@ const SimulatorModule = {
               onchange="SimulatorModule.onRecipeSelect(this.value)"
               class="w-full px-4 py-3 rounded-2xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white font-semibold text-gray-800 shadow-xs">
               <option value="">✨ Cálculo Libre (Ingresar costo manual)</option>
-              ${allRecipes.map(r => `
-                <option value="${r.id}" ${r.id === this.selectedRecipeId ? 'selected' : ''}>
-                  ${r.name} (${r.type === 'cake' ? 'Torta ' + r.yieldPortions + ' porc.' : 'Lote ' + r.yieldUnits + ' un.'})
-                </option>
-              `).join('')}
+              ${allRecipes.map(r => {
+                const isCakeType = this.isCakeOrPie(r);
+                const cleanName = r.name.replace(/\s*\(\d+\s*porc[a-zA-Z.]*\)/gi, '').replace(/\s*\(\d+\s*personas\)/gi, '').replace(/\s*\(x\d+\)/gi, '').trim();
+                const infoBadge = isCakeType ? `${r.yieldPortions || 16} porc.` : `${r.yieldUnits || 1} un.`;
+                const icon = isCakeType ? '🎂' : '🍪';
+                return `
+                  <option value="${r.id}" ${r.id === this.selectedRecipeId ? 'selected' : ''}>
+                    ${icon} ${cleanName} (${infoBadge})
+                  </option>
+                `;
+              }).join('')}
             </select>
           </div>
 
-          <!-- Selector de Modo (Unidad / Porción / Lote) -->
+          <!-- Selector de Modo Adaptativo (2 Opciones según tipo de producto) -->
           <div>
             <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">2. Simular Por</label>
-            <div class="grid grid-cols-3 gap-2 bg-gray-100 p-1 rounded-2xl">
-              <button 
-                onclick="SimulatorModule.setSimMode('unit')" 
-                class="py-2 rounded-xl text-xs font-bold transition ${this.simMode === 'unit' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
-                ${isCake ? 'Torta Completa' : 'Por Unidad'}
-              </button>
-              <button 
-                onclick="SimulatorModule.setSimMode('portion')" 
-                class="py-2 rounded-xl text-xs font-bold transition ${this.simMode === 'portion' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
-                Por Porción
-              </button>
-              <button 
-                onclick="SimulatorModule.setSimMode('batch')" 
-                class="py-2 rounded-xl text-xs font-bold transition ${this.simMode === 'batch' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
-                Lote Completo
-              </button>
+            <div class="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-2xl">
+              ${isCakeOrPie ? `
+                <!-- Para Tortas, Tartaletas y Pies -->
+                <button 
+                  onclick="SimulatorModule.setSimMode('portion')" 
+                  class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'portion' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
+                  <span>🍰</span> Por Porción
+                </button>
+                <button 
+                  onclick="SimulatorModule.setSimMode('batch')" 
+                  class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'batch' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
+                  <span>🎂</span> Pastel Completo
+                </button>
+              ` : `
+                <!-- Para Galletas, Alfajores, Cupcakes, etc. -->
+                <button 
+                  onclick="SimulatorModule.setSimMode('unit')" 
+                  class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'unit' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
+                  <span>🧁</span> Por Unidad
+                </button>
+                <button 
+                  onclick="SimulatorModule.setSimMode('batch')" 
+                  class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'batch' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
+                  <span>📦</span> Por Lote
+                </button>
+              `}
             </div>
           </div>
         </div>
 
-        <!-- Barra de Escalado Inteligente por Personas (Si hay receta seleccionada) -->
-        ${activeRecipe ? `
-          <div class="bg-gradient-to-r from-pink-50/70 to-rose-50/70 p-4 rounded-2xl border border-pink-200/80 space-y-3">
+        <!-- Barra de Escalado Inteligente por Personas (Si es Torta, Tartaleta o Pie) -->
+        ${activeRecipe && isCakeOrPie ? `
+          <div class="bg-gradient-to-r from-pink-50/80 to-rose-50/80 p-4 rounded-2xl border border-pink-200/80 space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <span class="text-xs font-bold text-pink-900 flex items-center gap-1.5">
-                  <span>📏</span> Ajustar Tamaño / Personas de la Torta
+                  <span>📏</span> Ajustar Tamaño / Personas del Pastel
                 </span>
                 <span class="text-[11px] text-pink-700">Receta base formulada para: <strong>${basePortions} personas</strong></span>
               </div>
@@ -172,19 +215,19 @@ const SimulatorModule = {
                   oninput="SimulatorModule.onTargetPortionsChange(this.value)"
                   class="w-20 px-2.5 py-1 text-center rounded-xl border border-pink-300 font-black text-pink-700 text-sm bg-white shadow-2xs focus:ring-2 focus:ring-pink-400"
                 />
-                <span class="text-xs font-bold text-pink-800">${isCake ? 'personas' : 'unidades'}</span>
+                <span class="text-xs font-bold text-pink-800">personas</span>
               </div>
             </div>
 
             <!-- Botones de Tallas Rápidas -->
             <div class="flex flex-wrap items-center gap-1.5">
-              <span class="text-[11px] text-gray-500 font-medium mr-1">Tallas rápidas:</span>
-              ${(isCake ? [10, 12, 15, 16, 20, 25, 30, 35, 40, 50] : [6, 12, 24, 36, 48, 60, 100]).map(p => `
+              <span class="text-[11px] text-gray-500 font-medium mr-1">Tallas comunes:</span>
+              ${[10, 12, 15, 16, 20, 25, 30, 35, 40, 50].map(p => `
                 <button 
                   onclick="SimulatorModule.onTargetPortionsChange(${p})"
                   class="px-2.5 py-1 rounded-xl text-xs font-bold transition ${ (this.simTargetPortions || basePortions) === p ? 'bg-pink-600 text-white shadow-xs scale-105' : 'bg-white text-gray-700 hover:bg-pink-100 border border-pink-200'}"
                 >
-                  ${p} ${isCake ? 'pers.' : 'un.'}
+                  ${p} personas
                 </button>
               `).join('')}
 
@@ -192,7 +235,7 @@ const SimulatorModule = {
                 <button 
                   onclick="SimulatorModule.saveScaledAsNewRecipe()" 
                   class="ml-auto px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 active:scale-95 cursor-pointer"
-                  title="Guardar esta torta de ${this.simTargetPortions} personas como nueva receta en tu catálogo"
+                  title="Guardar este pastel de ${this.simTargetPortions} personas como nueva ficha técnica"
                 >
                   <span>💾</span> Guardar Ficha (${this.simTargetPortions}p)
                 </button>
@@ -208,7 +251,7 @@ const SimulatorModule = {
               💰
             </div>
             <div>
-              <span class="text-xs text-gray-500 block">Costo de Fabricación (${isCake ? `Torta ${this.simTargetPortions || basePortions} personas` : this.getModeLabel(isCake)}):</span>
+              <span class="text-xs text-gray-500 block">Costo de Fabricación (${this.getModeLabel(isCakeOrPie)}):</span>
               <span class="text-xs font-semibold text-gray-700">${recipeName}</span>
             </div>
           </div>
@@ -242,7 +285,7 @@ const SimulatorModule = {
             <div class="text-xl sm:text-2xl font-black ${simResult.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}">
               ${Calculator.formatCurrency(simResult.netProfit)}
             </div>
-            <span class="text-[11px] text-gray-400 font-medium">Por ${isCake ? `Torta (${this.simTargetPortions || basePortions}p)` : this.getModeLabel(isCake)}</span>
+            <span class="text-[11px] text-gray-400 font-medium">Por ${this.getModeLabel(isCakeOrPie)}</span>
           </div>
         </div>
 
@@ -301,7 +344,7 @@ const SimulatorModule = {
           <div>
             <div class="flex justify-between items-center mb-2">
               <label class="text-sm font-bold text-gray-900">
-                Precio de Venta al Público (${isCake ? `Torta ${this.simTargetPortions || basePortions}p` : this.getModeLabel(isCake)})
+                Precio de Venta al Público (${this.getModeLabel(isCakeOrPie)})
               </label>
               <div class="relative">
                 <span class="absolute left-3 top-2 text-gray-400 font-bold">$</span>
@@ -456,7 +499,7 @@ const SimulatorModule = {
       <!-- Proyección de Ventas y Ganancias por Volumen -->
       <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm">
         <h3 class="font-bold text-gray-800 text-base mb-2 flex items-center gap-2">
-          <span>🚀</span> Proyección de Ganancias por Volumen de Venta (${isCake ? `Tortas de ${this.simTargetPortions || basePortions}p` : this.getModeLabel(isCake)}s)
+          <span>🚀</span> Proyección de Ganancias por Volumen de Venta (${this.getModeLabel(isCakeOrPie)}s)
         </h3>
         <p class="text-xs text-gray-500 mb-4">Descubre cuánto dinero ganas según la cantidad de unidades vendidas al mes con este precio.</p>
 
@@ -477,9 +520,12 @@ const SimulatorModule = {
                 const totalCostBatch = currentCost * qty;
                 const totalComm = this.includeCardFee ? (totalSales * feePct / 100) : 0;
                 const totalProfit = totalSales - totalCostBatch - totalComm;
+                const modePlural = isCakeOrPie 
+                  ? (this.simMode === 'portion' ? 'porciones' : 'pasteles') 
+                  : (this.simMode === 'batch' ? 'lotes' : 'unidades');
                 return `
                   <tr class="hover:bg-pink-50/30 transition">
-                    <td class="p-3 font-bold text-gray-900">${qty} ${isCake ? 'tortas' : this.getModeLabel(isCake) + 's'}</td>
+                    <td class="p-3 font-bold text-gray-900">${qty} ${modePlural}</td>
                     <td class="p-3">${Calculator.formatCurrency(totalSales)}</td>
                     <td class="p-3 text-gray-500">${Calculator.formatCurrency(totalCostBatch)}</td>
                     <td class="p-3 text-amber-600">${totalComm > 0 ? '-' + Calculator.formatCurrency(totalComm) : '$ 0'}</td>
@@ -517,10 +563,11 @@ const SimulatorModule = {
     `;
   },
 
-  getModeLabel(isCake) {
-    if (this.simMode === 'batch') return 'Lote';
-    if (this.simMode === 'portion') return 'Porción';
-    return isCake ? 'Torta' : 'Unidad';
+  getModeLabel(isCakeOrPie) {
+    if (isCakeOrPie) {
+      return this.simMode === 'portion' ? 'Porción' : 'Pastel Completo';
+    }
+    return this.simMode === 'batch' ? 'Lote' : 'Unidad';
   },
 
   getMarginHealth(margin) {
@@ -550,6 +597,12 @@ const SimulatorModule = {
   onRecipeSelect(recipeId) {
     this.selectedRecipeId = recipeId || null;
     this.simTargetPortions = null;
+    if (recipeId) {
+      const rec = DB.getRecipeById(recipeId);
+      if (rec) {
+        this.simMode = this.isCakeOrPie(rec) ? 'batch' : 'unit';
+      }
+    }
     this.currentPrice = 0;
     this.render();
   },
