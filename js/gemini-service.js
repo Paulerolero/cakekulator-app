@@ -3,7 +3,15 @@
 // ==========================================
 
 const GeminiService = {
+  // Pega tu API Key de Google Gemini aquí directamente o ingrésala en la app:
+  DEFAULT_API_KEY: '',
+
   getApiKey() {
+    // 1. Clave predeterminada en el código
+    if (this.DEFAULT_API_KEY && this.DEFAULT_API_KEY.trim() !== '') {
+      return this.DEFAULT_API_KEY.trim();
+    }
+    // 2. Clave guardada en configuración o localStorage
     const settings = DB.getSettings();
     return settings.geminiApiKey || localStorage.getItem('cakekulator_gemini_api_key') || '';
   },
