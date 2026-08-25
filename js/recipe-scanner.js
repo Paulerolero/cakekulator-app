@@ -134,49 +134,100 @@ Ingredientes:
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
-    this.renderProcessingStep('Leyendo imagen con Inteligencia Óptica (OCR)...');
+    if (typeof GeminiService !== 'undefined' && !GeminiService.hasApiKey()) {
+      GeminiService.promptApiKeyModal(() => {
+        this.renderProcessingStep('Analizando receta con Google Gemini IA...');
+        this.processRecipeWithGemini(file);
+      });
+      return;
+    }
 
+    this.renderProcessingStep('Analizando receta con Google Gemini IA...');
+    await this.processRecipeWithGemini(file);
+  },
+
+  async processRecipeWithGemini(fileOrDataUrl) {
     try {
-      if (typeof Tesseract === 'undefined') {
-        throw new Error('Módulo OCR no cargado');
-      }
-
-      const result = await Tesseract.recognize(
-        file,
-        'spa',
-        {
-          logger: m => {
-            if (m.status === 'recognizing text') {
-              const pct = Math.round(m.progress * 100);
-              this.updateProcessingProgress(pct, `Analizando texto de la receta (${pct}%)...`);
-            }
-          }
-        }
-      );
-
-      const text = result && result.data && result.data.text;
-      if (!text || text.trim().length < 10) {
-        alert('No se pudo detectar texto legible en la imagen. Por favor intenta con una foto más clara o pega el texto directamente.');
-        this.renderCaptureStep();
+      this.updateProcessingProgress(50, 'Gemini IA identificando ingredientes y porciones...');
+      const geminiResult = await GeminiService.analyzeRecipe(fileOrDataUrl);
+      this.updateProcessingProgress(90, 'Estructurando ingredientes y costos...');
+      this.processGeminiRecipeResult(geminiResult);
+    } catch (e) {
+      console.error('Error al analizar receta con Gemini:', e);
+      if (e.message === 'MISSING_API_KEY' || e.message.includes('API key')) {
+        GeminiService.promptApiKeyModal(() => {
+          this.processRecipeWithGemini(fileOrDataUrl);
+        });
         return;
       }
-
-      this.parseRecipeText(text);
-    } catch (e) {
-      console.error('Error en OCR:', e);
-      alert('Hubo un inconveniente al procesar la imagen. Puedes pegar el texto de la receta manualmente.');
+      alert(`Hubo un inconveniente con Gemini IA: ${e.message || e}\nPuedes pegar el texto de la receta manualmente.`);
       this.renderCaptureStep();
     }
   },
 
-  handleTextParse() {
+  async handleTextParse() {
     const textarea = document.getElementById('recipe-raw-text');
     const text = textarea ? textarea.value.trim() : '';
     if (!text) {
       alert('Por favor ingresa o pega el texto de la receta.');
       return;
     }
-    this.parseRecipeText(text);
+
+    if (typeof GeminiService !== 'undefined' && !GeminiService.hasApiKey()) {
+      // Si no tiene API key, usar el parser local de regex existente como alternativa
+      this.parseRecipeText(text);
+      return;
+    }
+
+    this.renderProcessingStep('Procesando receta con Gemini IA...');
+
+    try {
+      const geminiResult = await GeminiService.analyzeRecipe(text);
+      this.processGeminiRecipeResult(geminiResult);
+    } catch (e) {
+      console.warn('Fallback a parser local:', e);
+      this.parseRecipeText(text);
+    }
+  },
+
+  processGeminiRecipeResult(data) {
+    if (!data || !data.ingredients) {
+      alert('No se pudieron extraer los ingredientes de la receta.');
+      this.renderCaptureStep();
+      return;
+    }
+
+    const allPantryIngredients = DB.getIngredients();
+    const detectedIngredients = (data.ingredients || []).map(ing => {
+      const bestMatch = this.findBestPantryMatch(ing.name, allPantryIngredients);
+      const normUnit = this.normalizeUnit(ing.unit || 'g');
+      return {
+        id: 'rec_ing_' + Math.random().toString(36).substr(2, 6),
+        name: ing.name,
+        quantity: parseFloat(ing.quantity) || 1,
+        unit: normUnit,
+        matchedIngredientId: bestMatch ? bestMatch.id : null,
+        pantryName: bestMatch ? bestMatch.name : null,
+        pantryUnit: bestMatch ? bestMatch.packageUnit : null,
+        isCustom: !bestMatch
+      };
+    });
+
+    const isUnits = data.type === 'units' || ['Alfajores', 'Galletas', 'Cupcakes', 'Profiteroles'].includes(data.category);
+
+    this.scannedRecipe = {
+      name: data.name || 'Receta Escaneada con Gemini',
+      category: data.category || 'Tortas',
+      type: isUnits ? 'units' : 'cake',
+      yieldPortions: parseInt(data.servings) || (isUnits ? 24 : 16),
+      yieldUnits: isUnits ? (parseInt(data.servings) || 24) : 1,
+      prepTimeMinutes: parseInt(data.prepTimeMin) || 45,
+      bakeTimeMinutes: parseInt(data.bakeTimeMin) || 30,
+      notes: data.notes || '',
+      ingredients: detectedIngredients
+    };
+
+    this.renderVerificationStep();
   },
 
   renderProcessingStep(statusText) {

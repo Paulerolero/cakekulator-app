@@ -5,7 +5,6 @@
 const ReceiptScannerModule = {
   scannedItems: [],
   isProcessing: false,
-  tesseractLoaded: false,
 
   openModal() {
     let modal = document.getElementById('receipt-scanner-modal');
@@ -134,92 +133,114 @@ TOTAL PAGADO:             $ 25.200`;
     const file = event.target.files?.[0];
     if (!file) return;
 
-    this.renderLoading('Procesando imagen de la boleta...');
+    this.renderLoading('Analizando boleta con Google Gemini IA...');
 
     const reader = new FileReader();
     reader.onload = async (e) => {
       const imageDataUrl = e.target.result;
-      await this.processImageWithOCR(imageDataUrl);
+      await this.processImageWithGemini(imageDataUrl);
     };
     reader.readAsDataURL(file);
   },
 
-  renderLoading(message = 'Extrayendo insumos con OCR...') {
+  renderLoading(message = 'Extrayendo insumos con Google Gemini IA...') {
     const modal = document.getElementById('receipt-scanner-modal');
     if (!modal) return;
 
     modal.innerHTML = `
       <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-pink-100 text-center space-y-4 animate-in fade-in">
-        <div class="w-16 h-16 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center mx-auto text-3xl animate-bounce">
-          🧾
+        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 text-pink-600 flex items-center justify-center mx-auto text-3xl animate-bounce">
+          ✨
         </div>
         <div>
           <h3 class="font-bold text-gray-900 text-base">Escaneando Boleta</h3>
-          <p id="ocr-status-text" class="text-xs text-gray-500 mt-1">${message}</p>
+          <p id="ocr-status-text" class="text-xs text-purple-600 font-semibold mt-1">${message}</p>
         </div>
-        <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-          <div id="ocr-progress-bar" class="bg-gradient-to-r from-pink-500 to-rose-500 h-full w-1/3 transition-all duration-300 rounded-full"></div>
+        <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden shadow-inner">
+          <div id="ocr-progress-bar" class="bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 h-full w-3/4 animate-pulse rounded-full"></div>
         </div>
-        <span class="text-[10px] text-gray-400 block">Identificando productos, unidades y precios...</span>
+        <span class="text-[10px] text-gray-400 block">Google Gemini IA identificando productos, cantidades y precios...</span>
       </div>
     `;
   },
 
-  async processImageWithOCR(imageDataUrl) {
-    try {
-      // Cargar Tesseract si no está listo
-      if (typeof Tesseract === 'undefined') {
-        const statusEl = document.getElementById('ocr-status-text');
-        if (statusEl) statusEl.textContent = 'Cargando motor de reconocimiento OCR...';
-        await this.loadTesseractScript();
-      }
-
-      const progressBar = document.getElementById('ocr-progress-bar');
-      const statusEl = document.getElementById('ocr-status-text');
-
-      const worker = await Tesseract.createWorker('spa+eng', 1, {
-        logger: m => {
-          if (m.status === 'recognizing text' && m.progress) {
-            const pct = Math.round(m.progress * 100);
-            if (progressBar) progressBar.style.width = `${pct}%`;
-            if (statusEl) statusEl.textContent = `Leyendo texto de la boleta: ${pct}%`;
-          }
-        }
+  async processImageWithGemini(imageDataUrl) {
+    if (typeof GeminiService !== 'undefined' && !GeminiService.hasApiKey()) {
+      GeminiService.promptApiKeyModal(() => {
+        this.renderLoading('Analizando boleta con Google Gemini IA...');
+        this.processImageWithGemini(imageDataUrl);
       });
+      return;
+    }
 
-      const ret = await worker.recognize(imageDataUrl);
-      await worker.terminate();
-
-      const extractedText = ret.data.text;
-      console.log('Texto extraído por OCR:', extractedText);
-      this.parseReceiptText(extractedText);
+    try {
+      const rawItems = await GeminiService.analyzeReceipt(imageDataUrl);
+      this.processGeminiItems(rawItems);
     } catch (error) {
-      console.error('Error durante OCR:', error);
-      alert('No se pudo procesar la imagen automáticamente. Puedes pegar el texto manualmente.');
+      console.error('Error durante análisis con Gemini:', error);
+      if (error.message === 'MISSING_API_KEY' || error.message.includes('API key')) {
+        GeminiService.promptApiKeyModal(() => {
+          this.renderLoading('Analizando boleta con Google Gemini IA...');
+          this.processImageWithGemini(imageDataUrl);
+        });
+        return;
+      }
+      alert(`Hubo un problema al analizar la imagen con Gemini: ${error.message || error}\nPuedes pegar el texto manualmente.`);
       this.renderCaptureStep();
     }
   },
 
-  loadTesseractScript() {
-    return new Promise((resolve, reject) => {
-      if (typeof Tesseract !== 'undefined') {
-        return resolve();
-      }
-      const script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
-      script.onload = () => resolve();
-      script.onerror = (err) => reject(err);
-      document.head.appendChild(script);
-    });
-  },
-
-  handleTextParse() {
+  async handleTextParse() {
     const rawText = document.getElementById('receipt-raw-text')?.value || '';
     if (!rawText.trim()) {
       alert('Por favor ingresa o pega el texto de la boleta.');
       return;
     }
-    this.parseReceiptText(rawText);
+
+    if (typeof GeminiService !== 'undefined' && !GeminiService.hasApiKey()) {
+      GeminiService.promptApiKeyModal(() => {
+        this.handleTextParse();
+      });
+      return;
+    }
+
+    this.renderLoading('Analizando texto de boleta con Gemini IA...');
+
+    try {
+      const rawItems = await GeminiService.analyzeReceipt(rawText);
+      this.processGeminiItems(rawItems);
+    } catch (error) {
+      console.error('Error al procesar texto con Gemini:', error);
+      alert(`Error: ${error.message || error}`);
+      this.renderCaptureStep();
+    }
+  },
+
+  processGeminiItems(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+      alert('No se detectaron productos válidos. Intenta con una imagen más clara.');
+      this.renderCaptureStep();
+      return;
+    }
+
+    const existingIngredients = DB.getIngredients();
+    this.scannedItems = items.map(item => {
+      const matchedIng = this.findBestIngredientMatch(item.name, existingIngredients);
+      return {
+        id: 'scanned_' + Math.random().toString(36).substr(2, 6),
+        name: matchedIng ? matchedIng.name : this.capitalize(item.name || 'Insumo'),
+        rawName: item.name,
+        packageQty: parseFloat(item.packageQty) || (matchedIng ? matchedIng.packageQty : 1),
+        packageUnit: item.packageUnit || (matchedIng ? matchedIng.packageUnit : 'u'),
+        packagePrice: parseFloat(item.packagePrice) || 0,
+        matchedIngredientId: matchedIng ? matchedIng.id : null,
+        oldPrice: matchedIng ? matchedIng.packagePrice : null,
+        category: matchedIng ? matchedIng.category : (item.category || this.guessCategory(item.name)),
+        selected: true
+      };
+    });
+
+    this.renderReviewStep();
   },
 
   // Motor Inteligente de Extracción y Emparejamiento

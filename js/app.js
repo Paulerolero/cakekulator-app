@@ -327,9 +327,25 @@ const App = {
               </div>
             </div>
 
+          <!-- Inteligencia Artificial Google Gemini -->
+          <div class="space-y-3 pt-3">
+            <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 flex items-center justify-between">
+              <span class="flex items-center gap-2"><span>✨</span> Google Gemini IA (Escaneo de Boletas y Recetas)</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${settings.geminiApiKey ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'}">
+                ${settings.geminiApiKey ? 'IA Activa' : 'Sin Clave'}
+              </span>
+            </h3>
+
+            <p class="text-xs text-gray-500">Gemini analiza fotos de boletas y recetas reconociendo ingredientes, precios y unidades automáticamente.</p>
+
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Nota o Términos por defecto en presupuestos</label>
-              <textarea id="set-quote-note" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">${settings.quoteNote || ''}</textarea>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-semibold text-gray-700">API Key de Gemini</label>
+                <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-[11px] text-purple-600 font-bold hover:underline">
+                  Obtener clave gratis en Google AI Studio ↗
+                </a>
+              </div>
+              <input type="password" id="set-gemini-api-key" value="${settings.geminiApiKey || ''}" placeholder="AIzaSy..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-400 bg-white font-mono text-xs">
             </div>
           </div>
 
@@ -444,7 +460,8 @@ const App = {
       businessPhone: document.getElementById('set-business-phone').value.trim(),
       businessInstagram: document.getElementById('set-business-ig').value.trim(),
       businessEmail: document.getElementById('set-business-email').value.trim(),
-      quoteNote: document.getElementById('set-quote-note').value.trim()
+      quoteNote: document.getElementById('set-quote-note').value.trim(),
+      geminiApiKey: (document.getElementById('set-gemini-api-key')?.value || '').trim()
     };
 
     DB.saveSettings(newSettings);

@@ -44,15 +44,36 @@ const ReceiptsModule = {
     const file = event.target.files[0];
     if (!file) return;
     this.imageUrl = URL.createObjectURL(file);
-    this.progress = 'Preparando OCR...';
+    this.progress = 'Analizando documento con Google Gemini IA...';
     this.render();
-    if (!window.Tesseract) { this.progress = 'OCR no disponible sin conexión. Puedes pegar el texto manualmente.'; this.render(); return; }
+
+    if (typeof GeminiService !== 'undefined' && !GeminiService.hasApiKey()) {
+      GeminiService.promptApiKeyModal(() => {
+        this.processFile(event);
+      });
+      return;
+    }
+
     try {
-      const result = await Tesseract.recognize(file, 'spa', { logger: data => { if (data.status === 'recognizing text') this.progress = `Analizando documento: ${Math.round(data.progress * 100)}%`; else this.progress = data.status; const progress = document.getElementById('receipt-progress'); if (progress) progress.textContent = this.progress; } });
-      this.ocrText = result.data.text;
-      this.progress = 'Texto detectado. Revisa las líneas antes de aplicar.';
-      this.parseText();
-    } catch (error) { console.error('Error en OCR:', error); this.progress = 'No se pudo leer la imagen. Pega el texto manualmente y vuelve a intentarlo.'; this.render(); }
+      const items = await GeminiService.analyzeReceipt(file);
+      const existing = DB.getIngredients();
+      this.items = items.map(item => {
+        const match = existing.find(ing => this.normalize(ing.name).includes(this.normalize(item.name)) || this.normalize(item.name).includes(this.normalize(ing.name)));
+        return {
+          name: item.name,
+          packageQty: item.packageQty || 1,
+          packageUnit: item.packageUnit || 'u',
+          packagePrice: item.packagePrice || 0,
+          matchedId: match?.id || ''
+        };
+      });
+      this.progress = `✨ ¡Listo! Se identificaron ${this.items.length} productos con Gemini IA.`;
+      this.render();
+    } catch (error) {
+      console.error('Error en Gemini Vision:', error);
+      this.progress = 'No se pudo leer la imagen con Gemini. Pega el texto manualmente y vuelve a intentarlo.';
+      this.render();
+    }
   },
 
   updateRawText(text) { this.ocrText = text; },
