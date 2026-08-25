@@ -16,6 +16,9 @@ const App = {
     // Eventos de instalación PWA
     this.initPWAInstall();
 
+    // Inicializar navegación táctil por gestos (Swipe)
+    this.initGestures();
+
     // Inicializar autenticación y sesión con Google / Firebase
     if (typeof AuthModule !== 'undefined') {
       AuthModule.init();
@@ -30,10 +33,111 @@ const App = {
     // Renderizar pestaña inicial
     this.switchTab('dashboard');
 
-    console.log('Cakekulator cargado correctamente.');
+    console.log('Cakekulator cargado correctamente con control de gestos.');
   },
 
-  switchTab(tabName, scrollToTop = true) {
+  initGestures() {
+    let startX = 0;
+    let startY = 0;
+    let startTime = 0;
+    let isTracking = false;
+
+    const tabsOrder = ['dashboard', 'quotes', 'recipes', 'ingredients', 'market-radar'];
+
+    const isInteractiveElement = (target) => {
+      if (!target || !(target instanceof Element)) return false;
+      
+      // Sliders y controles interactivos
+      if (target.closest('input[type="range"], .accent-pink-500')) return true;
+      if (target.closest('input, textarea, select, option, [contenteditable="true"]')) return true;
+      
+      // Modales activos abiertos
+      const openModal = document.querySelector('#recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #ingredient-modal:not(.hidden), #quote-whatsapp-modal:not(.hidden), #quote-print-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #custom-search-modal:not(.hidden), #store-manager-modal:not(.hidden), #firebase-config-modal:not(.hidden)');
+      if (openModal) return true;
+
+      // Zonas de scroll horizontal interno (como categorías o tablas)
+      const scrollable = target.closest('.overflow-x-auto, [style*="overflow-x"], .no-scrollbar');
+      if (scrollable && scrollable.scrollWidth > scrollable.clientWidth + 10) {
+        return true;
+      }
+
+      return false;
+    };
+
+    const handleStart = (clientX, clientY, target) => {
+      if (isInteractiveElement(target)) {
+        isTracking = false;
+        return;
+      }
+      startX = clientX;
+      startY = clientY;
+      startTime = Date.now();
+      isTracking = true;
+    };
+
+    const handleEnd = (clientX, clientY) => {
+      if (!isTracking) return;
+      isTracking = false;
+
+      const deltaX = clientX - startX;
+      const deltaY = clientY - startY;
+      const deltaTime = Date.now() - startTime;
+
+      const minDistance = 45; // px mínimos para detectar swipe
+      const maxTime = 600; // ms máximos
+      const isHorizontalDominant = Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
+
+      if (deltaTime <= maxTime && Math.abs(deltaX) >= minDistance && isHorizontalDominant) {
+        const currentIndex = tabsOrder.indexOf(App.currentTab);
+        if (currentIndex === -1) return;
+
+        if (deltaX < -minDistance) {
+          // Deslizar izquierda -> Siguiente pestaña
+          if (currentIndex < tabsOrder.length - 1) {
+            const nextTab = tabsOrder[currentIndex + 1];
+            App.switchTab(nextTab, true, 'slide-left');
+          }
+        } else if (deltaX > minDistance) {
+          // Deslizar derecha -> Pestaña anterior
+          if (currentIndex > 0) {
+            const prevTab = tabsOrder[currentIndex - 1];
+            App.switchTab(prevTab, true, 'slide-right');
+          }
+        }
+      }
+    };
+
+    // Soporte nativo para pantallas táctiles de celular (iOS / Android / PWA)
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) {
+        isTracking = false;
+        return;
+      }
+      handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      if (e.changedTouches.length !== 1) {
+        isTracking = false;
+        return;
+      }
+      handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+    }, { passive: true });
+
+    // Soporte universal para pointer events (ratón, emuladores y trackpads)
+    window.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') return; // Ya manejado por touchstart
+      if (e.button !== 0) return;
+      handleStart(e.clientX, e.clientY, e.target);
+    }, { passive: true });
+
+    window.addEventListener('pointerup', (e) => {
+      if (e.pointerType === 'touch') return;
+      handleEnd(e.clientX, e.clientY);
+    }, { passive: true });
+  },
+
+  switchTab(tabName, scrollToTop = true, direction = 'none') {
     // Si se pide simulador, abrir inicio y scrollear al simulador
     if (tabName === 'simulator') {
       tabName = 'dashboard';
@@ -51,9 +155,18 @@ const App = {
       if (el) el.classList.add('hidden');
     });
 
-    // Mostrar la vista activa
+    // Mostrar la vista activa con animación fluida
     const activeView = document.getElementById(`${tabName}-view`);
-    if (activeView) activeView.classList.remove('hidden');
+    if (activeView) {
+      activeView.classList.remove('hidden', 'view-slide-left', 'view-slide-right', 'view-transition');
+      if (direction === 'slide-left') {
+        activeView.classList.add('view-slide-left');
+      } else if (direction === 'slide-right') {
+        activeView.classList.add('view-slide-right');
+      } else {
+        activeView.classList.add('view-transition');
+      }
+    }
 
     // Actualizar estilos de los botones de navegación (desktop y móvil)
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -123,93 +236,93 @@ const App = {
 
     container.innerHTML = `
       <!-- Hero Banner Pastelero Personalizado -->
-      <div class="relative overflow-hidden bg-pink-600 dark:bg-pink-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg mb-6">
-        <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 max-w-2xl">
+      <div class="relative overflow-hidden bg-pink-600 dark:bg-pink-700 rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-md mb-4 sm:mb-6">
+        <div class="relative z-10 flex items-center gap-3 sm:gap-5 max-w-2xl">
           ${settings.logoUrl ? `
-            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/95 p-2 shadow-lg ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
+            <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-white/95 p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
               <img src="${settings.logoUrl}" alt="Logo ${settings.businessName || ''}" class="w-full h-full object-contain">
             </div>
           ` : ''}
-          <div class="flex-1">
-            <h1 class="text-2xl sm:text-3xl font-black leading-tight">
+          <div class="flex-1 min-w-0">
+            <h1 class="text-lg sm:text-2xl font-black leading-tight truncate">
               ${settings.businessName || 'Mi Pastelería Artesanal'}
             </h1>
-            <p class="text-pink-100 text-xs sm:text-sm mt-1.5 leading-relaxed">
-              Costea con precisión tus alfajores, tortas, galletas y cupcakes. Nunca más cobres a ciegas ni regales tu tiempo.
+            <p class="text-pink-100 text-[11px] sm:text-xs mt-1 leading-snug line-clamp-2 sm:line-clamp-none">
+              Costea con precisión tus tortas, alfajores, galletas y cupcakes. Nunca más cobres a ciegas.
             </p>
           </div>
         </div>
 
         <!-- Decoración flotante -->
-        <div class="absolute -right-6 -bottom-8 opacity-20 sm:opacity-30 text-9xl pointer-events-none select-none">
+        <div class="absolute -right-4 -bottom-6 opacity-15 sm:opacity-25 text-7xl sm:text-8xl pointer-events-none select-none">
           🧁
         </div>
       </div>
 
       <!-- Métricas Clave (KPIs) con Acceso Directo -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Recetas & Costeo" class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm hover:shadow-md hover:border-pink-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-3.5 group select-none">
-          <div class="w-12 h-12 rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 group-hover:bg-pink-100 transition duration-200">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Recetas & Costeo" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-pink-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-pink-100 transition duration-200">
             🎂
           </div>
-          <div>
-            <span class="text-xs text-gray-500 font-medium block group-hover:text-pink-600 transition">Recetas Creadas</span>
-            <span class="text-xl font-black text-gray-900">${recipes.length}</span>
+          <div class="min-w-0">
+            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-pink-600 transition">Recetas</span>
+            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${recipes.length}</span>
           </div>
         </div>
 
-        <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos & Empaques" class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm hover:shadow-md hover:border-amber-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-3.5 group select-none">
-          <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 group-hover:bg-amber-100 transition duration-200">
+        <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos & Empaques" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-amber-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-amber-100 transition duration-200">
             📦
           </div>
-          <div>
-            <span class="text-xs text-gray-500 font-medium block group-hover:text-amber-600 transition">Insumos Guardados</span>
-            <span class="text-xl font-black text-gray-900">${ingredients.length}</span>
+          <div class="min-w-0">
+            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-amber-600 transition">Insumos</span>
+            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${ingredients.length}</span>
           </div>
         </div>
 
-        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm hover:shadow-md hover:border-emerald-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-3.5 group select-none">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 group-hover:bg-emerald-100 transition duration-200">
+        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-emerald-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-emerald-100 transition duration-200">
             📋
           </div>
-          <div>
-            <span class="text-xs text-gray-500 font-medium block group-hover:text-emerald-600 transition">Cotizaciones Activas</span>
-            <span class="text-xl font-black text-gray-900">${pendingQuotes.length}</span>
+          <div class="min-w-0">
+            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-emerald-600 transition">Cotizaciones</span>
+            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${pendingQuotes.length}</span>
           </div>
         </div>
 
-        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones y Presupuestos" class="bg-white p-4 rounded-3xl border border-pink-100 shadow-sm hover:shadow-md hover:border-purple-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-3.5 group select-none">
-          <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 group-hover:bg-purple-100 transition duration-200">
+        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones y Presupuestos" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-purple-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-purple-100 transition duration-200">
             💰
           </div>
-          <div>
-            <span class="text-xs text-gray-500 font-medium block group-hover:text-purple-600 transition">Total Presupuestado</span>
-            <span class="text-lg font-black text-gray-900 truncate">${Calculator.formatCurrency(totalQuotedAmount)}</span>
+          <div class="min-w-0">
+            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-purple-600 transition">Presupuestado</span>
+            <span class="text-sm sm:text-lg font-black text-gray-900 truncate block">${Calculator.formatCurrency(totalQuotedAmount)}</span>
           </div>
         </div>
       </div>
 
       <!-- Simulador de Precios y Rentabilidad Integrado en Inicio -->
-      <div id="dashboard-simulator-container" class="mb-6"></div>
+      <div id="dashboard-simulator-container" class="mb-4 sm:mb-6"></div>
 
       <!-- Recetas Destacadas y Accesos Rápidos -->
-      <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm mb-6">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-gray-900 text-base flex items-center gap-2">
+      <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 shadow-sm mb-4 sm:mb-6">
+        <div class="flex items-center justify-between mb-3 sm:mb-4">
+          <h3 class="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
             <span>🧁</span> Fichas de Recetas Rápidas
           </h3>
           <button onclick="App.switchTab('recipes')" class="text-xs text-pink-600 font-bold hover:underline">
-            Ver todas las recetas →
+            Ver todas →
           </button>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
           ${recipes.slice(0, 6).map(r => {
             const costs = Calculator.calculateRecipeFullCosts(r);
             return `
-              <div class="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50/80 hover:bg-pink-50/50 transition cursor-pointer border border-gray-100 group" onclick="SimulatorModule.loadRecipeForSimulation('${r.id}')" title="Simular rentabilidad de esta receta">
-                <div class="flex items-center gap-2.5 truncate">
-                  <span class="text-xl group-hover:scale-110 transition">${r.type === 'cake' ? '🎂' : '🍪'}</span>
+              <div class="flex items-center justify-between p-3 rounded-xl sm:rounded-2xl bg-gray-50/80 hover:bg-pink-50/50 transition cursor-pointer border border-gray-100 group" onclick="SimulatorModule.loadRecipeForSimulation('${r.id}')" title="Simular rentabilidad de esta receta">
+                <div class="flex items-center gap-2 truncate">
+                  <span class="text-lg group-hover:scale-110 transition">${r.type === 'cake' ? '🎂' : '🍪'}</span>
                   <div class="truncate">
                     <h4 class="font-bold text-xs text-gray-800 truncate group-hover:text-pink-600 transition">${r.name}</h4>
                     <span class="text-[10px] text-gray-500">Costo: ${Calculator.formatCurrency(costs.costPerUnit)} / un</span>
@@ -254,15 +367,15 @@ const App = {
     const settings = DB.getSettings();
 
     container.innerHTML = `
-      <div class="max-w-2xl mx-auto space-y-6">
+      <div class="max-w-2xl mx-auto space-y-4 sm:space-y-6">
         <div>
-          <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <h2 class="text-lg sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
             <span>⚙️</span> Configuración de la Pastelería
           </h2>
-          <p class="text-sm text-gray-500">Personaliza moneda, tarifas de mano de obra y datos de contacto para tus cotizaciones.</p>
+          <p class="text-xs sm:text-sm text-gray-500">Personaliza moneda, tarifas de mano de obra y datos de contacto para tus cotizaciones.</p>
         </div>
 
-        <form id="settings-form" onsubmit="App.saveSettingsForm(event)" class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm space-y-5 text-sm">
+        <form id="settings-form" onsubmit="App.saveSettingsForm(event)" class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 shadow-sm space-y-4 sm:space-y-5 text-xs sm:text-sm">
           <!-- Parámetros de Costeo -->
           <div class="space-y-4">
             <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 flex items-center gap-2">

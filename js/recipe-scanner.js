@@ -31,17 +31,17 @@ const RecipeScannerModule = {
     if (!modal) return;
 
     modal.innerHTML = `
-      <div class="bg-white rounded-3xl max-w-xl w-full p-5 sm:p-6 shadow-2xl border border-pink-100 max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-pink-100 max-h-[88vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
         
         <!-- Header -->
-        <div class="flex items-center justify-between border-b border-gray-100 pb-3.5 mb-4">
-          <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 text-white flex items-center justify-center text-xl shadow-md shadow-pink-200">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3.5">
+          <div class="flex items-center gap-2 sm:gap-2.5">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-purple-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-xs">
               📸
             </div>
             <div>
-              <h3 class="font-bold text-gray-900 text-base">Escanear Receta con Cámara o Foto</h3>
-              <p class="text-xs text-gray-400">Captura un cuaderno, libro o captura de pantalla para prellenar la ficha</p>
+              <h3 class="font-bold text-gray-900 text-sm sm:text-base">Escanear Receta con Cámara o Foto</h3>
+              <p class="text-[11px] sm:text-xs text-gray-400">Captura un cuaderno, libro o foto para prellenar la ficha</p>
             </div>
           </div>
           <button onclick="RecipeScannerModule.closeModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 transition">

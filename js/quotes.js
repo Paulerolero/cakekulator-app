@@ -31,51 +31,43 @@ const QuotesModule = {
     });
 
     container.innerHTML = `
-      <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div>
-          <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <span>📋</span> Presupuestos & Cotizaciones
-          </h2>
-          <p class="text-sm text-gray-500">Crea cotizaciones profesionales, calcula abonos y envíalas directo a WhatsApp con PDF adjunto y botones de respuesta.</p>
-        </div>
-        <button onclick="QuotesModule.openEditor()" class="btn-primary flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white font-medium shadow-md shadow-pink-200 transition active:scale-95">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-          Nueva Cotización
-        </button>
-      </div>
-
-      <!-- Barra de Búsqueda y Filtros -->
-      <div class="space-y-3 mb-5">
-        <div class="relative">
-          <input 
-            type="text" 
-            id="quote-search" 
-            placeholder="Buscar por cliente, folio o evento..." 
-            value="${this.searchQuery}"
-            oninput="QuotesModule.onSearch(this.value)"
-            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white shadow-sm text-sm"
-          />
-          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          ${this.searchQuery ? `
-            <button onclick="QuotesModule.clearSearch()" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          ` : ''}
+      <!-- Barra Superior de Acciones y Búsqueda -->
+      <div class="space-y-2.5 sm:space-y-3 mb-3 sm:mb-5">
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <input 
+              type="text" 
+              id="quote-search" 
+              placeholder="Buscar por cliente, folio o evento..." 
+              value="${this.searchQuery}"
+              oninput="QuotesModule.onSearch(this.value)"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white shadow-xs text-xs sm:text-sm"
+            />
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-2.5 sm:top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            ${this.searchQuery ? `
+              <button onclick="QuotesModule.clearSearch()" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            ` : ''}
+          </div>
+          <button onclick="QuotesModule.openEditor()" class="btn-primary shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold shadow-md shadow-pink-200 transition active:scale-95 text-xs sm:text-sm whitespace-nowrap cursor-pointer">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nueva Cotización
+          </button>
         </div>
 
         <!-- Filtros de Estado -->
-        <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar text-xs font-medium">
+        <div class="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar text-xs font-medium">
           ${[
             { id: 'all', label: '✨ Todas (' + allQuotes.length + ')' },
             { id: 'draft', label: '📝 Borradores' },
             { id: 'sent', label: '📤 Enviadas' },
-            { id: 'approved', label: '✅ Aprobadas / Pagadas' },
+            { id: 'approved', label: '✅ Aprobadas' },
             { id: 'rejected', label: '❌ Rechazadas' }
           ].map(st => `
             <button 
               onclick="QuotesModule.filterByStatus('${st.id}')"
-              class="px-3.5 py-1.5 rounded-full whitespace-nowrap transition ${this.filterStatus === st.id ? 'bg-pink-500 text-white shadow-sm font-semibold' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-100'}">
+              class="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full whitespace-nowrap transition ${this.filterStatus === st.id ? 'bg-pink-500 text-white shadow-xs font-bold' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-100'}">
               ${st.label}
             </button>
           `).join('')}
@@ -443,10 +435,16 @@ const QuotesModule = {
 
   openEditor(quoteId = null) {
     this.editingQuoteId = quoteId;
-    const modal = document.getElementById('quote-editor-modal');
+    let modal = document.getElementById('quote-editor-modal');
+    if (!modal) {
+      this.render();
+      modal = document.getElementById('quote-editor-modal');
+    }
+    if (!modal) return;
     const form = document.getElementById('quote-form');
     const title = document.getElementById('quote-editor-title');
     const itemsTable = document.getElementById('quote-items-table');
+    if (!itemsTable || !form || !title) return;
 
     itemsTable.innerHTML = '';
     form.reset();
@@ -497,11 +495,12 @@ const QuotesModule = {
 
     const row = document.createElement('div');
     row.id = rowId;
-    row.className = 'grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-xl border border-gray-100 shadow-xs';
+    row.className = 'bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs space-y-2';
 
     row.innerHTML = `
-      <div class="col-span-5">
-        <select class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium focus:ring-1 focus:ring-pink-400 q-item-recipe bg-white" onchange="QuotesModule.onRecipeSelect('${rowId}')">
+      <!-- Fila 1: Selector de Producto / Receta -->
+      <div class="w-full">
+        <select class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-pink-400 q-item-recipe bg-white truncate" onchange="QuotesModule.onRecipeSelect('${rowId}')">
           <option value="">-- Producto Personalizado --</option>
           ${allRecipes.map(r => {
             const costs = Calculator.calculateRecipeFullCosts(r);
@@ -513,23 +512,27 @@ const QuotesModule = {
             `;
           }).join('')}
         </select>
-        <input type="text" placeholder="Nombre personalizado" value="${customName}" class="w-full mt-1 px-2 py-1 rounded-lg border border-gray-200 text-[11px] q-item-custom-name ${selectedRecipeId ? 'hidden' : ''}" oninput="QuotesModule.recalculateTotals()">
+        <input type="text" placeholder="Nombre personalizado del producto" value="${customName}" class="w-full mt-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs q-item-custom-name ${selectedRecipeId ? 'hidden' : ''}" oninput="QuotesModule.recalculateTotals()">
       </div>
 
-      <div class="col-span-2">
-        <input type="number" step="1" min="1" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-center font-bold q-item-qty focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
-      </div>
-
-      <div class="col-span-3">
-        <div class="relative">
-          <span class="absolute left-2 top-1.5 text-gray-400 text-xs">$</span>
-          <input type="number" step="100" min="0" placeholder="Precio" value="${unitPrice}" class="w-full pl-5 pr-2 py-1.5 rounded-lg border border-gray-200 text-xs text-right font-bold text-gray-800 q-item-price focus:ring-1 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
+      <!-- Fila 2: Cantidad, Precio Unitario, Subtotal y Borrar -->
+      <div class="flex items-center gap-2 pt-0.5">
+        <div class="w-20 shrink-0">
+          <input type="number" step="1" min="1" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 text-xs text-center font-bold q-item-qty focus:ring-2 focus:ring-pink-400 bg-gray-50/60" oninput="QuotesModule.recalculateTotals()">
         </div>
-      </div>
 
-      <div class="col-span-2 flex items-center justify-between pl-1">
-        <span class="text-[11px] font-black text-pink-600 q-item-subtotal truncate">$ 0</span>
-        <button type="button" onclick="document.getElementById('${rowId}').remove(); QuotesModule.recalculateTotals();" class="text-gray-300 hover:text-red-500 p-1">
+        <div class="flex-1 min-w-[90px]">
+          <div class="relative">
+            <span class="absolute left-2.5 top-1.5 text-gray-400 text-xs">$</span>
+            <input type="number" step="100" min="0" placeholder="Precio" value="${unitPrice}" class="w-full pl-5 pr-2.5 py-1.5 rounded-xl border border-gray-200 text-xs text-right font-bold text-gray-800 q-item-price focus:ring-2 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
+          </div>
+        </div>
+
+        <div class="w-20 text-right px-1 shrink-0">
+          <span class="text-xs font-black text-pink-600 q-item-subtotal truncate block">$ 0</span>
+        </div>
+
+        <button type="button" onclick="document.getElementById('${rowId}').remove(); QuotesModule.recalculateTotals();" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition shrink-0" title="Eliminar ítem">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
       </div>

@@ -31,50 +31,43 @@ const RecipesModule = {
     });
 
     container.innerHTML = `
-      <!-- Header de Recetas -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-        <div>
-          <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <span>🎂</span> Fichas Técnicas y Costeos
-          </h2>
-          <p class="text-sm text-gray-500">Calcula costos por lote, unidad y porción para tortas, alfajores, galletas y más.</p>
-        </div>
-        <div class="flex items-center gap-2">
-          <button onclick="RecipeScannerModule.openModal()" class="flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer">
-            <span>📸</span> Escanear Receta
-          </button>
-          <button onclick="RecipesModule.openEditor()" class="btn-primary flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-white font-bold text-xs shadow-md shadow-pink-200 transition active:scale-95 cursor-pointer">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            Nueva Receta
-          </button>
-        </div>
-      </div>
+      <!-- Barra Superior de Acciones y Búsqueda -->
+      <div class="space-y-2.5 sm:space-y-3 mb-3 sm:mb-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="relative flex-1">
+            <input 
+              type="text" 
+              id="recipe-search" 
+              placeholder="Buscar receta (ej. Alfajores, Torta de Chocolate)..." 
+              value="${this.searchQuery}"
+              oninput="RecipesModule.onSearch(this.value)"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white shadow-xs text-xs sm:text-sm"
+            />
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-2.5 sm:top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            ${this.searchQuery ? `
+              <button onclick="RecipesModule.clearSearch()" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            ` : ''}
+          </div>
 
-      <!-- Barra de Búsqueda y Categorías -->
-      <div class="space-y-3 mb-5">
-        <div class="relative">
-          <input 
-            type="text" 
-            id="recipe-search" 
-            placeholder="Buscar receta (ej. Alfajores, Torta de Chocolate, Cupcakes)..." 
-            value="${this.searchQuery}"
-            oninput="RecipesModule.onSearch(this.value)"
-            class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white shadow-sm text-sm"
-          />
-          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          ${this.searchQuery ? `
-            <button onclick="RecipesModule.clearSearch()" class="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="RecipeScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap">
+              <span>📸</span> Escanear Receta
             </button>
-          ` : ''}
+            <button onclick="RecipesModule.openEditor()" class="flex-1 sm:flex-none btn-primary flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md shadow-pink-200 transition active:scale-95 cursor-pointer whitespace-nowrap">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              Nueva Receta
+            </button>
+          </div>
         </div>
 
         <!-- Categorías -->
-        <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar text-xs font-medium">
+        <div class="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar text-xs font-medium">
           ${categories.map(cat => `
             <button 
               onclick="RecipesModule.filterByCategory('${cat}')"
-              class="px-3 py-1.5 rounded-full whitespace-nowrap transition-colors ${this.activeCategory === cat ? 'bg-pink-500 text-white shadow-sm' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-100'}">
+              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap transition-colors ${this.activeCategory === cat ? 'bg-pink-500 text-white shadow-xs font-bold' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-100'}">
               ${cat === 'all' ? '✨ Todas (' + allRecipes.length + ')' : cat}
             </button>
           `).join('')}
@@ -92,7 +85,7 @@ const RecipesModule = {
           </button>
         </div>
       ` : `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-12 sm:pb-0">
           ${filtered.map(recipe => {
             const costs = Calculator.calculateRecipeFullCosts(recipe, ingredientsMap);
             const isCake = recipe.type === 'cake';
@@ -459,13 +452,20 @@ const RecipesModule = {
   },
 
   openEditor(id = null) {
-    const modal = document.getElementById('recipe-editor-modal');
+    let modal = document.getElementById('recipe-editor-modal');
+    if (!modal) {
+      this.render();
+      modal = document.getElementById('recipe-editor-modal');
+    }
+    if (!modal) return;
     const title = document.getElementById('recipe-editor-title');
     const form = document.getElementById('recipe-form');
     const settings = DB.getSettings();
 
     const ingContainer = document.getElementById('recipe-ingredients-table');
     const packContainer = document.getElementById('recipe-packaging-table');
+    if (!ingContainer || !packContainer || !form || !title) return;
+
     ingContainer.innerHTML = '';
     packContainer.innerHTML = '';
 

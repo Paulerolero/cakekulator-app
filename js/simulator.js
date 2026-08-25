@@ -130,14 +130,14 @@ const SimulatorModule = {
 
     container.innerHTML = `
       <!-- Selector de Receta y Modo Adaptativo -->
-      <div class="bg-white rounded-3xl p-5 border border-pink-100 shadow-sm space-y-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+      <div class="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 border border-pink-100 shadow-sm space-y-3.5 sm:space-y-4 mb-4 sm:mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 items-center">
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">1. Selecciona Producto o Receta</label>
+            <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 sm:mb-1.5 uppercase tracking-wider">1. Selecciona Producto o Receta</label>
             <select 
               id="sim-recipe-select" 
               onchange="SimulatorModule.onRecipeSelect(this.value)"
-              class="w-full px-4 py-3 rounded-2xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white font-semibold text-gray-800 shadow-xs">
+              class="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white font-semibold text-gray-800 shadow-xs text-xs sm:text-sm">
               <option value="">✨ Cálculo Libre (Ingresar costo manual)</option>
               ${allRecipes.map(r => {
                 const isCakeType = this.isCakeOrPie(r);
@@ -155,30 +155,30 @@ const SimulatorModule = {
 
           <!-- Selector de Modo Adaptativo (2 Opciones según tipo de producto) -->
           <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">2. Simular Por</label>
-            <div class="grid grid-cols-2 gap-2 bg-gray-100 p-1 rounded-2xl">
+            <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 sm:mb-1.5 uppercase tracking-wider">2. Simular Por</label>
+            <div class="grid grid-cols-2 gap-1.5 sm:gap-2 bg-gray-100 p-1 rounded-xl sm:rounded-2xl">
               ${isCakeOrPie ? `
                 <!-- Para Tortas, Tartaletas y Pies -->
                 <button 
                   onclick="SimulatorModule.setSimMode('portion')" 
-                  class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'portion' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
+                  class="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'portion' ? 'bg-white text-pink-600 shadow-xs font-black' : 'text-gray-600 hover:text-gray-900'}">
                   <span>🍰</span> Por Porción
                 </button>
                 <button 
                   onclick="SimulatorModule.setSimMode('batch')" 
-                  class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'batch' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
+                  class="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'batch' ? 'bg-white text-pink-600 shadow-xs font-black' : 'text-gray-600 hover:text-gray-900'}">
                   <span>🎂</span> Pastel Completo
                 </button>
               ` : `
                 <!-- Para Galletas, Alfajores, Cupcakes, etc. -->
                 <button 
                   onclick="SimulatorModule.setSimMode('unit')" 
-                  class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'unit' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
+                  class="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'unit' ? 'bg-white text-pink-600 shadow-xs font-black' : 'text-gray-600 hover:text-gray-900'}">
                   <span>🧁</span> Por Unidad
                 </button>
                 <button 
                   onclick="SimulatorModule.setSimMode('batch')" 
-                  class="py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'batch' ? 'bg-white text-pink-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}">
+                  class="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 ${this.simMode === 'batch' ? 'bg-white text-pink-600 shadow-xs font-black' : 'text-gray-600 hover:text-gray-900'}">
                   <span>📦</span> Por Lote
                 </button>
               `}
@@ -188,13 +188,13 @@ const SimulatorModule = {
 
         <!-- Barra de Escalado Inteligente por Personas (Si es Torta, Tartaleta o Pie) -->
         ${activeRecipe && isCakeOrPie ? `
-          <div class="bg-gradient-to-r from-pink-50/80 to-rose-50/80 p-4 rounded-2xl border border-pink-200/80 space-y-3">
+          <div class="bg-gradient-to-r from-pink-50/80 to-rose-50/80 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-pink-200/80 space-y-2.5 sm:space-y-3">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <span class="text-xs font-bold text-pink-900 flex items-center gap-1.5">
                   <span>📏</span> Ajustar Tamaño / Personas del Pastel
                 </span>
-                <span class="text-[11px] text-pink-700">Receta base formulada para: <strong>${basePortions} personas</strong></span>
+                <span class="text-[10px] sm:text-[11px] text-pink-700">Receta base formulada para: <strong>${basePortions} personas</strong></span>
               </div>
               
               <div class="flex items-center gap-1.5">
@@ -205,31 +205,31 @@ const SimulatorModule = {
                   max="500" 
                   value="${this.simTargetPortions || basePortions}" 
                   oninput="SimulatorModule.onTargetPortionsChange(this.value)"
-                  class="w-20 px-2.5 py-1 text-center rounded-xl border border-pink-300 font-black text-pink-700 text-sm bg-white shadow-2xs focus:ring-2 focus:ring-pink-400"
+                  class="w-16 sm:w-20 px-2 py-1 text-center rounded-xl border border-pink-300 font-black text-pink-700 text-xs sm:text-sm bg-white shadow-2xs focus:ring-2 focus:ring-pink-400"
                 />
                 <span class="text-xs font-bold text-pink-800">personas</span>
               </div>
             </div>
 
-            <!-- Botones de Tallas Rápidas -->
-            <div class="flex flex-wrap items-center gap-1.5">
-              <span class="text-[11px] text-gray-500 font-medium mr-1">Tallas comunes:</span>
+            <!-- Botones de Tallas Rápidas en fila táctil desplazable -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+              <span class="text-[10px] sm:text-[11px] text-gray-500 font-medium mr-1 whitespace-nowrap">Tallas:</span>
               ${[10, 12, 15, 16, 20, 25, 30, 35, 40, 50].map(p => `
                 <button 
                   onclick="SimulatorModule.onTargetPortionsChange(${p})"
-                  class="px-2.5 py-1 rounded-xl text-xs font-bold transition ${ (this.simTargetPortions || basePortions) === p ? 'bg-pink-600 text-white shadow-xs scale-105' : 'bg-white text-gray-700 hover:bg-pink-100 border border-pink-200'}"
+                  class="px-2.5 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition ${ (this.simTargetPortions || basePortions) === p ? 'bg-pink-600 text-white shadow-xs scale-105' : 'bg-white text-gray-700 hover:bg-pink-100 border border-pink-200'}"
                 >
-                  ${p} personas
+                  ${p}p
                 </button>
               `).join('')}
 
               ${isScaled ? `
                 <button 
                   onclick="SimulatorModule.saveScaledAsNewRecipe()" 
-                  class="ml-auto px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 active:scale-95 cursor-pointer"
+                  class="ml-auto whitespace-nowrap px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 active:scale-95 cursor-pointer"
                   title="Guardar este pastel de ${this.simTargetPortions} personas como nueva ficha técnica"
                 >
-                  <span>💾</span> Guardar Ficha (${this.simTargetPortions}p)
+                  <span>💾</span> Guardar (${this.simTargetPortions}p)
                 </button>
               ` : ''}
             </div>
@@ -237,7 +237,7 @@ const SimulatorModule = {
         ` : ''}
 
         <!-- Costo de Fabricación Calculado -->
-        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-3 border-t border-gray-100 bg-pink-50/40 p-3 rounded-2xl">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 sm:gap-3 pt-3 border-t border-gray-100 bg-pink-50/40 p-3 rounded-xl sm:rounded-2xl">
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-bold text-xs">
               💰
