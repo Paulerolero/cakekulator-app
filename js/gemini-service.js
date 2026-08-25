@@ -7,11 +7,15 @@ const GeminiService = {
   DEFAULT_API_KEY: '',
 
   getApiKey() {
-    // 1. Clave predeterminada en el código
+    // 1. Clave en archivo de configuración local (no commiteado en Git)
+    if (typeof window !== 'undefined' && window.APP_CONFIG && window.APP_CONFIG.GEMINI_API_KEY) {
+      return window.APP_CONFIG.GEMINI_API_KEY.trim();
+    }
+    // 2. Clave predeterminada en el código
     if (this.DEFAULT_API_KEY && this.DEFAULT_API_KEY.trim() !== '') {
       return this.DEFAULT_API_KEY.trim();
     }
-    // 2. Clave guardada en configuración o localStorage
+    // 3. Clave guardada en configuración o localStorage
     const settings = DB.getSettings();
     return settings.geminiApiKey || localStorage.getItem('cakekulator_gemini_api_key') || '';
   },
