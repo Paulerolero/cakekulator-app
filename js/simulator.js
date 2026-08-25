@@ -267,15 +267,15 @@ const SimulatorModule = {
       </div>
 
       <!-- Tarjetas de Métricas Principales (KPIs) -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <!-- Ganancia Neta -->
-        <div class="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
             <span>Ganancia Neta</span>
             <span class="text-base">${simResult.netProfit >= 0 ? '💚' : '💔'}</span>
           </div>
           <div>
-            <div class="text-xl sm:text-2xl font-black ${simResult.netProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}">
+            <div class="text-xl sm:text-2xl font-black ${simResult.netProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600'}">
               ${Calculator.formatCurrency(simResult.netProfit)}
             </div>
             <span class="text-[11px] text-gray-400 font-medium">Por ${this.getModeLabel(isCakeOrPie)}</span>
@@ -283,8 +283,8 @@ const SimulatorModule = {
         </div>
 
         <!-- Margen de Ganancia -->
-        <div class="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
             <span>Margen sobre Venta</span>
             <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${marginHealth.badgeClass}">${marginHealth.text}</span>
           </div>
@@ -296,32 +296,18 @@ const SimulatorModule = {
           </div>
         </div>
 
-        <!-- Markup / Recargo -->
-        <div class="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
-            <span>Markup (Recargo)</span>
-            <span class="text-base">📈</span>
-          </div>
-          <div>
-            <div class="text-xl sm:text-2xl font-black text-purple-600">
-              ${simResult.markup.toFixed(1)}%
-            </div>
-            <span class="text-[11px] text-gray-400 font-medium">Multiplicador: ${simResult.costMultiplier.toFixed(2)}x</span>
-          </div>
-        </div>
-
         <!-- Cobro Neto / En Mano -->
-        <div class="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm flex flex-col justify-between">
-          <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
-            <span>Ingreso Neto</span>
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+            <span>Ingreso Neto (Cobro)</span>
             <span class="text-base">💳</span>
           </div>
           <div>
-            <div class="text-xl sm:text-2xl font-black text-gray-800">
+            <div class="text-xl sm:text-2xl font-black text-gray-800 dark:text-gray-100">
               ${Calculator.formatCurrency(simResult.netRevenue)}
             </div>
             ${this.includeCardFee ? `
-              <span class="text-[10px] text-amber-600 font-medium">Comisión POS: -${Calculator.formatCurrency(simResult.commissionAmount)}</span>
+              <span class="text-[10px] text-amber-600 dark:text-amber-400 font-medium">Comisión POS: -${Calculator.formatCurrency(simResult.commissionAmount)}</span>
             ` : `
               <span class="text-[11px] text-gray-400 font-medium">Sin comisión de tarjeta</span>
             `}

@@ -178,18 +178,6 @@ const RecipesModule = {
           }).join('')}
         </div>
       `}
-
-      <!-- Botón Flotante (FAB) para Escanear Receta con Cámara o Foto -->
-      <div class="fixed bottom-20 md:bottom-8 right-4 sm:right-8 z-30">
-        <button 
-          onclick="RecipeScannerModule.openModal()" 
-          title="Escanear receta con cámara o foto"
-          class="group flex items-center gap-2.5 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:from-purple-700 hover:to-rose-600 text-white px-4.5 py-3.5 rounded-full shadow-xl shadow-purple-500/40 hover:shadow-2xl hover:shadow-purple-500/60 transition-all duration-300 transform hover:-translate-y-1 active:scale-95 ring-4 ring-white/90 select-none cursor-pointer"
-        >
-          <span class="text-xl group-hover:rotate-12 transition-transform duration-300">📸</span>
-          <span class="text-xs font-black tracking-wide pr-1">Escanear Receta</span>
-        </button>
-      </div>
     `;
   },
 
