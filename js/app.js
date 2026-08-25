@@ -19,6 +19,9 @@ const App = {
     // Escuchar estado de conexión (Online / Offline)
     this.initNetworkStatus();
 
+    // Navegación con botón atrás / gestos móviles para modales y scroll
+    this.initBackAndScrollHandler();
+
     // Renderizar pestaña inicial
     this.switchTab('dashboard');
 
@@ -533,6 +536,82 @@ const App = {
 
     window.addEventListener('online', updateStatus);
     window.addEventListener('offline', updateStatus);
+  },
+
+  // ==========================================
+  // Manejo de Modales y Gestos "Atrás" en Móvil
+  // ==========================================
+  openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    // Registrar estado en el historial del navegador para soporte de botón Atrás
+    try {
+      history.pushState({ modalOpen: true, modalId: modalId }, '');
+    } catch (e) {
+      console.warn('Error en history.pushState:', e);
+    }
+  },
+
+  closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.add('hidden');
+    // Limpiar entrada del historial si corresponde
+    if (history.state && history.state.modalOpen && history.state.modalId === modalId) {
+      history.back();
+    }
+  },
+
+  closeAllModals() {
+    const modalIds = [
+      'ingredient-modal',
+      'recipe-editor-modal',
+      'quote-editor-modal',
+      'quote-print-modal',
+      'sim-add-to-quote-modal'
+    ];
+    let closedAny = false;
+    modalIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !el.classList.contains('hidden')) {
+        el.classList.add('hidden');
+        closedAny = true;
+      }
+    });
+    return closedAny;
+  },
+
+  initBackAndScrollHandler() {
+    let isScrolledPushed = false;
+
+    // Detectar si el usuario baja en la pantalla en móvil para que "Atrás" lo devuelva al top
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      if (scrollY > 250 && !isScrolledPushed && (!history.state || !history.state.modalOpen)) {
+        try {
+          history.pushState({ isScrolled: true }, '');
+          isScrolledPushed = true;
+        } catch (e) {}
+      } else if (scrollY <= 80 && isScrolledPushed) {
+        isScrolledPushed = false;
+      }
+    }, { passive: true });
+
+    // Escuchar evento popstate (botón atrás físico o gesto de swipe en Android/iOS)
+    window.addEventListener('popstate', (e) => {
+      // 1. Si hay algún modal abierto, cerrarlo inmediatamente y permanecer en la pantalla base
+      const closed = this.closeAllModals();
+      if (closed) {
+        return;
+      }
+
+      // 2. Si el usuario está abajo del todo / scrolleado en pantalla móvil, llevarlo al inicio
+      const currentScroll = window.scrollY || document.documentElement.scrollTop;
+      if (currentScroll > 100) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        isScrolledPushed = false;
+      }
+    });
   }
 };
 

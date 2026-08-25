@@ -395,12 +395,58 @@ const QuotesModule = {
     }
 
     this.recalculateTotals();
-    modal.classList.remove('hidden');
+    App.openModal('quote-editor-modal');
   },
 
   closeEditor() {
-    const modal = document.getElementById('quote-editor-modal');
-    if (modal) modal.classList.add('hidden');
+    App.closeModal('quote-editor-modal');
+  },
+
+  createFromSimulator(itemData) {
+    App.switchTab('quotes');
+    this.openEditor();
+    const itemsContainer = document.getElementById('quote-items-table');
+    if (itemsContainer) itemsContainer.innerHTML = '';
+    this.addItemRow(itemData.recipeId || 'custom', itemData.recipeName || '', itemData.quantity || 1, itemData.unitPrice || 0);
+    this.recalculateTotals();
+    App.showToast(`Producto cargado en nuevo presupuesto 📋`);
+  },
+
+  addItemToExistingQuote(quoteId, itemData) {
+    const quote = DB.getQuoteById(quoteId);
+    if (!quote) return;
+
+    if (!quote.items) quote.items = [];
+    const qty = Number(itemData.quantity) || 1;
+    const price = Number(itemData.unitPrice) || 0;
+    const itemSubtotal = qty * price;
+
+    quote.items.push({
+      recipeId: itemData.recipeId || 'custom',
+      recipeName: itemData.recipeName || 'Producto',
+      quantity: qty,
+      unitPrice: price,
+      subtotal: itemSubtotal
+    });
+
+    // Recalcular montos
+    const subtotal = quote.items.reduce((acc, it) => acc + (it.subtotal || it.quantity * it.unitPrice), 0);
+    const discountPercent = quote.discountPercent || 0;
+    const discountAmount = subtotal * (discountPercent / 100);
+    const total = Math.max(0, subtotal - discountAmount);
+    const depositPercent = quote.depositPercent || 50;
+    const depositAmount = total * (depositPercent / 100);
+    const remainingBalance = total - depositAmount;
+
+    quote.subtotal = subtotal;
+    quote.discountAmount = discountAmount;
+    quote.total = total;
+    quote.depositAmount = depositAmount;
+    quote.remainingBalance = remainingBalance;
+
+    DB.updateQuote(quoteId, quote);
+    this.render();
+    App.showToast(`¡Añadido a cotización ${quote.code} (${quote.customerName})! ✨`);
   },
 
   addItemRow(selectedRecipeId = '', customName = '', qty = 1, unitPrice = 0) {
@@ -613,12 +659,8 @@ const QuotesModule = {
     }
   },
 
-  // Generador de Mensaje Formateado para WhatsApp
-  sendWhatsApp(id) {
-    const quote = DB.getQuoteById(id);
-    if (!quote) return;
-    const settings = DB.getSettings();
-
+  // Construye el texto formateado para WhatsApp (con opción de Instagram y redes)
+  buildWhatsAppMessage(quote, settings, includeInstagram = true) {
     let itemsText = '';
     (quote.items || []).forEach(item => {
       itemsText += `• *${item.quantity}x* ${item.recipeName} 👉 ${Calculator.formatCurrency(item.subtotal)}\n`;
@@ -640,8 +682,224 @@ const QuotesModule = {
     msg += `💵 *Saldo pendiente al entregar:* ${Calculator.formatCurrency(quote.remainingBalance)}\n`;
     if (quote.deliveryOption) msg += `🚚 *Entrega:* ${quote.deliveryOption}\n`;
     if (quote.notes) msg += `\n📝 *Condiciones:* ${quote.notes}\n`;
-    msg += `\n¡Gracias por preferir nuestro trabajo hecho con amor! 💕🎂`;
 
+    // Redes sociales y contacto
+    msg += `\n-----------------------------\n`;
+    if (includeInstagram && settings.businessInstagram) {
+      const igHandle = settings.businessInstagram.trim();
+      const igClean = igHandle.replace(/^@/, '');
+      msg += `📸 *Instagram:* instagram.com/${igClean} (${igHandle})\n`;
+    }
+    if (settings.businessPhone) msg += `📱 *WhatsApp:* ${settings.businessPhone}\n`;
+    if (settings.businessEmail) msg += `✉️ *Email:* ${settings.businessEmail}\n`;
+
+    msg += `\n¡Gracias por preferir nuestro trabajo hecho con amor! 💕🎂`;
+    return msg;
+  },
+
+  // Generador de HTML para el PDF descargable / imprimible
+  getQuoteHtmlForPdf(quote, settings) {
+    return `
+      <div style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; color: #1f2937; padding: 24px; max-width: 700px; margin: 0 auto; background: #ffffff;">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #fce7f3; padding-bottom: 16px; margin-bottom: 20px;">
+          <div>
+            <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #db2777;">
+              🍰 ${settings.businessName || 'Mi Pastelería'}
+            </h1>
+            <div style="font-size: 11px; color: #6b7280; margin-top: 6px; line-height: 1.4;">
+              ${settings.businessInstagram ? `<div>📸 <strong>Instagram:</strong> ${settings.businessInstagram}</div>` : ''}
+              ${settings.businessPhone ? `<div>📱 <strong>WhatsApp:</strong> ${settings.businessPhone}</div>` : ''}
+              ${settings.businessEmail ? `<div>✉️ <strong>Email:</strong> ${settings.businessEmail}</div>` : ''}
+            </div>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px;">Cotización Formal</span>
+            <h2 style="margin: 2px 0 0 0; font-size: 18px; font-weight: 800; color: #111827; font-family: monospace;">${quote.code || 'COT'}</h2>
+            <div style="font-size: 11px; color: #6b7280; margin-top: 4px;">Fecha: ${new Date(quote.createdAt || Date.now()).toLocaleDateString('es-CL')}</div>
+          </div>
+        </div>
+
+        <!-- Info Cliente -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: #fdf2f8; padding: 12px 16px; border-radius: 12px; border: 1px solid #fbcfe8; font-size: 11px; margin-bottom: 20px;">
+          <div>
+            <div style="color: #9d174d; font-weight: 700; text-transform: uppercase; font-size: 9px;">Cliente</div>
+            <div style="font-size: 13px; font-weight: 800; color: #111827; margin-top: 2px;">${quote.customerName}</div>
+            <div style="color: #4b5563; margin-top: 2px;">📞 ${quote.customerPhone || 'Sin registrar'}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="color: #9d174d; font-weight: 700; text-transform: uppercase; font-size: 9px;">Evento / Entrega</div>
+            <div style="font-size: 12px; font-weight: 700; color: #111827; margin-top: 2px;">${quote.eventName || 'Pedido Especial'}</div>
+            <div style="color: #4b5563; margin-top: 2px;">📅 ${quote.eventDate || 'A coordinar'} · 🚚 ${quote.deliveryOption || 'Retiro'}</div>
+          </div>
+        </div>
+
+        <!-- Tabla Productos -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 20px;">
+          <thead>
+            <tr style="background: #f3f4f6; color: #374151; font-weight: 700;">
+              <th style="padding: 8px 10px; text-align: left; border-top-left-radius: 8px;">Producto / Descripción</th>
+              <th style="padding: 8px 10px; text-align: center;">Cant.</th>
+              <th style="padding: 8px 10px; text-align: right;">Unitario</th>
+              <th style="padding: 8px 10px; text-align: right; border-top-right-radius: 8px;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(quote.items || []).map(item => `
+              <tr style="border-bottom: 1px solid #f3f4f6;">
+                <td style="padding: 8px 10px; font-weight: 600; color: #1f2937;">${item.recipeName}</td>
+                <td style="padding: 8px 10px; text-align: center; color: #4b5563;">${item.quantity}</td>
+                <td style="padding: 8px 10px; text-align: right; color: #4b5563;">${Calculator.formatCurrency(item.unitPrice)}</td>
+                <td style="padding: 8px 10px; text-align: right; font-weight: 700; color: #111827;">${Calculator.formatCurrency(item.subtotal)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+
+        <!-- Totales -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+          <div style="width: 260px; font-size: 11px; line-height: 1.6;">
+            <div style="display: flex; justify-content: space-between; color: #4b5563;">
+              <span>Subtotal:</span>
+              <span style="font-weight: 700; color: #111827;">${Calculator.formatCurrency(quote.subtotal)}</span>
+            </div>
+            ${quote.discountAmount > 0 ? `
+              <div style="display: flex; justify-content: space-between; color: #e11d48;">
+                <span>Descuento (${quote.discountPercent}%):</span>
+                <span style="font-weight: 700;">-${Calculator.formatCurrency(quote.discountAmount)}</span>
+              </div>
+            ` : ''}
+            <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 800; color: #db2777; border-top: 1px solid #e5e7eb; padding-top: 6px; margin-top: 4px;">
+              <span>TOTAL:</span>
+              <span>${Calculator.formatCurrency(quote.total)}</span>
+            </div>
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 6px 10px; border-radius: 8px; margin-top: 6px; display: flex; justify-content: space-between; color: #065f46; font-weight: 700;">
+              <span>Abono Reserva (${quote.depositPercent}%):</span>
+              <span>${Calculator.formatCurrency(quote.depositAmount)}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; color: #6b7280; font-size: 10px; padding: 4px 6px;">
+              <span>Saldo al entregar:</span>
+              <span style="font-weight: 600;">${Calculator.formatCurrency(quote.remainingBalance)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Condiciones y Redes Footer -->
+        <div style="border-top: 1px solid #fce7f3; padding-top: 12px; font-size: 10px; color: #6b7280; line-height: 1.5;">
+          <div style="font-weight: 700; color: #374151; margin-bottom: 2px;">Términos & Condiciones:</div>
+          <div>${quote.notes || settings.quoteNote || 'Presupuesto válido por 15 días.'}</div>
+
+          <!-- Redes y Contacto Destacado -->
+          <div style="margin-top: 14px; padding: 10px; background: #fff5f9; border-radius: 8px; border: 1px dashed #fbcfe8; display: flex; justify-content: space-around; text-align: center; color: #be185d; font-weight: 600;">
+            ${settings.businessInstagram ? `<span>📸 ${settings.businessInstagram}</span>` : ''}
+            ${settings.businessPhone ? `<span>📱 ${settings.businessPhone}</span>` : ''}
+            ${settings.businessEmail ? `<span>✉️ ${settings.businessEmail}</span>` : ''}
+          </div>
+          <div style="text-align: center; margin-top: 10px; color: #db2777; font-weight: 700; font-size: 10px;">
+            ¡Hecho a mano con los mejores ingredientes y mucho amor! 💕🧁
+          </div>
+        </div>
+      </div>
+    `;
+  },
+
+  // Generar Blob del PDF
+  async generateQuotePdfBlob(quote, settings) {
+    const htmlContent = this.getQuoteHtmlForPdf(quote, settings);
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.style.width = '750px';
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
+
+    const opt = {
+      margin: 8,
+      filename: `Cotizacion_${quote.code || 'COT'}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      if (window.html2pdf) {
+        const pdfBlob = await html2pdf().set(opt).from(container).outputPdf('blob');
+        document.body.removeChild(container);
+        return pdfBlob;
+      }
+    } catch (e) {
+      console.warn('Error generando blob con html2pdf:', e);
+    }
+    document.body.removeChild(container);
+    return null;
+  },
+
+  // Descarga directa del archivo PDF
+  async downloadQuotePdf(quote, settings) {
+    App.showToast('Generando PDF de cotización... 📄');
+    const htmlContent = this.getQuoteHtmlForPdf(quote, settings);
+    const container = document.createElement('div');
+    container.style.position = 'fixed';
+    container.style.left = '-9999px';
+    container.style.top = '0';
+    container.style.width = '750px';
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
+
+    const opt = {
+      margin: 8,
+      filename: `Cotizacion_${quote.code || 'COT'}_${(quote.customerName || 'Cliente').replace(/\s+/g, '_')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    if (window.html2pdf) {
+      await html2pdf().set(opt).from(container).save();
+    } else {
+      window.print();
+    }
+    document.body.removeChild(container);
+  },
+
+  // Enviar por WhatsApp adjuntando el documento PDF y el texto juntos
+  async sendWhatsApp(id, includeInstagram = true) {
+    const quote = DB.getQuoteById(id);
+    if (!quote) return;
+    const settings = DB.getSettings();
+
+    // 1. Cambiar estado automáticamente a "enviada"
+    quote.status = 'sent';
+    DB.updateQuote(id, { status: 'sent' });
+    this.render();
+
+    // 2. Construir mensaje de texto
+    const msg = this.buildWhatsAppMessage(quote, settings, includeInstagram);
+
+    // 3. Intentar compartir con Web Share API (PDF + Texto juntos)
+    try {
+      const pdfBlob = await this.generateQuotePdfBlob(quote, settings);
+      if (pdfBlob) {
+        const fileName = `Cotizacion_${quote.code || 'COT'}.pdf`;
+        const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+          await navigator.share({
+            title: `Cotización ${quote.code} - ${settings.businessName || 'Pastelería'}`,
+            text: msg,
+            files: [pdfFile]
+          });
+          App.showToast('¡Cotización enviada y marcada como Enviada! 📤');
+          return;
+        }
+      }
+    } catch (err) {
+      console.log('Web Share finalizado o no soportado:', err);
+    }
+
+    // Fallback: descargar PDF y abrir WhatsApp Web / App
+    this.downloadQuotePdf(quote, settings);
     const encodedMsg = encodeURIComponent(msg);
     let url = `https://wa.me/`;
     if (quote.customerPhone) {
@@ -652,6 +910,7 @@ const QuotesModule = {
     }
 
     window.open(url, '_blank');
+    App.showToast('PDF descargado y WhatsApp abierto (Marcada como Enviada 📤)');
   },
 
   // Vista imprimible / PDF
@@ -663,14 +922,32 @@ const QuotesModule = {
     const container = document.getElementById('printable-quote-content');
     container.innerHTML = `
       <div class="space-y-6">
+        <!-- Barra de Acciones Rápidas del Modal -->
+        <div class="no-print bg-pink-50 p-3 rounded-2xl border border-pink-100 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold text-pink-800">Acciones de Envío:</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="QuotesModule.sendWhatsApp('${quote.id}')" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+              <span>💬</span> WhatsApp con PDF
+            </button>
+            <button onclick="QuotesModule.downloadQuotePdf(DB.getQuoteById('${quote.id}'), DB.getSettings())" class="px-3 py-1.5 bg-pink-500 hover:bg-pink-600 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+              <span>📥</span> Descargar PDF
+            </button>
+          </div>
+        </div>
+
         <!-- Encabezado de la Pastelería -->
         <div class="flex justify-between items-start border-b border-gray-200 pb-5">
           <div>
             <div class="text-2xl font-black text-pink-600 flex items-center gap-2">
               <span>🍰</span> ${settings.businessName || 'Mi Pastelería'}
             </div>
-            <p class="text-xs text-gray-500 mt-1">${settings.businessInstagram || ''} · ${settings.businessPhone || ''}</p>
-            <p class="text-xs text-gray-500">${settings.businessEmail || ''}</p>
+            <div class="text-xs text-gray-500 mt-1 space-y-0.5">
+              ${settings.businessInstagram ? `<p class="flex items-center gap-1">📸 <strong>Instagram:</strong> ${settings.businessInstagram}</p>` : ''}
+              ${settings.businessPhone ? `<p class="flex items-center gap-1">📱 <strong>WhatsApp:</strong> ${settings.businessPhone}</p>` : ''}
+              ${settings.businessEmail ? `<p class="flex items-center gap-1">✉️ <strong>Email:</strong> ${settings.businessEmail}</p>` : ''}
+            </div>
           </div>
           <div class="text-right">
             <span class="text-xs uppercase font-bold text-gray-400 tracking-wider">Presupuesto</span>
@@ -684,12 +961,12 @@ const QuotesModule = {
           <div>
             <span class="text-gray-400 font-semibold uppercase text-[10px] block">Cliente:</span>
             <span class="font-bold text-gray-900 text-sm">${quote.customerName}</span>
-            <p class="text-gray-600 mt-0.5">${quote.customerPhone || 'Sin teléfono'}</p>
+            <p class="text-gray-600 mt-0.5">📞 ${quote.customerPhone || 'Sin teléfono'}</p>
           </div>
           <div class="text-right">
             <span class="text-gray-400 font-semibold uppercase text-[10px] block">Evento / Fecha:</span>
             <span class="font-bold text-gray-900">${quote.eventName || 'Evento especial'}</span>
-            <p class="text-gray-600 mt-0.5">📅 ${quote.eventDate || 'A coordinar'}</p>
+            <p class="text-gray-600 mt-0.5">📅 ${quote.eventDate || 'A coordinar'} · 🚚 ${quote.deliveryOption || 'Retiro'}</p>
           </div>
         </div>
 
@@ -745,20 +1022,26 @@ const QuotesModule = {
           </div>
         </div>
 
-        <!-- Notas al Pie -->
-        <div class="pt-4 border-t border-gray-100 text-xs text-gray-500 space-y-1">
+        <!-- Notas al Pie y Redes Sociales -->
+        <div class="pt-4 border-t border-gray-100 text-xs text-gray-500 space-y-2">
           <p class="font-semibold text-gray-700">Términos y Condiciones:</p>
-          <p>${quote.notes || settings.quoteNote}</p>
-          <p class="pt-2 text-center text-pink-600 font-semibold text-[11px]">¡Gracias por endulzar tus momentos especiales con nosotros!</p>
+          <p>${quote.notes || settings.quoteNote || 'Presupuesto válido por 15 días.'}</p>
+          
+          <div class="mt-3 p-3 bg-pink-50/60 rounded-xl border border-pink-100 flex flex-wrap justify-around text-center text-pink-700 font-semibold text-xs">
+            ${settings.businessInstagram ? `<span>📸 ${settings.businessInstagram}</span>` : ''}
+            ${settings.businessPhone ? `<span>📱 ${settings.businessPhone}</span>` : ''}
+            ${settings.businessEmail ? `<span>✉️ ${settings.businessEmail}</span>` : ''}
+          </div>
+
+          <p class="pt-2 text-center text-pink-600 font-semibold text-[11px]">¡Gracias por endulzar tus momentos especiales con nosotros! 💕🎂</p>
         </div>
       </div>
     `;
 
-    document.getElementById('quote-print-modal').classList.remove('hidden');
+    App.openModal('quote-print-modal');
   },
 
   closePrintModal() {
-    const modal = document.getElementById('quote-print-modal');
-    if (modal) modal.classList.add('hidden');
+    App.closeModal('quote-print-modal');
   }
 };

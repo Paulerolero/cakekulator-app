@@ -487,12 +487,11 @@ const RecipesModule = {
 
     this.onTypeChange(document.getElementById('rec-type').value);
     this.recalculateLiveSummary();
-    modal.classList.remove('hidden');
+    App.openModal('recipe-editor-modal');
   },
 
   closeEditor() {
-    const modal = document.getElementById('recipe-editor-modal');
-    if (modal) modal.classList.add('hidden');
+    App.closeModal('recipe-editor-modal');
   },
 
   addIngredientRow(selectedId = '', qty = '', unit = 'g') {

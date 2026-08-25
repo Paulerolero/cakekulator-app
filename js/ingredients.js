@@ -323,12 +323,11 @@ const IngredientsModule = {
     }
 
     this.updateLiveCostPreview();
-    modal.classList.remove('hidden');
+    App.openModal('ingredient-modal');
   },
 
   closeModal() {
-    const modal = document.getElementById('ingredient-modal');
-    if (modal) modal.classList.add('hidden');
+    App.closeModal('ingredient-modal');
     this.editingId = null;
   },
 

@@ -384,6 +384,11 @@ const SimulatorModule = {
             <p class="font-bold text-pink-800 mb-0.5">💡 Consejo de Fijación:</p>
             <p>${this.getPricingAdvice(simResult.profitMargin)}</p>
           </div>
+
+          <!-- Botón de Acción Principal: Agregar a Cotización -->
+          <button onclick="SimulatorModule.openAddToQuoteModal()" class="w-full mt-4 py-3.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-pink-200 transition active:scale-95 flex items-center justify-center gap-2 text-sm">
+            <span>📋</span> Agregar a Presupuesto / Cotización
+          </button>
         </div>
       </div>
 
@@ -423,6 +428,83 @@ const SimulatorModule = {
               }).join('')}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Modal: Agregar a Cotización (Nueva o Existente) -->
+      <div id="sim-add-to-quote-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div class="bg-gradient-to-r from-pink-500 to-rose-400 p-4 text-white flex items-center justify-between">
+            <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
+              <span>📋</span> Agregar a Presupuesto
+            </h3>
+            <button onclick="SimulatorModule.closeAddToQuoteModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <div class="p-5 space-y-4 text-sm max-h-[80vh] overflow-y-auto">
+            <!-- Producto a Agregar -->
+            <div class="bg-pink-50/60 p-3.5 rounded-2xl border border-pink-100 space-y-2">
+              <div class="flex justify-between items-start gap-2">
+                <div class="flex-1">
+                  <span class="text-[10px] font-bold text-pink-700 uppercase tracking-wider block">Producto Simulado</span>
+                  <input type="text" id="sim-modal-name" value="${recipeName}" class="font-bold text-gray-900 bg-transparent border-b border-pink-200 focus:outline-none focus:border-pink-500 text-sm w-full">
+                </div>
+                <div class="text-right shrink-0">
+                  <span class="text-[10px] text-gray-400 block font-medium">Precio Unitario</span>
+                  <span class="text-base font-black text-pink-600">${Calculator.formatCurrency(this.currentPrice)}</span>
+                </div>
+              </div>
+
+              <!-- Selector de Cantidad -->
+              <div class="flex justify-between items-center pt-2 border-t border-pink-100/80">
+                <label class="text-xs font-semibold text-gray-700">Cantidad a Cotizar:</label>
+                <div class="flex items-center gap-2">
+                  <input type="number" min="1" step="1" id="sim-modal-qty" value="1" oninput="SimulatorModule.onSimModalQtyChange(this.value)" class="w-16 px-2.5 py-1 text-center font-bold text-sm rounded-xl border border-pink-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <span class="text-xs text-gray-500">${this.getModeLabel(isCake)}s</span>
+                </div>
+              </div>
+
+              <div class="flex justify-between items-center text-xs pt-1 font-bold text-gray-800">
+                <span>Subtotal Estimado:</span>
+                <span id="sim-modal-subtotal" class="text-pink-600 text-sm">${Calculator.formatCurrency(this.currentPrice)}</span>
+              </div>
+            </div>
+
+            <!-- Opciones de Destino -->
+            <div class="space-y-3 pt-1">
+              <!-- Opción 1: Crear Nueva Cotización -->
+              <button type="button" onclick="SimulatorModule.confirmCreateNewQuote()" class="w-full py-3 px-4 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-2xl shadow-md shadow-pink-200 transition flex items-center justify-center gap-2 text-xs sm:text-sm">
+                <span>✨</span> Crear Nueva Cotización con este Producto
+              </button>
+
+              <div class="relative flex py-1 items-center">
+                <div class="flex-grow border-t border-gray-200"></div>
+                <span class="flex-shrink mx-3 text-[11px] font-semibold text-gray-400 uppercase">O a una existente</span>
+                <div class="flex-grow border-t border-gray-200"></div>
+              </div>
+
+              <!-- Opción 2: Añadir a Cotización Existente -->
+              <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 space-y-2.5">
+                <label class="block text-xs font-bold text-gray-700">Seleccionar Cotización Guardada:</label>
+                ${allQuotes.length > 0 ? `
+                  <select id="sim-modal-target-quote" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white text-xs font-medium text-gray-800">
+                    ${allQuotes.map(q => `
+                      <option value="${q.id}">
+                        ${q.code} - ${q.customerName || 'Cliente'} (${Calculator.formatCurrency(q.total)})
+                      </option>
+                    `).join('')}
+                  </select>
+                  <button type="button" onclick="SimulatorModule.confirmAddToExistingQuote()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <span>📥</span> Añadir a Esta Cotización
+                  </button>
+                ` : `
+                  <p class="text-xs text-gray-500">No tienes cotizaciones guardadas aún. Usa el botón superior para crear una nueva.</p>
+                `}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -534,5 +616,61 @@ const SimulatorModule = {
   onFeeChange(val) {
     this.cardFeePercent = parseFloat(val) || 0;
     this.render();
+  },
+
+  // ==========================================
+  // Acciones de Agregar a Cotización
+  // ==========================================
+  openAddToQuoteModal() {
+    App.openModal('sim-add-to-quote-modal');
+    this.onSimModalQtyChange(1);
+  },
+
+  closeAddToQuoteModal() {
+    App.closeModal('sim-add-to-quote-modal');
+  },
+
+  onSimModalQtyChange(val) {
+    const qty = Math.max(1, parseInt(val, 10) || 1);
+    const subtotalEl = document.getElementById('sim-modal-subtotal');
+    if (subtotalEl) {
+      subtotalEl.textContent = Calculator.formatCurrency(this.currentPrice * qty);
+    }
+  },
+
+  confirmCreateNewQuote() {
+    const nameInput = document.getElementById('sim-modal-name');
+    const qtyInput = document.getElementById('sim-modal-qty');
+    const name = nameInput ? nameInput.value.trim() : 'Producto';
+    const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value, 10) || 1) : 1;
+
+    this.closeAddToQuoteModal();
+    QuotesModule.createFromSimulator({
+      recipeId: this.selectedRecipeId || 'custom',
+      recipeName: name,
+      quantity: qty,
+      unitPrice: this.currentPrice
+    });
+  },
+
+  confirmAddToExistingQuote() {
+    const select = document.getElementById('sim-modal-target-quote');
+    if (!select || !select.value) {
+      alert('Por favor selecciona una cotización de la lista.');
+      return;
+    }
+    const quoteId = select.value;
+    const nameInput = document.getElementById('sim-modal-name');
+    const qtyInput = document.getElementById('sim-modal-qty');
+    const name = nameInput ? nameInput.value.trim() : 'Producto';
+    const qty = qtyInput ? Math.max(1, parseInt(qtyInput.value, 10) || 1) : 1;
+
+    this.closeAddToQuoteModal();
+    QuotesModule.addItemToExistingQuote(quoteId, {
+      recipeId: this.selectedRecipeId || 'custom',
+      recipeName: name,
+      quantity: qty,
+      unitPrice: this.currentPrice
+    });
   }
 };
