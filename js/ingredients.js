@@ -348,12 +348,8 @@ const IngredientsModule = {
     }
 
     this.updateLiveCostPreview();
-<<<<<<< HEAD
     App.openModal('ingredient-modal');
-=======
-    modal.classList.remove('hidden');
     if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
->>>>>>> 8ed98c7f6cdeb9f03b5d46885c1620e868f5ae3c
   },
 
   closeModal() {

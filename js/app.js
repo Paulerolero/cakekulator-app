@@ -928,6 +928,7 @@ const App = {
     const modal = document.getElementById(modalId);
     if (!modal) return;
     modal.classList.remove('hidden');
+    this.lockBodyScroll();
     // Registrar estado en el historial del navegador para soporte de botón Atrás
     try {
       history.pushState({ modalOpen: true, modalId: modalId }, '');
@@ -939,6 +940,7 @@ const App = {
   closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) modal.classList.add('hidden');
+    this.unlockBodyScroll();
     // Limpiar entrada del historial si corresponde
     if (history.state && history.state.modalOpen && history.state.modalId === modalId) {
       history.back();
@@ -949,8 +951,17 @@ const App = {
     const modalIds = [
       'ingredient-modal',
       'recipe-editor-modal',
+      'recipe-scaling-modal',
+      'recipe-scanner-modal',
+      'receipt-scanner-modal',
       'quote-editor-modal',
+      'quote-whatsapp-modal',
       'quote-print-modal',
+      'market-custom-search-modal',
+      'market-store-manager-modal',
+      'firebase-config-modal',
+      'gemini-key-modal',
+      'login-prompt-modal',
       'sim-add-to-quote-modal'
     ];
     let closedAny = false;
@@ -961,6 +972,7 @@ const App = {
         closedAny = true;
       }
     });
+    this.unlockBodyScroll();
     return closedAny;
   },
 

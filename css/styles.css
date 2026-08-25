@@ -296,6 +296,30 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 /* ==========================================
+   Scrollbar Fino, Moderno y Discreto
+   ========================================== */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #f472b6;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #db2777;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ==========================================
    Sistema de Modales Ultracentrados & Mobile Friendly
    ========================================== */
 @keyframes modalPopIn {
@@ -339,7 +363,10 @@ html.dark #ingredient-modal > div,
 html.dark #market-custom-search-modal > div,
 html.dark #market-store-manager-modal > div,
 html.dark #firebase-config-modal > div,
-html.dark #gemini-api-modal > div {
+html.dark #gemini-api-modal > div,
+html.dark #gemini-key-modal > div,
+html.dark #login-prompt-modal > div,
+html.dark #sim-add-to-quote-modal > div {
   background-color: #1e293b !important;
   color: #f8fafc !important;
   border-color: #334155 !important;

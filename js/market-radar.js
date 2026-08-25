@@ -473,55 +473,55 @@ const MarketRadarModule = {
 
       <!-- Listado de Ofertas Destacadas -->
       ${filtered.length === 0 ? `
-        <div class="bg-white rounded-3xl p-10 text-center border border-pink-100 shadow-sm space-y-3">
-          <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center text-3xl mx-auto">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-10 text-center border border-pink-100 dark:border-slate-800 shadow-sm space-y-3">
+          <div class="w-16 h-16 rounded-full bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 flex items-center justify-center text-3xl mx-auto">
             🛒
           </div>
-          <h3 class="text-base font-bold text-gray-800">No encontramos ofertas para este filtro</h3>
-          <p class="text-xs text-gray-500 max-w-md mx-auto">Prueba buscando en el catálogo general o haz una búsqueda directa en las tiendas con el botón superior.</p>
+          <h3 class="text-base font-bold text-gray-800 dark:text-gray-200">No encontramos ofertas para este filtro</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">Prueba buscando en el catálogo general o haz una búsqueda directa en las tiendas con el botón superior.</p>
           <button onclick="MarketRadarModule.openCustomSearchModal()" class="px-4 py-2 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-md shadow-pink-200 hover:bg-pink-700 transition">
             🔍 Buscar en Tiendas
           </button>
         </div>
       ` : `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-8">
           ${filtered.map(item => {
             const unitPrice = item.offerPrice / item.packageQty;
             const existingLocal = this.findMatchingLocalIngredient(item);
             return `
-              <div class="bg-white rounded-3xl p-4.5 border border-pink-100/80 shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-3 relative group">
+              <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-pink-100/90 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group">
                 
-                <div>
+                <div class="mb-4">
                   <!-- Header del Producto -->
-                  <div class="flex items-start justify-between gap-2 mb-1.5">
-                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700">
+                  <div class="flex items-start justify-between gap-2 mb-2.5">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300">
                       <span>${item.storeLogo}</span> ${item.store}
                     </span>
-                    <span class="inline-flex items-center gap-0.5 text-[11px] font-black px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100">
+                    <span class="inline-flex items-center gap-0.5 text-xs font-black px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/60">
                       -${item.discountPct}%
                     </span>
                   </div>
 
-                  <h4 class="font-bold text-sm text-gray-900 leading-snug group-hover:text-pink-600 transition">${item.name}</h4>
-                  <span class="text-[11px] text-gray-400 block mt-0.5">Marca: ${item.brand} · Formato: ${item.packageQty} ${item.packageUnit}</span>
+                  <h4 class="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100 leading-snug group-hover:text-pink-600 dark:group-hover:text-pink-400 transition mb-1">${item.name}</h4>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 block">Marca: ${item.brand} · Formato: ${item.packageQty} ${item.packageUnit}</span>
                 </div>
 
-                <!-- Precios y Comparador -->
-                <div class="bg-gray-50/70 p-3 rounded-2xl space-y-1">
+                <!-- Precios y Comparador con Márgenes Generosos -->
+                <div class="bg-gray-50/80 dark:bg-slate-800/80 p-3.5 sm:p-4 rounded-2xl space-y-2 mb-4 border border-gray-100 dark:border-slate-700/60">
                   <div class="flex items-baseline justify-between">
                     <div>
-                      <span class="text-xs text-gray-400 line-through mr-1">${Calculator.formatCurrency(item.normalPrice)}</span>
-                      <span class="text-base font-black text-emerald-600">${Calculator.formatCurrency(item.offerPrice)}</span>
+                      <span class="text-xs text-gray-400 dark:text-gray-500 line-through mr-1.5">${Calculator.formatCurrency(item.normalPrice)}</span>
+                      <span class="text-lg font-black text-emerald-600 dark:text-emerald-400">${Calculator.formatCurrency(item.offerPrice)}</span>
                     </div>
-                    <span class="text-[10px] font-semibold text-gray-500">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">
                       ${Calculator.formatCurrency(Math.round(unitPrice))} / ${item.packageUnit}
                     </span>
                   </div>
 
                   ${existingLocal ? `
-                    <div class="pt-1.5 border-t border-gray-200/60 flex items-center justify-between text-[10px]">
-                      <span class="text-gray-500">Tu costo actual:</span>
-                      <span class="font-bold ${item.offerPrice < existingLocal.packagePrice ? 'text-emerald-600' : 'text-amber-600'}">
+                    <div class="pt-2 border-t border-gray-200/70 dark:border-slate-700 flex items-center justify-between text-xs">
+                      <span class="text-gray-500 dark:text-gray-400">Tu costo actual:</span>
+                      <span class="font-bold ${item.offerPrice < existingLocal.packagePrice ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}">
                         ${Calculator.formatCurrency(existingLocal.packagePrice)}
                         ${item.offerPrice < existingLocal.packagePrice ? ' (¡Ahorras ' + Calculator.formatCurrency(existingLocal.packagePrice - item.offerPrice) + '!)' : ''}
                       </span>
@@ -529,18 +529,18 @@ const MarketRadarModule = {
                   ` : ''}
                 </div>
 
-                <!-- Acciones del Producto -->
-                <div class="grid grid-cols-2 gap-2 pt-1">
+                <!-- Acciones del Producto con Mayor Separación -->
+                <div class="grid grid-cols-2 gap-3 pt-1 mt-auto">
                   <a 
                     href="${item.productUrl}" 
                     target="_blank" 
-                    class="py-2 px-2.5 rounded-xl border border-gray-200 hover:border-pink-300 hover:bg-pink-50/50 text-gray-700 font-bold text-xs flex items-center justify-center gap-1 transition text-center"
+                    class="py-2.5 px-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-500 hover:bg-pink-50/50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center gap-1.5 transition text-center shadow-2xs"
                   >
                     <span>🔗</span> Ver Oferta
                   </a>
                   <button 
                     onclick="MarketRadarModule.applyOfferToInventory('${item.id}')"
-                    class="py-2 px-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs flex items-center justify-center gap-1 shadow-md shadow-pink-200 transition active:scale-95 cursor-pointer"
+                    class="py-2.5 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-pink-200/80 dark:shadow-none transition active:scale-95 cursor-pointer"
                   >
                     <span>📥</span> Usar Precio
                   </button>
@@ -782,15 +782,15 @@ const MarketRadarModule = {
       const root = document.getElementById('modals-root') || document.body;
       root.appendChild(modal);
     }
-    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto no-scrollbar';
 
     const stores = this.getStores();
 
     modal.innerHTML = `
       <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 space-y-4 max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] my-auto flex flex-col modal-animate-in">
         
-        <!-- Header -->
-        <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">
+        <!-- Header Fijo Superior -->
+        <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3 shrink-0">
           <div class="flex items-center gap-2.5">
             <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-gray-800 to-gray-900 text-white flex items-center justify-center text-xl shadow-md">
               ⚙️
@@ -803,98 +803,103 @@ const MarketRadarModule = {
           <button onclick="MarketRadarModule.closeStoreManagerModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <!-- Formulario para Agregar Nueva Tienda -->
-        <div class="bg-pink-50/50 dark:bg-slate-800/60 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 space-y-3">
-          <h4 class="font-bold text-xs text-pink-800 dark:text-pink-300 flex items-center gap-1.5">
-            <span>➕</span> Agregar Nueva Tienda o Distribuidora Personalizada
-          </h4>
+        <!-- Contenedor Completo con Scroll Unificado para Formulario y Lista -->
+        <div class="overflow-y-auto flex-1 pr-1 space-y-5 max-h-[calc(100dvh-7rem)] sm:max-h-[78vh]">
+          
+          <!-- Formulario para Agregar Nueva Tienda -->
+          <div class="bg-pink-50/60 dark:bg-slate-800/60 p-4 sm:p-5 rounded-2xl border border-pink-100 dark:border-slate-700 space-y-3">
+            <h4 class="font-bold text-xs sm:text-sm text-pink-800 dark:text-pink-300 flex items-center gap-1.5">
+              <span>➕</span> Agregar Nueva Tienda o Distribuidora Personalizada
+            </h4>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-            <div>
-              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre de la Tienda *</label>
-              <input type="text" id="new-store-name" placeholder="Ej. Distribuidora Santa Ana" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white font-bold" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre de la Tienda *</label>
+                <input type="text" id="new-store-name" placeholder="Ej. Distribuidora Santa Ana" class="w-full p-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 font-bold text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-400" />
+              </div>
+
+              <div>
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
+                <select id="new-store-cat" class="w-full p-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 font-medium text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-400">
+                  <option value="Supermercados">Supermercados</option>
+                  <option value="Distribuidoras de Pastelería" selected>Distribuidoras de Pastelería</option>
+                  <option value="Moldes & Empaques">Moldes & Empaques</option>
+                  <option value="Comercio Local">Comercio Local / Barrio</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">URL Sitio Web / Portal *</label>
+                <input type="url" id="new-store-portal" placeholder="https://www.tienda.cl" class="w-full p-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-400" />
+              </div>
+
+              <div>
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">URL de Búsqueda Directa (Opcional)</label>
+                <input type="url" id="new-store-search" placeholder="https://www.tienda.cl/buscar?q=" class="w-full p-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 focus:ring-2 focus:ring-pink-400" />
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Descripción / Nota</label>
+                <input type="text" id="new-store-desc" placeholder="Ej. Sucursal La Florida, buenos precios en manjar y chocolate" class="w-full p-2.5 rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-400" />
+              </div>
             </div>
 
-            <div>
-              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
-              <select id="new-store-cat" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white font-medium">
-                <option value="Supermercados">Supermercados</option>
-                <option value="Distribuidoras de Pastelería" selected>Distribuidoras de Pastelería</option>
-                <option value="Moldes & Empaques">Moldes & Empaques</option>
-                <option value="Comercio Local">Comercio Local / Barrio</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">URL Sitio Web / Portal *</label>
-              <input type="url" id="new-store-portal" placeholder="https://www.tienda.cl" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white" />
-            </div>
-
-            <div>
-              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">URL de Búsqueda Directa (Opcional)</label>
-              <input type="url" id="new-store-search" placeholder="https://www.tienda.cl/buscar?q=" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white text-gray-600" />
-            </div>
-
-            <div class="sm:col-span-2">
-              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Descripción / Nota</label>
-              <input type="text" id="new-store-desc" placeholder="Ej. Sucursal La Florida, buenos precios en manjar y chocolate" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white" />
+            <div class="flex justify-end pt-1">
+              <button onclick="MarketRadarModule.saveNewStore()" class="px-5 py-2.5 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs rounded-xl shadow-md shadow-pink-200 transition active:scale-95 cursor-pointer">
+                + Guardar Tienda
+              </button>
             </div>
           </div>
 
-          <div class="flex justify-end pt-1">
-            <button onclick="MarketRadarModule.saveNewStore()" class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs rounded-xl shadow-md shadow-pink-200 transition active:scale-95">
-              + Guardar Tienda
-            </button>
-          </div>
-        </div>
+          <!-- Lista de Tiendas Actuales -->
+          <div class="space-y-3 pt-1">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Tiendas registradas (${stores.length}):</span>
+              <button onclick="MarketRadarModule.confirmResetStores()" class="text-[11px] text-gray-500 hover:text-pink-600 underline font-semibold cursor-pointer">
+                Restablecer Predeterminadas
+              </button>
+            </div>
 
-        <!-- Lista de Tiendas Actuales -->
-        <div class="overflow-y-auto flex-1 pr-1 space-y-2">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Tiendas registradas (${stores.length}):</span>
-            <button onclick="MarketRadarModule.confirmResetStores()" class="text-[11px] text-gray-500 hover:text-pink-600 underline font-semibold">
-              Restablecer Predeterminadas
-            </button>
-          </div>
-
-          <div class="space-y-2">
-            ${stores.map(store => `
-              <div class="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-gray-300 flex items-center justify-between gap-3 transition">
-                <div class="flex items-center gap-3 truncate">
-                  <span class="text-2xl shrink-0">${store.icon || '🏬'}</span>
-                  <div class="truncate">
-                    <div class="flex items-center gap-2">
-                      <h5 class="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">${store.name}</h5>
-                      <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${store.category === 'Supermercados' ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300'}">
-                        ${store.category}
-                      </span>
+            <div class="space-y-2.5">
+              ${stores.map(store => `
+                <div class="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-pink-200 dark:hover:border-pink-900 flex items-center justify-between gap-3 transition shadow-2xs">
+                  <div class="flex items-center gap-3 truncate">
+                    <span class="text-2xl shrink-0">${store.icon || '🏬'}</span>
+                    <div class="truncate">
+                      <div class="flex items-center gap-2">
+                        <h5 class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate">${store.name}</h5>
+                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${store.category === 'Supermercados' ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300'}">
+                          ${store.category}
+                        </span>
+                      </div>
+                      <p class="text-[11px] text-gray-400 dark:text-gray-400 truncate mt-0.5">${store.description || store.portalUrl}</p>
                     </div>
-                    <p class="text-[10px] text-gray-400 truncate">${store.description || store.portalUrl}</p>
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    <!-- Toggle Activo -->
+                    <button 
+                      onclick="MarketRadarModule.toggleStoreEnabled('${store.id}')"
+                      class="px-3 py-1.5 rounded-xl text-[11px] font-bold transition cursor-pointer ${store.enabled !== false ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400'}"
+                      title="${store.enabled !== false ? 'Tienda Activa en el Radar' : 'Tienda Oculta'}"
+                    >
+                      ${store.enabled !== false ? '✓ Activa' : 'Oculta'}
+                    </button>
+
+                    <!-- Botón Eliminar -->
+                    <button 
+                      onclick="MarketRadarModule.deleteStoreConfirm('${store.id}', '${store.name}')" 
+                      title="Eliminar tienda de mi lista" 
+                      class="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
-
-                <div class="flex items-center gap-2 shrink-0">
-                  <!-- Toggle Activo -->
-                  <button 
-                    onclick="MarketRadarModule.toggleStoreEnabled('${store.id}')"
-                    class="px-2.5 py-1 rounded-xl text-[10px] font-bold transition ${store.enabled !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'}"
-                    title="${store.enabled !== false ? 'Tienda Activa en el Radar' : 'Tienda Oculta'}"
-                  >
-                    ${store.enabled !== false ? '✓ Activa' : 'Oculta'}
-                  </button>
-
-                  <!-- Botón Eliminar -->
-                  <button 
-                    onclick="MarketRadarModule.deleteStoreConfirm('${store.id}', '${store.name}')" 
-                    title="Eliminar tienda de mi lista" 
-                    class="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              </div>
-            `).join('')}
+              `).join('')}
+            </div>
           </div>
+
         </div>
 
       </div>

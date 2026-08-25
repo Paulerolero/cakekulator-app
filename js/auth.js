@@ -371,96 +371,96 @@ const AuthModule = {
       const root = document.getElementById('modals-root') || document.body;
       root.appendChild(modal);
     }
-    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-md overflow-y-auto';
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md overflow-y-auto no-scrollbar';
 
     modal.innerHTML = `
-      <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-pink-100 dark:border-slate-800 text-center relative modal-animate-in max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] my-auto overflow-y-auto">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 sm:p-7 shadow-2xl border border-pink-100 dark:border-slate-800 text-center relative overflow-hidden modal-animate-in max-h-[calc(100dvh-1rem)] sm:max-h-[94vh] my-auto flex flex-col justify-between">
         
         <!-- Elemento decorativo de fondo -->
-        <div class="absolute -top-16 -right-16 w-36 h-36 bg-gradient-to-br from-pink-200/40 to-rose-200/30 rounded-full blur-2xl pointer-events-none"></div>
-        <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-gradient-to-tr from-amber-200/30 to-pink-200/30 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute -top-12 -right-12 w-32 h-32 bg-pink-200/30 dark:bg-pink-900/20 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-amber-200/20 dark:bg-purple-900/20 rounded-full blur-2xl pointer-events-none"></div>
 
         <!-- Botón de Cerrar Modal (Invitado) -->
         <button 
           onclick="AuthModule.closeLoginModal()" 
           title="Cerrar y continuar sin cuenta"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition cursor-pointer"
+          class="absolute top-3.5 right-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition cursor-pointer z-10"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
-        <!-- Icono de Marca Pastelera -->
-        <div class="mx-auto w-16 h-16 rounded-3xl bg-gradient-to-tr from-pink-500 via-rose-400 to-pink-400 p-0.5 shadow-lg shadow-pink-200/80 mb-4 flex items-center justify-center">
-          <div class="w-full h-full bg-white dark:bg-slate-900 rounded-[22px] flex items-center justify-center text-3xl select-none">
+        <div class="relative z-10">
+          <!-- Icono de Marca Pastelera -->
+          <div class="mx-auto w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-500 text-white shadow-md shadow-pink-200/80 mb-2.5 flex items-center justify-center text-2xl sm:text-3xl select-none">
             🎂
           </div>
-        </div>
 
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-950/50 border border-pink-100 dark:border-pink-900 text-pink-700 dark:text-pink-300 text-[11px] font-bold mb-2">
-          <span>✨</span> Sincronización en la Nube
-        </div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-pink-50 dark:bg-pink-950/50 border border-pink-100 dark:border-pink-900 text-pink-700 dark:text-pink-300 text-[10px] sm:text-[11px] font-bold mb-1.5">
+            <span>✨</span> Sincronización en la Nube
+          </div>
 
-        <h3 class="text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight mb-1 font-heading">
-          Tu Pastelería Siempre Conectada
-        </h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6 max-w-xs mx-auto leading-relaxed">
-          Accede a tus recetas, costos e insumos desde cualquier celular, tablet o computador sin perder nada.
-        </p>
+          <h3 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight mb-1 font-heading leading-tight">
+            Tu Pastelería Siempre Conectada
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 sm:mb-4 max-w-xs mx-auto leading-snug">
+            Accede a tus recetas, costos e insumos desde cualquier celular, tablet o computador sin perder nada.
+          </p>
 
-        <!-- Tarjetas de Beneficios con diseño pastelero -->
-        <div class="bg-gradient-to-b from-pink-50/70 to-rose-50/40 dark:from-slate-800/80 dark:to-slate-800/40 rounded-2xl p-4 text-left space-y-3 mb-6 border border-pink-100/70 dark:border-slate-700">
-          <div class="flex items-start gap-3">
-            <span class="text-lg leading-none">🎂</span>
-            <div>
-              <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200">Recetas y Fichas Técnicas</h5>
-              <p class="text-[11px] text-gray-500 dark:text-gray-400">Tus costes, ingredientes y porciones siempre respaldados.</p>
+          <!-- Tarjetas de Beneficios con diseño pastelero compacto -->
+          <div class="bg-pink-50/70 dark:bg-slate-800/80 rounded-2xl p-3 sm:p-3.5 text-left space-y-2 mb-3.5 sm:mb-4 border border-pink-100/70 dark:border-slate-700">
+            <div class="flex items-center gap-2.5">
+              <span class="text-base leading-none shrink-0">🎂</span>
+              <div class="min-w-0">
+                <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">Recetas y Fichas Técnicas</h5>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">Tus costes, ingredientes y porciones siempre respaldados.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-base leading-none shrink-0">📦</span>
+              <div class="min-w-0">
+                <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">Insumos e Inventario</h5>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">Actualiza precios en tu celular y se reflejan al instante.</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <span class="text-base leading-none shrink-0">⚡</span>
+              <div class="min-w-0">
+                <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">Sincronización en Vivo</h5>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">Firestore guarda tus cambios automáticamente segundo a segundo.</p>
+              </div>
             </div>
           </div>
-          <div class="flex items-start gap-3">
-            <span class="text-lg leading-none">📦</span>
-            <div>
-              <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200">Insumos e Inventario</h5>
-              <p class="text-[11px] text-gray-500 dark:text-gray-400">Actualiza precios en tu celular y se reflejan en tu PC al instante.</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3">
-            <span class="text-lg leading-none">⚡</span>
-            <div>
-              <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200">Sincronización en Vivo</h5>
-              <p class="text-[11px] text-gray-500 dark:text-gray-400">Firestore guarda tus cambios automáticamente segundo a segundo.</p>
-            </div>
-          </div>
-        </div>
 
-        <!-- Botón de Inicio de Sesión con Google -->
-        <div id="login-modal-action-container">
+          <!-- Botón de Inicio de Sesión con Google -->
+          <div id="login-modal-action-container">
+            <button 
+              onclick="AuthModule.loginWithGoogle()"
+              id="google-login-main-btn"
+              class="w-full flex items-center justify-center gap-2.5 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-800 dark:text-gray-100 border-2 border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-500 font-bold py-2.5 sm:py-3 px-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 text-xs sm:text-sm mb-2 group cursor-pointer"
+            >
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform shrink-0" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Continuar con Google</span>
+            </button>
+          </div>
+
+          <p class="text-[10px] text-gray-400 dark:text-gray-400 flex items-center justify-center gap-1 mb-2">
+            <svg class="w-3.5 h-3.5 text-emerald-500 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Conexión segura y cifrada con Firebase Cloud
+          </p>
+
+          <!-- Botón secundario para modo local -->
           <button 
-            onclick="AuthModule.loginWithGoogle()"
-            id="google-login-main-btn"
-            class="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-800 dark:text-gray-100 border-2 border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-500 font-bold py-3.5 px-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 text-sm mb-3 group cursor-pointer"
+            onclick="AuthModule.closeLoginModal()"
+            class="text-xs text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 font-semibold py-0.5 transition cursor-pointer"
           >
-            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span>Continuar con Google</span>
+            Continuar en modo local (sin sincronizar)
           </button>
         </div>
-
-        <p class="text-[10px] text-gray-400 dark:text-gray-400 flex items-center justify-center gap-1 mb-4">
-          <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-          Conexión segura y cifrada con Firebase Cloud
-        </p>
-
-        <!-- Botón secundario para modo local -->
-        <button 
-          onclick="AuthModule.closeLoginModal()"
-          class="text-xs text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 font-semibold py-1 transition cursor-pointer"
-        >
-          Continuar en modo local (sin sincronizar)
-        </button>
       </div>
     `;
 
