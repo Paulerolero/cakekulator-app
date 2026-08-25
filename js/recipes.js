@@ -522,20 +522,12 @@ const RecipesModule = {
 
     this.onTypeChange(document.getElementById('rec-type').value);
     this.recalculateLiveSummary();
-<<<<<<< HEAD
     App.openModal('recipe-editor-modal');
-  },
-
-  closeEditor() {
-    App.closeModal('recipe-editor-modal');
-=======
-    modal.classList.remove('hidden');
     if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
   closeEditor() {
-    const modal = document.getElementById('recipe-editor-modal');
-    if (modal) modal.classList.add('hidden');
+    App.closeModal('recipe-editor-modal');
     if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
@@ -625,7 +617,6 @@ const RecipesModule = {
 
     const factor = targetPortions / currentPortions;
     this.scaleFormIngredients(factor);
->>>>>>> 8ed98c7f6cdeb9f03b5d46885c1620e868f5ae3c
   },
 
   addIngredientRow(selectedId = '', qty = '', unit = 'g') {
