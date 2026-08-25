@@ -278,20 +278,21 @@ const RecipesModule = {
 
             <!-- Sección 2: Insumos & Ingredientes -->
             <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-3">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center justify-between gap-2">
                 <h4 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
                   <span class="w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs">2</span>
                   Ingredientes & Cantidades
                 </h4>
 
                 <!-- Botones de Escalado Rápido en Formulario -->
-                <div class="flex items-center gap-1 text-[11px]">
-                  <span class="text-gray-500 font-medium mr-1 hidden sm:inline">Escalar receta:</span>
-                  <button type="button" onclick="RecipesModule.scaleFormIngredients(0.5)" class="px-2 py-1 bg-white hover:bg-pink-50 text-pink-700 font-bold rounded-lg border border-pink-200 shadow-2xs" title="Reducir a la mitad">½</button>
-                  <button type="button" onclick="RecipesModule.scaleFormIngredients(1.5)" class="px-2 py-1 bg-white hover:bg-pink-50 text-pink-700 font-bold rounded-lg border border-pink-200 shadow-2xs" title="Aumentar 50%">x1.5</button>
-                  <button type="button" onclick="RecipesModule.scaleFormIngredients(2)" class="px-2 py-1 bg-white hover:bg-pink-50 text-pink-700 font-bold rounded-lg border border-pink-200 shadow-2xs" title="Duplicar">x2</button>
-                  <button type="button" onclick="RecipesModule.promptScaleForm()" class="px-2.5 py-1 bg-pink-100 hover:bg-pink-200 text-pink-800 font-bold rounded-lg transition" title="Escalar por número de personas">📏 Por Personas...</button>
-                  <button type="button" onclick="RecipesModule.addIngredientRow()" class="ml-1 px-3 py-1 bg-pink-600 text-white hover:bg-pink-700 font-bold rounded-lg shadow-2xs transition flex items-center gap-1">
+                <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                  <div class="inline-flex rounded-xl p-0.5 bg-gray-200/70 border border-gray-200">
+                    <button type="button" onclick="RecipesModule.scaleFormIngredients(0.5)" class="px-2 py-1 bg-white hover:bg-pink-50 text-pink-700 font-bold rounded-lg shadow-2xs text-[11px]" title="Reducir a la mitad">½</button>
+                    <button type="button" onclick="RecipesModule.scaleFormIngredients(1.5)" class="px-2 py-1 bg-white hover:bg-pink-50 text-pink-700 font-bold rounded-lg shadow-2xs text-[11px]" title="Aumentar 50%">x1.5</button>
+                    <button type="button" onclick="RecipesModule.scaleFormIngredients(2)" class="px-2 py-1 bg-white hover:bg-pink-50 text-pink-700 font-bold rounded-lg shadow-2xs text-[11px]" title="Duplicar">x2</button>
+                  </div>
+                  <button type="button" onclick="RecipesModule.promptScaleForm()" class="px-2.5 py-1.5 bg-pink-100 hover:bg-pink-200 text-pink-800 font-bold rounded-xl text-xs transition active:scale-95" title="Escalar por número de personas">📏 Por Personas...</button>
+                  <button type="button" onclick="RecipesModule.addIngredientRow()" class="px-3 py-1.5 bg-pink-600 text-white hover:bg-pink-700 font-bold rounded-xl shadow-xs transition flex items-center gap-1 text-xs active:scale-95">
                     + Insumo
                   </button>
                 </div>
@@ -617,10 +618,11 @@ const RecipesModule = {
 
     const row = document.createElement('div');
     row.id = rowId;
-    row.className = 'grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-xl border border-gray-100 shadow-xs';
+    row.className = 'bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs space-y-2';
     row.innerHTML = `
-      <div class="col-span-5 sm:col-span-5">
-        <select class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium focus:ring-1 focus:ring-pink-400 ing-select bg-white" onchange="RecipesModule.onIngredientRowChange('${rowId}')">
+      <!-- Fila 1: Selección del Insumo -->
+      <div class="w-full">
+        <select class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-pink-400 ing-select bg-white truncate" onchange="RecipesModule.onIngredientRowChange('${rowId}')">
           <option value="">-- Seleccionar Insumo --</option>
           ${allIngredients.map(ing => `
             <option value="${ing.id}" ${ing.id === selectedId ? 'selected' : ''}>
@@ -630,26 +632,30 @@ const RecipesModule = {
         </select>
       </div>
 
-      <div class="col-span-3 sm:col-span-3">
-        <input type="number" step="any" min="0" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-center ing-qty focus:ring-1 focus:ring-pink-400" oninput="RecipesModule.onIngredientRowChange('${rowId}')">
-      </div>
+      <!-- Fila 2: Cantidad, Unidad, Costo Calculado y Botón Eliminar -->
+      <div class="flex items-center gap-2">
+        <div class="flex-1 min-w-[70px]">
+          <input type="number" step="any" min="0" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 text-xs text-center font-bold ing-qty focus:ring-2 focus:ring-pink-400 bg-gray-50/50" oninput="RecipesModule.onIngredientRowChange('${rowId}')">
+        </div>
 
-      <div class="col-span-2 sm:col-span-2">
-        <select class="w-full px-1.5 py-1.5 rounded-lg border border-gray-200 text-xs ing-unit focus:ring-1 focus:ring-pink-400 bg-white" onchange="RecipesModule.onIngredientRowChange('${rowId}')">
-          <option value="g" ${unit === 'g' ? 'selected' : ''}>g</option>
-          <option value="kg" ${unit === 'kg' ? 'selected' : ''}>kg</option>
-          <option value="ml" ${unit === 'ml' ? 'selected' : ''}>ml</option>
-          <option value="l" ${unit === 'l' || unit === 'L' ? 'selected' : ''}>L</option>
-          <option value="u" ${unit === 'u' ? 'selected' : ''}>u</option>
-          <option value="tbsp" ${unit === 'tbsp' ? 'selected' : ''}>cda</option>
-          <option value="tsp" ${unit === 'tsp' ? 'selected' : ''}>cdta</option>
-          <option value="cup" ${unit === 'cup' ? 'selected' : ''}>taza</option>
-        </select>
-      </div>
+        <div class="w-20">
+          <select class="w-full px-2 py-1.5 rounded-xl border border-gray-200 text-xs font-medium ing-unit focus:ring-2 focus:ring-pink-400 bg-white" onchange="RecipesModule.onIngredientRowChange('${rowId}')">
+            <option value="g" ${unit === 'g' ? 'selected' : ''}>g</option>
+            <option value="kg" ${unit === 'kg' ? 'selected' : ''}>kg</option>
+            <option value="ml" ${unit === 'ml' ? 'selected' : ''}>ml</option>
+            <option value="l" ${unit === 'l' || unit === 'L' ? 'selected' : ''}>L</option>
+            <option value="u" ${unit === 'u' ? 'selected' : ''}>u</option>
+            <option value="tbsp" ${unit === 'tbsp' ? 'selected' : ''}>cda</option>
+            <option value="tsp" ${unit === 'tsp' ? 'selected' : ''}>cdta</option>
+            <option value="cup" ${unit === 'cup' ? 'selected' : ''}>taza</option>
+          </select>
+        </div>
 
-      <div class="col-span-2 sm:col-span-2 flex items-center justify-between pl-1">
-        <span class="text-[11px] font-bold text-gray-700 ing-cost truncate">$ 0</span>
-        <button type="button" onclick="document.getElementById('${rowId}').remove(); RecipesModule.recalculateLiveSummary();" class="text-gray-300 hover:text-red-500 p-1">
+        <div class="flex-1 text-right px-1">
+          <span class="text-xs font-black text-pink-600 ing-cost truncate inline-block">$ 0</span>
+        </div>
+
+        <button type="button" onclick="document.getElementById('${rowId}').remove(); RecipesModule.recalculateLiveSummary();" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition shrink-0" title="Eliminar fila">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
       </div>
@@ -666,10 +672,11 @@ const RecipesModule = {
 
     const row = document.createElement('div');
     row.id = rowId;
-    row.className = 'grid grid-cols-12 gap-2 items-center bg-white p-2.5 rounded-xl border border-gray-100 shadow-xs';
+    row.className = 'bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs space-y-2';
     row.innerHTML = `
-      <div class="col-span-5 sm:col-span-5">
-        <select class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium focus:ring-1 focus:ring-emerald-400 pack-select bg-white" onchange="RecipesModule.onPackagingRowChange('${rowId}')">
+      <!-- Fila 1: Selección del Empaque -->
+      <div class="w-full">
+        <select class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-emerald-400 pack-select bg-white truncate" onchange="RecipesModule.onPackagingRowChange('${rowId}')">
           <option value="">-- Seleccionar Empaque --</option>
           ${allPackaging.map(ing => `
             <option value="${ing.id}" ${ing.id === selectedId ? 'selected' : ''}>
@@ -679,21 +686,25 @@ const RecipesModule = {
         </select>
       </div>
 
-      <div class="col-span-3 sm:col-span-3">
-        <input type="number" step="any" min="0" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-center pack-qty focus:ring-1 focus:ring-emerald-400" oninput="RecipesModule.onPackagingRowChange('${rowId}')">
-      </div>
+      <!-- Fila 2: Cantidad, Unidad, Costo Calculado y Botón Eliminar -->
+      <div class="flex items-center gap-2">
+        <div class="flex-1 min-w-[70px]">
+          <input type="number" step="any" min="0" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 text-xs text-center font-bold pack-qty focus:ring-2 focus:ring-emerald-400 bg-gray-50/50" oninput="RecipesModule.onPackagingRowChange('${rowId}')">
+        </div>
 
-      <div class="col-span-2 sm:col-span-2">
-        <select class="w-full px-1.5 py-1.5 rounded-lg border border-gray-200 text-xs pack-unit focus:ring-1 focus:ring-emerald-400 bg-white" onchange="RecipesModule.onPackagingRowChange('${rowId}')">
-          <option value="u" ${unit === 'u' ? 'selected' : ''}>un</option>
-          <option value="g" ${unit === 'g' ? 'selected' : ''}>g</option>
-          <option value="m" ${unit === 'm' ? 'selected' : ''}>m</option>
-        </select>
-      </div>
+        <div class="w-20">
+          <select class="w-full px-2 py-1.5 rounded-xl border border-gray-200 text-xs font-medium pack-unit focus:ring-2 focus:ring-emerald-400 bg-white" onchange="RecipesModule.onPackagingRowChange('${rowId}')">
+            <option value="u" ${unit === 'u' ? 'selected' : ''}>un</option>
+            <option value="g" ${unit === 'g' ? 'selected' : ''}>g</option>
+            <option value="m" ${unit === 'm' ? 'selected' : ''}>m</option>
+          </select>
+        </div>
 
-      <div class="col-span-2 sm:col-span-2 flex items-center justify-between pl-1">
-        <span class="text-[11px] font-bold text-gray-700 pack-cost truncate">$ 0</span>
-        <button type="button" onclick="document.getElementById('${rowId}').remove(); RecipesModule.recalculateLiveSummary();" class="text-gray-300 hover:text-red-500 p-1">
+        <div class="flex-1 text-right px-1">
+          <span class="text-xs font-black text-emerald-600 pack-cost truncate inline-block">$ 0</span>
+        </div>
+
+        <button type="button" onclick="document.getElementById('${rowId}').remove(); RecipesModule.recalculateLiveSummary();" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition shrink-0" title="Eliminar empaque">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
       </div>
