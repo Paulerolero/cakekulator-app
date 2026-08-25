@@ -123,7 +123,7 @@ const App = {
 
     container.innerHTML = `
       <!-- Hero Banner Pastelero Personalizado -->
-      <div class="relative overflow-hidden bg-gradient-to-r from-pink-500 via-rose-400 to-pink-500 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-pink-200/50 mb-6">
+      <div class="relative overflow-hidden bg-pink-600 dark:bg-pink-700 rounded-3xl p-6 sm:p-8 text-white shadow-lg mb-6">
         <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 max-w-2xl">
           ${settings.logoUrl ? `
             <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/95 p-2 shadow-lg ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
@@ -609,10 +609,9 @@ const App = {
     }
   },
 
-  // Modo Oscuro / Claro
+  // Modo Oscuro / Claro (Modo Claro por defecto)
   initDarkMode() {
-    const isDark = localStorage.getItem('cakekulator_dark_mode') === 'true' || 
-                   (!('cakekulator_dark_mode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    const isDark = localStorage.getItem('cakekulator_dark_mode') === 'true';
     
     if (isDark) {
       document.documentElement.classList.add('dark');

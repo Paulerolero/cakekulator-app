@@ -131,18 +131,18 @@ const QuotesModule = {
                   </div>
 
                   <!-- Resumen Financiero -->
-                  <div class="bg-gradient-to-r from-pink-50/50 to-rose-50/30 rounded-xl p-3 border border-pink-100 text-xs space-y-1.5">
+                  <div class="bg-pink-50/70 dark:bg-slate-800/80 rounded-xl p-3 border border-pink-100 dark:border-slate-700 text-xs space-y-1.5">
                     <div class="flex justify-between items-center">
-                      <span class="text-gray-500">Total Cotizado:</span>
-                      <span class="text-base font-black text-gray-900">${Calculator.formatCurrency(total)}</span>
+                      <span class="text-gray-600 dark:text-slate-300 font-medium">Total Cotizado:</span>
+                      <span class="text-base font-black text-gray-900 dark:text-white">${Calculator.formatCurrency(total)}</span>
                     </div>
-                    <div class="flex justify-between items-center text-emerald-700 font-medium">
+                    <div class="flex justify-between items-center text-emerald-700 dark:text-emerald-400 font-semibold">
                       <span>Abono requerido (${q.depositPercent || 50}%):</span>
-                      <span class="font-bold">${Calculator.formatCurrency(deposit)}</span>
+                      <span class="font-bold text-emerald-800 dark:text-emerald-300">${Calculator.formatCurrency(deposit)}</span>
                     </div>
-                    <div class="flex justify-between items-center text-gray-500 text-[11px]">
+                    <div class="flex justify-between items-center text-gray-600 dark:text-slate-400 text-[11px]">
                       <span>Saldo al entregar:</span>
-                      <span>${Calculator.formatCurrency(balance)}</span>
+                      <span class="font-semibold text-gray-800 dark:text-slate-200">${Calculator.formatCurrency(balance)}</span>
                     </div>
                   </div>
                 </div>
@@ -235,7 +235,7 @@ const QuotesModule = {
             </div>
 
             <!-- 3. Totales, Descuento y Abono -->
-            <div class="bg-gradient-to-br from-pink-50 to-rose-50 p-4 rounded-2xl border border-pink-100 space-y-3">
+            <div class="bg-pink-50/70 dark:bg-slate-800/80 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 space-y-3">
               <h4 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
                 <span class="w-5 h-5 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs">3</span>
                 Condiciones de Pago & Totales
@@ -305,9 +305,9 @@ const QuotesModule = {
       <!-- Modal de Envío WhatsApp & PDF Personalizado -->
       <div id="quote-whatsapp-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
         <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
-          <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 p-4 text-white flex items-center justify-between shrink-0">
+          <div class="bg-emerald-600 dark:bg-emerald-700 p-4 text-white flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-xs">
+              <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl shadow-xs">
                 📲
               </div>
               <div>

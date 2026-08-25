@@ -155,17 +155,17 @@ const RecipesModule = {
                   </div>
 
                   <!-- Precio de Venta Sugerido -->
-                  <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl p-2.5 text-xs">
+                  <div class="bg-emerald-50/80 dark:bg-slate-800/80 border border-emerald-100 dark:border-slate-700 rounded-xl p-2.5 text-xs">
                     <div class="flex justify-between items-center">
                       <div>
-                        <span class="text-emerald-800 font-semibold block text-[11px]">Precio Venta Sugerido:</span>
-                        <span class="text-emerald-600 text-[10px]">Margen meta: ${costs.targetMargin}%</span>
+                        <span class="text-emerald-800 dark:text-emerald-300 font-bold block text-[11px]">Precio Venta Sugerido:</span>
+                        <span class="text-emerald-700 dark:text-emerald-400 text-[10px] font-medium">Margen meta: ${costs.targetMargin}%</span>
                       </div>
                       <div class="text-right">
-                        <span class="text-sm font-black text-emerald-700">
+                        <span class="text-sm font-black text-emerald-800 dark:text-emerald-300">
                           ${isCake ? Calculator.formatCurrency(costs.suggestedBatchPrice) : Calculator.formatCurrency(costs.suggestedUnitPrice) + ' c/u'}
                         </span>
-                        ${!isCake ? `<span class="block text-[10px] text-emerald-600 font-medium">${Calculator.formatCurrency(costs.suggestedBatchPrice)} lote</span>` : `<span class="block text-[10px] text-emerald-600 font-medium">${Calculator.formatCurrency(costs.suggestedPortionPrice)} / porción</span>`}
+                        ${!isCake ? `<span class="block text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">${Calculator.formatCurrency(costs.suggestedBatchPrice)} lote</span>` : `<span class="block text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">${Calculator.formatCurrency(costs.suggestedPortionPrice)} / porción</span>`}
                       </div>
                     </div>
                   </div>
@@ -354,13 +354,13 @@ const RecipesModule = {
             </div>
 
             <!-- Sección 5: Margen y Precios de Venta -->
-            <div class="bg-gradient-to-br from-pink-50 via-rose-50 to-amber-50 p-4 rounded-2xl border border-pink-200 space-y-3">
+            <div class="bg-pink-50/70 dark:bg-slate-800/80 p-4 rounded-2xl border border-pink-200 dark:border-slate-700 space-y-3">
               <div class="flex items-center justify-between">
-                <h4 class="font-bold text-pink-900 text-sm flex items-center gap-1.5">
+                <h4 class="font-bold text-pink-900 dark:text-pink-300 text-sm flex items-center gap-1.5">
                   <span class="w-5 h-5 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs">5</span>
                   Simulación de Margen y Precio de Venta
                 </h4>
-                <div class="flex items-center gap-1 bg-white px-3 py-1 rounded-xl border border-pink-200">
+                <div class="flex items-center gap-1 bg-white dark:bg-slate-900 px-3 py-1 rounded-xl border border-pink-200 dark:border-slate-700">
                   <span class="text-xs text-gray-600">Margen Meta:</span>
                   <input type="number" id="rec-suggested-margin" min="5" max="95" value="45" oninput="RecipesModule.recalculateLiveSummary()" class="w-12 font-bold text-pink-600 text-center focus:outline-none">
                   <span class="text-xs text-pink-600 font-bold">%</span>

@@ -452,30 +452,30 @@ const SimulatorModule = {
 
             <!-- Leyenda Detallada -->
             <div class="space-y-2 text-xs">
-              <div class="flex justify-between items-center p-2 rounded-xl bg-gray-50">
+              <div class="flex justify-between items-center p-2.5 rounded-xl bg-gray-50 dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700">
                 <div class="flex items-center gap-2">
-                  <span class="w-3 h-3 rounded-full bg-rose-400"></span>
-                  <span class="font-medium text-gray-700">Costo de Fabricación:</span>
+                  <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                  <span class="font-semibold text-gray-700 dark:text-slate-300">Costo de Fabricación:</span>
                 </div>
-                <span class="font-bold text-gray-900">${Calculator.formatCurrency(currentCost)}</span>
+                <span class="font-bold text-gray-900 dark:text-white">${Calculator.formatCurrency(currentCost)}</span>
               </div>
 
               ${this.includeCardFee ? `
-                <div class="flex justify-between items-center p-2 rounded-xl bg-amber-50">
+                <div class="flex justify-between items-center p-2.5 rounded-xl bg-amber-50/80 dark:bg-slate-800/80 border border-amber-100 dark:border-slate-700">
                   <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-amber-400"></span>
-                    <span class="font-medium text-amber-900">Comisión POS (${this.cardFeePercent}%):</span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                    <span class="font-semibold text-amber-900 dark:text-amber-300">Comisión POS (${this.cardFeePercent}%):</span>
                   </div>
-                  <span class="font-bold text-amber-700">-${Calculator.formatCurrency(simResult.commissionAmount)}</span>
+                  <span class="font-bold text-amber-700 dark:text-amber-400">-${Calculator.formatCurrency(simResult.commissionAmount)}</span>
                 </div>
               ` : ''}
 
-              <div class="flex justify-between items-center p-2 rounded-xl bg-emerald-50">
+              <div class="flex justify-between items-center p-2.5 rounded-xl bg-emerald-50/80 dark:bg-slate-800/80 border border-emerald-100 dark:border-slate-700">
                 <div class="flex items-center gap-2">
                   <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
-                  <span class="font-bold text-emerald-900">Ganancia Neta en tu Bolsillo:</span>
+                  <span class="font-bold text-emerald-900 dark:text-emerald-300">Ganancia Neta en tu Bolsillo:</span>
                 </div>
-                <span class="font-black text-emerald-600 text-sm">${Calculator.formatCurrency(simResult.netProfit)}</span>
+                <span class="font-black text-emerald-700 dark:text-emerald-400 text-sm">${Calculator.formatCurrency(simResult.netProfit)}</span>
               </div>
             </div>
           </div>
