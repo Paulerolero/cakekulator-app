@@ -18,6 +18,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           colors: {
@@ -32,6 +33,19 @@
               700: '#be185d',
               800: '#9d174d',
               900: '#831843',
+            },
+            dark: {
+              50: '#f8fafc',
+              100: '#f1f5f9',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+              400: '#94a3b8',
+              500: '#64748b',
+              600: '#475569',
+              700: '#334155',
+              800: '#1e293b',
+              900: '#0f172a',
+              950: '#0b0f19',
             }
           }
         }
@@ -48,25 +62,25 @@
   <link rel="stylesheet" href="css/styles.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col pb-20 md:pb-6">
+<body class="text-gray-800 dark:text-gray-100 bg-[#faf5f8] dark:bg-[#0f172a] antialiased min-h-screen flex flex-col pb-20 md:pb-6 transition-colors duration-200">
 
   <!-- Top Navigation Header -->
-  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-pink-100 px-4 sm:px-6 py-3">
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100 dark:border-slate-800 px-4 sm:px-6 py-3 transition-colors duration-200">
     <div class="max-w-6xl mx-auto flex items-center justify-between gap-2">
       
       <!-- Brand Logo -->
       <div class="flex items-center gap-2.5 cursor-pointer select-none group shrink-0" onclick="App.switchTab('dashboard')">
-        <img src="assets/icons/logo.png" alt="Cakekulator Logo" class="w-10 h-10 rounded-2xl shadow-md shadow-pink-200/70 object-cover ring-1 ring-pink-200/50 group-hover:scale-105 transition-transform duration-200">
+        <img id="header-brand-logo" src="assets/icons/logo.png" alt="Cakekulator Logo" class="w-10 h-10 rounded-2xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700 group-hover:scale-105 transition-transform duration-200">
         <div>
-          <span class="font-extrabold text-lg text-gray-900 tracking-tight block leading-none">
-            Cake<span class="text-pink-600">kulator</span>
+          <span class="font-extrabold text-lg text-gray-900 dark:text-white tracking-tight block leading-none">
+            Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
           </span>
-          <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Gestión Pastelera</span>
+          <span id="header-brand-name" class="text-[10px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[130px] block">Gestión Pastelera</span>
         </div>
       </div>
 
       <!-- Desktop Nav Links -->
-      <nav class="hidden md:flex items-center gap-1 bg-pink-50/50 p-1.5 rounded-2xl border border-pink-100/60">
+      <nav class="hidden md:flex items-center gap-1 bg-pink-50/50 dark:bg-slate-800/60 p-1.5 rounded-2xl border border-pink-100/60 dark:border-slate-700/60">
         <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>🏠</span> Inicio
         </button>
@@ -84,17 +98,22 @@
         </button>
       </nav>
 
-      <!-- Right Header Actions (Google Auth, Install PWA, Settings) -->
+      <!-- Right Header Actions (Theme Toggle, Google Auth, Install PWA, Settings) -->
       <div class="flex items-center gap-2">
+        <!-- Botón Modo Oscuro / Claro -->
+        <button onclick="App.toggleDarkMode()" id="theme-toggle-btn" title="Cambiar modo oscuro / claro" class="p-2 rounded-xl text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 transition">
+          <span id="theme-toggle-icon" class="text-base">🌙</span>
+        </button>
+
         <!-- Contenedor de Autenticación con Google -->
         <div id="auth-header-container"></div>
 
         <!-- Botón Instalar PWA (Se muestra en Android / navegadores compatibles) -->
-        <button id="pwa-install-btn" onclick="App.installPWA()" class="hidden bg-pink-100 hover:bg-pink-200 text-pink-700 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+        <button id="pwa-install-btn" onclick="App.installPWA()" class="hidden bg-pink-100 dark:bg-slate-800 hover:bg-pink-200 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
           <span>📲</span> Instalar App
         </button>
 
-        <button onclick="App.switchTab('settings')" data-tab="settings" title="Configuración" class="nav-btn p-2 text-gray-500 hover:text-pink-600 hover:bg-pink-50 rounded-xl transition">
+        <button onclick="App.switchTab('settings')" data-tab="settings" title="Configuración" class="nav-btn p-2 text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 rounded-xl transition">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </button>
       </div>
@@ -114,8 +133,8 @@
   </main>
 
   <!-- Mobile Bottom Navigation Bar -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-pink-100 px-2 py-1.5 flex items-center justify-around shadow-lg">
-    <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-gray-500">
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-lg transition-colors duration-200">
+    <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn flex flex-col items-center gap-0.5 p-1.5 rounded-xl text-gray-500 dark:text-gray-400">
       <span class="text-lg leading-none">🏠</span>
       <span class="text-[10px] font-semibold">Inicio</span>
     </button>

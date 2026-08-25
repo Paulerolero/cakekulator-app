@@ -698,31 +698,33 @@ const QuotesModule = {
 
     let itemsText = '';
     (quote.items || []).forEach(item => {
-      itemsText += `  • *${item.quantity}x* ${item.recipeName} : ${Calculator.formatCurrency(item.subtotal)}\n`;
+      itemsText += `  🧁 *${item.quantity}x* ${item.recipeName} (${Calculator.formatCurrency(item.unitPrice)} c/u) ➔ *${Calculator.formatCurrency(item.subtotal)}*\n`;
     });
 
-    let msg = `🎂 *PRESUPUESTO - ${businessName.toUpperCase()}*\n`;
-    msg += `--------------------------------\n`;
-    msg += `👋 ¡Hola *${customerFirstName}*! Espero que estés muy bien.\n\n`;
-    msg += `Con mucho cariño te comparto el presupuesto detallado para tu pedido${quote.eventName ? ` de *${quote.eventName}*` : ''}:\n\n`;
-    msg += `📋 *Folio:* ${quote.code}\n`;
+    let msg = `✨ *COTIZACIÓN FORMAL - ${businessName.toUpperCase()}* ✨\n`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `👋 ¡Hola *${customerFirstName}*! Qué gusto saludarte.\n\n`;
+    msg += `Te comparto el detalle de tu presupuesto personalizado${quote.eventName ? ` para *${quote.eventName}*` : ''}:\n\n`;
+    msg += `📄 *Folio:* \`${quote.code}\`\n`;
     msg += `👤 *Cliente:* ${quote.customerName}\n`;
     if (quote.eventDate) msg += `📅 *Fecha de Entrega:* ${quote.eventDate}\n`;
     if (quote.deliveryOption) msg += `🚚 *Modalidad:* ${quote.deliveryOption}\n`;
-    msg += `\n🛒 *DETALLE DEL PEDIDO:*\n${itemsText}`;
-    msg += `--------------------------------\n`;
+    msg += `\n🛒 *DETALLE DE TU PEDIDO:*\n${itemsText}`;
+    msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
     msg += `💰 *Subtotal:* ${Calculator.formatCurrency(quote.subtotal)}\n`;
     if (quote.discountAmount > 0) {
-      msg += `🏷️ *Descuento (${quote.discountPercent}%):* -${Calculator.formatCurrency(quote.discountAmount)}\n`;
+      msg += `🏷️ *Descuento Especial (${quote.discountPercent}%):* -${Calculator.formatCurrency(quote.discountAmount)}\n`;
     }
-    msg += `✨ *TOTAL A PAGAR:* ${Calculator.formatCurrency(quote.total)}\n\n`;
-    msg += `💳 *CONDICIONES DE PAGO:*\n`;
-    msg += `• *Abono para agendar (${quote.depositPercent}%):* ${Calculator.formatCurrency(quote.depositAmount)}\n`;
-    msg += `• *Saldo restante contra entrega:* ${Calculator.formatCurrency(quote.remainingBalance)}\n`;
-    if (quote.notes) msg += `\n📝 *Condiciones:* ${quote.notes}\n`;
-    msg += `--------------------------------\n`;
-    msg += `📄 *(Te adjunto el documento formal en PDF con el resumen completo)*\n\n`;
-    msg += `¡Muchas gracias por preferir nuestro trabajo artesanal hecho con amor! 💕🎂`;
+    msg += `🌟 *TOTAL A PAGAR:* *${Calculator.formatCurrency(quote.total)}*\n\n`;
+    msg += `💳 *CONDICIONES DE RESERVA:*\n`;
+    msg += `• *Abono de Reserva (${quote.depositPercent}%):* *${Calculator.formatCurrency(quote.depositAmount)}*\n`;
+    msg += `• *Saldo Restante contra Entrega:* *${Calculator.formatCurrency(quote.remainingBalance)}*\n`;
+    if (quote.notes) {
+      msg += `\n📝 *Condiciones y Notas:* ${quote.notes}\n`;
+    }
+    msg += `━━━━━━━━━━━━━━━━━━━━━━\n`;
+    msg += `📎 *Te adjunto el presupuesto formal en PDF con el desglose completo y datos de transferencia.* 📄\n\n`;
+    msg += `Quedo muy atenta/o a tus consultas para agendar tu fecha. ¡Gracias por confiar en nuestro trabajo artesanal! 💕🎂`;
 
     return msg;
   },
@@ -798,15 +800,24 @@ const QuotesModule = {
         <!-- Header -->
         <table style="width: 100%; border-bottom: 2px solid #fbcfe8; padding-bottom: 15px; margin-bottom: 20px;">
           <tr>
-            <td style="vertical-align: top;">
-              <h1 style="margin: 0; color: #db2777; font-size: 24px; font-weight: 800;">🍰 ${settings.businessName || 'Mi Pastelería'}</h1>
-              <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">
-                ${settings.businessInstagram ? `Instagram: ${settings.businessInstagram} · ` : ''}
-                ${settings.businessPhone ? `Tel: ${settings.businessPhone}` : ''}
-              </p>
-              ${settings.businessEmail ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: #666;">${settings.businessEmail}</p>` : ''}
+            <td style="vertical-align: middle; width: 65%;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                ${settings.logoUrl ? `
+                  <img src="${settings.logoUrl}" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; vertical-align: middle; margin-right: 10px;" alt="Logo">
+                ` : ''}
+                <div style="display: inline-block; vertical-align: middle;">
+                  <h1 style="margin: 0; color: #db2777; font-size: 22px; font-weight: 800;">
+                    ${!settings.logoUrl ? '🍰 ' : ''}${settings.businessName || 'Mi Pastelería'}
+                  </h1>
+                  <p style="margin: 3px 0 0 0; font-size: 11px; color: #666;">
+                    ${settings.businessInstagram ? `Instagram: ${settings.businessInstagram} · ` : ''}
+                    ${settings.businessPhone ? `Tel: ${settings.businessPhone}` : ''}
+                  </p>
+                  ${settings.businessEmail ? `<p style="margin: 2px 0 0 0; font-size: 11px; color: #666;">${settings.businessEmail}</p>` : ''}
+                </div>
+              </div>
             </td>
-            <td style="vertical-align: top; text-align: right;">
+            <td style="vertical-align: middle; text-align: right; width: 35%;">
               <span style="font-size: 10px; text-transform: uppercase; color: #999; font-weight: 700; letter-spacing: 1px;">PRESUPUESTO FORMAL</span>
               <h2 style="margin: 2px 0 0 0; font-size: 20px; color: #111; font-family: monospace; font-weight: 800;">${quote.code}</h2>
               <p style="margin: 4px 0 0 0; font-size: 11px; color: #666;">Fecha: ${new Date(quote.createdAt || Date.now()).toLocaleDateString('es-CL')}</p>
@@ -953,47 +964,50 @@ const QuotesModule = {
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
+    App.showToast('⏳ Preparando documento PDF para WhatsApp...');
+
     try {
-      if (typeof html2pdf !== 'undefined' && navigator.share) {
+      if (typeof html2pdf !== 'undefined') {
         // Generar Blob del PDF
         const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
         const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
 
-        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+        // Intentar compartir de forma nativa con PDF adjunto (Móviles Android / iOS / Navegadores modernos)
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
           await navigator.share({
             title: `Cotización ${quote.code} - ${quote.customerName}`,
             text: message,
             files: [pdfFile]
           });
           this.closeWhatsAppModal();
-          App.showToast('✅ ¡Cotización compartida con PDF adjunto en WhatsApp!');
+          App.showToast('✅ ¡Cotización y PDF compartidos con éxito!');
           return;
         }
       }
     } catch (e) {
-      console.log('WebShare no disponible o cancelado:', e);
+      console.warn('WebShare con archivos no soportado o cancelado por usuario:', e);
     }
 
-    // Fallback para computadores de escritorio:
-    // 1. Descargar el PDF automáticamente
+    // Flujo universal alternativo (Desktop / Navegadores sin WebShare de archivos):
+    // 1. Descargar el archivo PDF automáticamente al dispositivo
     if (typeof html2pdf !== 'undefined') {
       html2pdf().set(opt).from(element).save();
     }
 
-    // 2. Copiar mensaje al portapapeles
+    // 2. Copiar el texto completo del mensaje al portapapeles
     try {
       await navigator.clipboard.writeText(message);
     } catch (err) {}
 
-    // 3. Abrir WhatsApp con el mensaje pre-cargado
+    // 3. Abrir WhatsApp directamente con el chat del cliente y el mensaje precargado
     const encodedMsg = encodeURIComponent(message);
-    let url = phone 
+    let waUrl = phone 
       ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`
       : `https://api.whatsapp.com/send?text=${encodedMsg}`;
 
-    window.open(url, '_blank');
+    window.open(waUrl, '_blank');
     this.closeWhatsAppModal();
-    App.showToast('📄 PDF descargado y WhatsApp abierto. ¡Listo para adjuntar!');
+    App.showToast('📲 WhatsApp abierto con mensaje listo y PDF descargado para adjuntar.');
   },
 
   // Vista imprimible en pantalla

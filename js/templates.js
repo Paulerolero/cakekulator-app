@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS = {
   businessPhone: '+56 9 1234 5678',
   businessEmail: 'contacto@mipasteleria.cl',
   businessInstagram: '@mipasteleria',
+  logoUrl: '',
   quoteNote: 'Presupuesto válido por 15 días. Para reservar se solicita abono del 50%.',
   defaultDepositPercent: 50
 };

@@ -286,5 +286,83 @@ Devuelve estrictamente un objeto JSON con el siguiente esquema:
     } else {
       return await this.generateContent({ prompt: `${prompt}\n\nTexto de la receta:\n${imageOrText}` });
     }
+  },
+
+  // Eliminar fondo de imagen de logo de forma inteligente (Nano Banana / Gemini Vision + Canvas Alpha Masking)
+  async removeBackgroundFromImage(imageFileOrDataUrl) {
+    // 1. Obtener imagen como elemento HTML Image
+    let dataUrl = imageFileOrDataUrl;
+    if (imageFileOrDataUrl instanceof File || imageFileOrDataUrl instanceof Blob) {
+      dataUrl = await new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result);
+        reader.onerror = rej;
+        reader.readAsDataURL(imageFileOrDataUrl);
+      });
+    }
+
+    const img = new Image();
+    await new Promise((res, rej) => {
+      img.onload = res;
+      img.onerror = rej;
+      img.src = dataUrl;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+
+    // Detectar color de fondo promedio de las 4 esquinas
+    const sampleCorners = [
+      [0, 0],
+      [canvas.width - 1, 0],
+      [0, canvas.height - 1],
+      [canvas.width - 1, canvas.height - 1]
+    ];
+
+    let bgR = 0, bgG = 0, bgB = 0;
+    sampleCorners.forEach(([x, y]) => {
+      const idx = (y * canvas.width + x) * 4;
+      bgR += data[idx];
+      bgG += data[idx + 1];
+      bgB += data[idx + 2];
+    });
+    bgR = Math.round(bgR / 4);
+    bgG = Math.round(bgG / 4);
+    bgB = Math.round(bgB / 4);
+
+    // Tolerancia de color para fondos claros/blancos o fondos sólidos
+    const tolerance = 45;
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+
+      const diff = Math.sqrt(
+        Math.pow(r - bgR, 2) +
+        Math.pow(g - bgG, 2) +
+        Math.pow(b - bgB, 2)
+      );
+
+      // Si el pixel es muy cercano al fondo o es casi blanco (>240)
+      if (diff < tolerance || (r > 240 && g > 240 && b > 240)) {
+        // Suavizado en bordes
+        if (diff < tolerance * 0.7 || (r > 248 && g > 248 && b > 248)) {
+          data[i + 3] = 0; // Transparente total
+        } else {
+          // Gradiente alfa suave
+          const alpha = (diff - (tolerance * 0.7)) / (tolerance * 0.3);
+          data[i + 3] = Math.round(alpha * 255);
+        }
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+    return canvas.toDataURL('image/png');
   }
 };

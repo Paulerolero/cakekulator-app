@@ -21,6 +21,12 @@ const App = {
       AuthModule.init();
     }
 
+    // Inicializar Modo Oscuro / Claro
+    this.initDarkMode();
+
+    // Actualizar Logo / Nombre en Header
+    this.updateHeaderBrand();
+
     // Renderizar pestaña inicial
     this.switchTab('dashboard');
 
@@ -116,30 +122,21 @@ const App = {
     const totalQuotedAmount = quotes.reduce((acc, q) => acc + (Number(q.total) || 0), 0);
 
     container.innerHTML = `
-      <!-- Hero Banner Pastelero -->
+      <!-- Hero Banner Pastelero Personalizado -->
       <div class="relative overflow-hidden bg-gradient-to-r from-pink-500 via-rose-400 to-pink-500 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-pink-200/50 mb-6">
-        <div class="relative z-10 max-w-xl">
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-xs font-semibold text-white mb-3">
-            <span>✨</span> Cakekulator Pro · Pastelería & Costeos
-          </div>
-          <h1 class="text-2xl sm:text-3xl font-black leading-tight">
-            ${settings.businessName || 'Mi Pastelería Artesanal'}
-          </h1>
-          <p class="text-pink-100 text-xs sm:text-sm mt-1 mb-5">
-            Costea con precisión tus alfajores, tortas, galletas y cupcakes. Nunca más cobres a ciegas ni regales tu tiempo.
-          </p>
-
-          <!-- Acciones Rápidas del Banner -->
-          <div class="flex flex-wrap gap-2.5">
-            <button onclick="RecipesModule.openEditor()" class="bg-white text-pink-600 hover:bg-pink-50 font-bold px-4 py-2.5 rounded-2xl text-xs shadow-md transition active:scale-95 flex items-center gap-1.5">
-              <span>🎂</span> Nueva Receta
-            </button>
-            <button onclick="QuotesModule.openEditor()" class="bg-pink-700/60 hover:bg-pink-700 text-white font-bold px-4 py-2.5 rounded-2xl text-xs backdrop-blur-sm transition active:scale-95 flex items-center gap-1.5">
-              <span>📋</span> Nueva Cotización
-            </button>
-            <button onclick="document.getElementById('dashboard-simulator-container')?.scrollIntoView({ behavior: 'smooth' })" class="bg-pink-700/60 hover:bg-pink-700 text-white font-bold px-4 py-2.5 rounded-2xl text-xs backdrop-blur-sm transition active:scale-95 flex items-center gap-1.5">
-              <span>📊</span> Simulador de Precios ↓
-            </button>
+        <div class="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 max-w-2xl">
+          ${settings.logoUrl ? `
+            <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white/95 p-2 shadow-lg ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
+              <img src="${settings.logoUrl}" alt="Logo ${settings.businessName || ''}" class="w-full h-full object-contain">
+            </div>
+          ` : ''}
+          <div class="flex-1">
+            <h1 class="text-2xl sm:text-3xl font-black leading-tight">
+              ${settings.businessName || 'Mi Pastelería Artesanal'}
+            </h1>
+            <p class="text-pink-100 text-xs sm:text-sm mt-1.5 leading-relaxed">
+              Costea con precisión tus alfajores, tortas, galletas y cupcakes. Nunca más cobres a ciegas ni regales tu tiempo.
+            </p>
           </div>
         </div>
 
@@ -316,6 +313,52 @@ const App = {
               </div>
             </div>
 
+            <!-- Logo Personalizado de la Pastelería -->
+            <div class="bg-gradient-to-r from-pink-50/60 via-purple-50/40 to-pink-50/60 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 dark:from-slate-800/80 dark:to-slate-800/80 space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                  Logo de tu Pastelería (Se muestra en Inicio y Presupuestos)
+                </label>
+                ${settings.logoUrl ? `
+                  <button type="button" onclick="App.removeLogo()" class="text-xs text-red-500 hover:text-red-700 font-semibold hover:underline">
+                    ✕ Quitar Logo
+                  </button>
+                ` : ''}
+              </div>
+
+              <div class="flex flex-col sm:flex-row items-center gap-4">
+                <div class="w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shadow-xs shrink-0 relative group">
+                  <img id="settings-logo-preview" src="${settings.logoUrl || 'assets/icons/logo.png'}" alt="Logo Preview" class="w-full h-full object-contain p-1">
+                </div>
+
+                <div class="flex-1 space-y-2 w-full">
+                  <input type="hidden" id="set-business-logo" value="${settings.logoUrl || ''}">
+                  
+                  <div class="flex flex-wrap gap-2">
+                    <label class="py-2 px-3.5 bg-white dark:bg-slate-900 hover:bg-pink-50 dark:hover:bg-slate-800 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-slate-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                      <span>📤</span> Subir Logo
+                      <input type="file" id="logo-file-input" accept="image/*" onchange="App.handleLogoUpload(event)" class="hidden">
+                    </label>
+
+                    <button 
+                      type="button" 
+                      id="remove-bg-btn"
+                      onclick="App.removeLogoBackground()" 
+                      class="py-2 px-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:opacity-90 text-white rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                      ${!settings.logoUrl ? 'disabled' : ''}
+                      title="Elimina el fondo blanco o sólido de tu logo automáticamente"
+                    >
+                      <span>🍌</span> Quitar Fondo (Nano Banana)
+                    </button>
+                  </div>
+
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                    Sube una imagen cuadrada (.PNG o .JPG). Con "Quitar Fondo" convertiremos automáticamente fondos blancos o sólidos en transparentes.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs font-semibold text-gray-700 mb-1">Instagram / Redes Sociales</label>
@@ -461,11 +504,144 @@ const App = {
       businessInstagram: document.getElementById('set-business-ig').value.trim(),
       businessEmail: document.getElementById('set-business-email').value.trim(),
       quoteNote: document.getElementById('set-quote-note').value.trim(),
+      logoUrl: (document.getElementById('set-business-logo')?.value || '').trim(),
       geminiApiKey: (document.getElementById('set-gemini-api-key')?.value || '').trim()
     };
 
     DB.saveSettings(newSettings);
+    this.updateHeaderBrand();
     this.showToast('Configuración guardada correctamente');
+  },
+
+  // Manejo de carga de Logo
+  async handleLogoUpload(event) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor selecciona un archivo de imagen válido.');
+      return;
+    }
+
+    try {
+      this.showToast('Cargando logo...');
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        const preview = document.getElementById('settings-logo-preview');
+        const hiddenInput = document.getElementById('set-business-logo');
+        const removeBgBtn = document.getElementById('remove-bg-btn');
+
+        if (preview) preview.src = dataUrl;
+        if (hiddenInput) hiddenInput.value = dataUrl;
+        if (removeBgBtn) removeBgBtn.disabled = false;
+
+        const settings = DB.getSettings();
+        settings.logoUrl = dataUrl;
+        DB.saveSettings(settings);
+        this.updateHeaderBrand();
+        this.showToast('✨ Logo cargado con éxito');
+      };
+      reader.readAsDataURL(file);
+    } catch (e) {
+      console.error('Error al cargar logo:', e);
+      alert('Hubo un inconveniente al cargar la imagen.');
+    }
+  },
+
+  // Remover fondo con Nano Banana / Canvas Segmentation
+  async removeLogoBackground() {
+    const hiddenInput = document.getElementById('set-business-logo');
+    const currentLogo = hiddenInput ? hiddenInput.value : '';
+    if (!currentLogo) {
+      alert('Primero debes subir una imagen de logo.');
+      return;
+    }
+
+    try {
+      this.showToast('🍌 Procesando y eliminando fondo con Nano Banana...');
+      const transparentLogo = await GeminiService.removeBackgroundFromImage(currentLogo);
+      
+      const preview = document.getElementById('settings-logo-preview');
+      if (preview) preview.src = transparentLogo;
+      if (hiddenInput) hiddenInput.value = transparentLogo;
+
+      const settings = DB.getSettings();
+      settings.logoUrl = transparentLogo;
+      DB.saveSettings(settings);
+      this.updateHeaderBrand();
+      this.showToast('✨ ¡Fondo eliminado con éxito!');
+    } catch (e) {
+      console.error('Error al remover fondo:', e);
+      alert('No se pudo procesar el fondo: ' + e.message);
+    }
+  },
+
+  // Quitar logo
+  removeLogo() {
+    const preview = document.getElementById('settings-logo-preview');
+    const hiddenInput = document.getElementById('set-business-logo');
+    const removeBgBtn = document.getElementById('remove-bg-btn');
+
+    if (preview) preview.src = 'assets/icons/logo.png';
+    if (hiddenInput) hiddenInput.value = '';
+    if (removeBgBtn) removeBgBtn.disabled = true;
+
+    const settings = DB.getSettings();
+    settings.logoUrl = '';
+    DB.saveSettings(settings);
+    this.updateHeaderBrand();
+    this.showToast('Logo restablecido al predeterminado');
+    this.renderCurrentTab(true);
+  },
+
+  // Actualizar logo y nombre en header
+  updateHeaderBrand() {
+    const settings = DB.getSettings();
+    const logoEl = document.getElementById('header-brand-logo');
+    const nameEl = document.getElementById('header-brand-name');
+
+    if (logoEl) {
+      logoEl.src = settings.logoUrl || 'assets/icons/logo.png';
+    }
+    if (nameEl) {
+      nameEl.textContent = settings.businessName || 'Gestión Pastelera';
+    }
+  },
+
+  // Modo Oscuro / Claro
+  initDarkMode() {
+    const isDark = localStorage.getItem('cakekulator_dark_mode') === 'true' || 
+                   (!('cakekulator_dark_mode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    this.updateDarkModeIcon();
+  },
+
+  toggleDarkMode() {
+    const isCurrentlyDark = document.documentElement.classList.contains('dark');
+    if (isCurrentlyDark) {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('cakekulator_dark_mode', 'false');
+      this.showToast('☀️ Modo Claro activado');
+    } else {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('cakekulator_dark_mode', 'true');
+      this.showToast('🌙 Modo Oscuro activado');
+    }
+    this.updateDarkModeIcon();
+  },
+
+  updateDarkModeIcon() {
+    const icon = document.getElementById('theme-toggle-icon');
+    if (icon) {
+      const isDark = document.documentElement.classList.contains('dark');
+      icon.textContent = isDark ? '☀️' : '🌙';
+    }
   },
 
   exportBackup() {

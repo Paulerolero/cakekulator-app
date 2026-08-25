@@ -129,14 +129,6 @@ const SimulatorModule = {
     const marginHealth = this.getMarginHealth(simResult.profitMargin);
 
     container.innerHTML = `
-      <!-- Header -->
-      <div class="mb-5">
-        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <span>📊</span> Simulador de Precios y Rentabilidad
-        </h2>
-        <p class="text-sm text-gray-500">Ajusta el precio de venta en tiempo real para conocer tus ganancias netas y márgenes.</p>
-      </div>
-
       <!-- Selector de Receta y Modo Adaptativo -->
       <div class="bg-white rounded-3xl p-5 border border-pink-100 shadow-sm space-y-4 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
