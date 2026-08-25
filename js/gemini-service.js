@@ -21,10 +21,16 @@ const GeminiService = {
   },
 
   setApiKey(key) {
+    const cleanKey = (key || '').trim();
     const settings = DB.getSettings();
-    settings.geminiApiKey = key.trim();
+    settings.geminiApiKey = cleanKey;
     DB.saveSettings(settings);
-    localStorage.setItem('cakekulator_gemini_api_key', key.trim());
+    localStorage.setItem('cakekulator_gemini_api_key', cleanKey);
+    
+    // Si hay usuario logueado en Firebase, garantizar respaldo inmediato en Firestore
+    if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured && typeof AuthModule !== 'undefined' && AuthModule.currentUser) {
+      DB.syncDocumentToCloud('settings', settings);
+    }
   },
 
   hasApiKey() {
