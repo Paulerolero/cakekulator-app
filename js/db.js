@@ -6,14 +6,16 @@ const DB_KEYS = {
   SETTINGS: 'cakekulator_settings',
   INGREDIENTS: 'cakekulator_ingredients',
   RECIPES: 'cakekulator_recipes',
-  QUOTES: 'cakekulator_quotes'
+  QUOTES: 'cakekulator_quotes',
+  MARKET_STORES: 'cakekulator_market_stores'
 };
 
 const LEGACY_DB_KEYS = {
   SETTINGS: 'dulcecalculo_settings',
   INGREDIENTS: 'dulcecalculo_ingredients',
   RECIPES: 'dulcecalculo_recipes',
-  QUOTES: 'dulcecalculo_quotes'
+  QUOTES: 'dulcecalculo_quotes',
+  MARKET_STORES: 'dulcecalculo_market_stores'
 };
 
 const DB = {
@@ -40,6 +42,268 @@ const DB = {
     if (!localStorage.getItem(DB_KEYS.QUOTES)) {
       this.saveQuotes(DEFAULT_QUOTES);
     }
+    if (!localStorage.getItem(DB_KEYS.MARKET_STORES) && typeof DEFAULT_MARKET_STORES !== 'undefined') {
+      this.saveMarketStores(DEFAULT_MARKET_STORES);
+    }
+  },
+
+  // Variables de Estado de Sincronización en la Nube
+  activeListeners: [],
+  periodicSyncInterval: null,
+  lastSyncTimestamp: null,
+  isSavingLocally: false,
+
+  // Sincronización en la Nube (Cloud Firestore) con detección en tiempo real
+  async syncDocumentToCloud(collectionName, data) {
+    if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured && FirebaseService.db && typeof AuthModule !== 'undefined' && AuthModule.currentUser) {
+      try {
+        const uid = AuthModule.currentUser.uid;
+        this.isSavingLocally = true;
+        
+        if (AuthModule && AuthModule.updateSyncStatus) {
+          AuthModule.updateSyncStatus('syncing', 'Guardando cambios...');
+        }
+
+        // Convertir datos para asegurar que no contengan objetos no serializables
+        const cleanData = JSON.parse(JSON.stringify(data));
+        const now = Date.now();
+        
+        await FirebaseService.db.collection('users').doc(uid).collection('data').doc(collectionName).set({
+          data: cleanData,
+          updatedAt: now
+        }, { merge: true });
+        
+        this.lastSyncTimestamp = now;
+        console.log(`☁️ Sincronizado en Firestore: ${collectionName}`);
+        
+        setTimeout(() => {
+          this.isSavingLocally = false;
+        }, 800);
+
+        if (AuthModule && AuthModule.updateSyncStatus) {
+          AuthModule.updateSyncStatus('synced', 'Sincronizado');
+        }
+      } catch (err) {
+        this.isSavingLocally = false;
+        console.error(`❌ Error al sincronizar ${collectionName} en Firestore:`, err);
+        if (AuthModule && AuthModule.updateSyncStatus) {
+          AuthModule.updateSyncStatus('error', 'Error al sincronizar');
+        }
+        if (err.code === 'permission-denied') {
+          console.error('🚨 Permiso denegado en Firestore: Revisa las Reglas de Seguridad en Firebase Console.');
+        }
+      }
+    } else {
+      console.log(`ℹ️ ${collectionName} guardado en almacenamiento local.`);
+    }
+  },
+
+  // Iniciar conexión y sincronización en tiempo real continua con Firestore
+  async initCloudSync(uid) {
+    if (typeof FirebaseService === 'undefined' || !FirebaseService.db) return;
+    try {
+      console.log('🔄 Iniciando sincronización en tiempo real para usuario:', uid);
+      if (AuthModule && AuthModule.updateSyncStatus) {
+        AuthModule.updateSyncStatus('syncing', 'Conectando con Firestore...');
+      }
+
+      const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
+      
+      // Primera verificación inicial de datos en la nube
+      const [settingsDoc, ingDoc, recDoc, quoteDoc, storeDoc] = await Promise.all([
+        userDocRef.doc('settings').get(),
+        userDocRef.doc('ingredients').get(),
+        userDocRef.doc('recipes').get(),
+        userDocRef.doc('quotes').get(),
+        userDocRef.doc('market_stores').get()
+      ]);
+
+      const hasCloudData = (settingsDoc.exists && settingsDoc.data()?.data) ||
+                           (ingDoc.exists && ingDoc.data()?.data) ||
+                           (recDoc.exists && recDoc.data()?.data) ||
+                           (quoteDoc.exists && quoteDoc.data()?.data) ||
+                           (storeDoc.exists && storeDoc.data()?.data);
+
+      if (settingsDoc.exists && settingsDoc.data()?.data) {
+        localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(settingsDoc.data().data));
+      }
+      if (ingDoc.exists && ingDoc.data()?.data) {
+        localStorage.setItem(DB_KEYS.INGREDIENTS, JSON.stringify(ingDoc.data().data));
+      }
+      if (recDoc.exists && recDoc.data()?.data) {
+        localStorage.setItem(DB_KEYS.RECIPES, JSON.stringify(recDoc.data().data));
+      }
+      if (quoteDoc.exists && quoteDoc.data()?.data) {
+        localStorage.setItem(DB_KEYS.QUOTES, JSON.stringify(quoteDoc.data().data));
+      }
+      if (storeDoc.exists && storeDoc.data()?.data) {
+        localStorage.setItem(DB_KEYS.MARKET_STORES, JSON.stringify(storeDoc.data().data));
+      }
+
+      this.lastSyncTimestamp = Date.now();
+
+      // Si es primera vez y no hay datos en la nube pero sí locales, respaldarlos de inmediato
+      if (!hasCloudData) {
+        console.log('🚀 Primera sesión: Respaldando datos locales en la nube Firestore...');
+        await this.pushLocalToCloud(uid);
+      }
+
+      // Activar Escucha en Tiempo Real (Listeners onSnapshot)
+      this.startRealtimeListeners(uid);
+
+      // Activar Comprobación Periódica en Segundo Plano (cada 20 segundos)
+      this.startPeriodicSync(uid, 20000);
+
+      if (AuthModule && AuthModule.updateSyncStatus) {
+        AuthModule.updateSyncStatus('synced', 'Sincronizado en tiempo real');
+      }
+
+      if (typeof App !== 'undefined' && App.renderCurrentTab) {
+        App.renderCurrentTab(true);
+      }
+    } catch (error) {
+      console.error('Error en initCloudSync:', error);
+      if (AuthModule && AuthModule.updateSyncStatus) {
+        AuthModule.updateSyncStatus('error', 'Error de conexión');
+      }
+      throw error;
+    }
+  },
+
+  // Escucha activa de cambios en Firestore en vivo (onSnapshot)
+  startRealtimeListeners(uid) {
+    if (typeof FirebaseService === 'undefined' || !FirebaseService.db) return;
+    this.stopRealtimeListeners();
+
+    const collections = [
+      { name: 'settings', key: DB_KEYS.SETTINGS },
+      { name: 'ingredients', key: DB_KEYS.INGREDIENTS },
+      { name: 'recipes', key: DB_KEYS.RECIPES },
+      { name: 'quotes', key: DB_KEYS.QUOTES },
+      { name: 'market_stores', key: DB_KEYS.MARKET_STORES }
+    ];
+
+    const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
+
+    collections.forEach(({ name, key }) => {
+      try {
+        const unsubscribe = userDocRef.doc(name).onSnapshot(docSnapshot => {
+          // Si estamos guardando localmente en este milisegundo, ignorar el rebote
+          if (this.isSavingLocally) return;
+
+          if (docSnapshot.exists) {
+            const remoteData = docSnapshot.data()?.data;
+            const remoteUpdatedAt = docSnapshot.data()?.updatedAt || 0;
+
+            if (remoteData) {
+              const currentLocalStr = localStorage.getItem(key);
+              const remoteStr = JSON.stringify(remoteData);
+
+              // Si hay cambios reales que vienen del servidor/otro dispositivo
+              if (currentLocalStr !== remoteStr) {
+                console.log(`⚡ Cambio en vivo detectado en Firestore para [${name}], actualizando localmente...`);
+                localStorage.setItem(key, remoteStr);
+                this.lastSyncTimestamp = Date.now();
+
+                // No interrumpir si el usuario está escribiendo en un input activo
+                const activeEl = document.activeElement;
+                const isUserTyping = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT');
+
+                if (!isUserTyping && typeof App !== 'undefined' && App.renderCurrentTab) {
+                  App.renderCurrentTab(true);
+                }
+
+                if (AuthModule && AuthModule.updateSyncStatus) {
+                  AuthModule.updateSyncStatus('synced', 'Actualizado desde la nube');
+                }
+              }
+            }
+          }
+        }, err => {
+          console.warn(`Aviso en listener de Firestore [${name}]:`, err);
+        });
+
+        this.activeListeners.push(unsubscribe);
+      } catch (e) {
+        console.error(`Error configurando listener de ${name}:`, e);
+      }
+    });
+
+    console.log(`📡 ${this.activeListeners.length} Listeners de Firestore en tiempo real activos.`);
+  },
+
+  // Detener listeners en tiempo real
+  stopRealtimeListeners() {
+    if (this.activeListeners && this.activeListeners.length) {
+      this.activeListeners.forEach(unsub => {
+        try { if (typeof unsub === 'function') unsub(); } catch (e) {}
+      });
+      this.activeListeners = [];
+      console.log('🛑 Listeners de Firestore detenidos.');
+    }
+  },
+
+  // Sincronización periódica automática (Heartbeat en segundo plano)
+  startPeriodicSync(uid, intervalMs = 20000) {
+    this.stopPeriodicSync();
+
+    this.periodicSyncInterval = setInterval(async () => {
+      if (!AuthModule || !AuthModule.currentUser || !navigator.onLine) return;
+
+      try {
+        // Actualizar etiqueta de estado
+        if (AuthModule && AuthModule.updateSyncStatus && AuthModule.syncStatus === 'synced') {
+          AuthModule.renderAuthUI();
+        }
+      } catch (e) {
+        console.warn('Chequeo periódico de sincronización:', e);
+      }
+    }, intervalMs);
+  },
+
+  stopPeriodicSync() {
+    if (this.periodicSyncInterval) {
+      clearInterval(this.periodicSyncInterval);
+      this.periodicSyncInterval = null;
+    }
+  },
+
+  async pushLocalToCloud(uid) {
+    if (typeof FirebaseService === 'undefined' || !FirebaseService.db) return;
+    const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
+    const settings = this.getSettings();
+    const ingredients = this.getIngredients();
+    const recipes = this.getRecipes();
+    const quotes = this.getQuotes();
+    const marketStores = this.getMarketStores();
+    const now = Date.now();
+
+    await Promise.all([
+      userDocRef.doc('settings').set({ data: settings, updatedAt: now }),
+      userDocRef.doc('ingredients').set({ data: ingredients, updatedAt: now }),
+      userDocRef.doc('recipes').set({ data: recipes, updatedAt: now }),
+      userDocRef.doc('quotes').set({ data: quotes, updatedAt: now }),
+      userDocRef.doc('market_stores').set({ data: marketStores, updatedAt: now })
+    ]);
+    this.lastSyncTimestamp = now;
+    console.log('✅ Todos los datos locales respaldados en Firestore.');
+  },
+
+  async pullCloudToLocal(uid) {
+    return this.initCloudSync(uid);
+  },
+
+  // Limpiar datos de sesión al cerrar sesión
+  clearSessionData() {
+    this.stopRealtimeListeners();
+    this.stopPeriodicSync();
+    this.lastSyncTimestamp = null;
+    localStorage.removeItem(DB_KEYS.SETTINGS);
+    localStorage.removeItem(DB_KEYS.INGREDIENTS);
+    localStorage.removeItem(DB_KEYS.RECIPES);
+    localStorage.removeItem(DB_KEYS.QUOTES);
+    localStorage.removeItem(DB_KEYS.MARKET_STORES);
+    this.init();
   },
 
   // Settings
@@ -55,6 +319,59 @@ const DB = {
 
   saveSettings(settings) {
     localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(settings));
+    this.syncDocumentToCloud('settings', settings);
+  },
+
+  // Tiendas del Radar de Ofertas (Supermercados y Distribuidoras)
+  getMarketStores() {
+    try {
+      const data = localStorage.getItem(DB_KEYS.MARKET_STORES);
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return typeof DEFAULT_MARKET_STORES !== 'undefined' ? DEFAULT_MARKET_STORES : [];
+    } catch (e) {
+      console.error('Error al cargar tiendas del radar:', e);
+      return typeof DEFAULT_MARKET_STORES !== 'undefined' ? DEFAULT_MARKET_STORES : [];
+    }
+  },
+
+  saveMarketStores(stores) {
+    localStorage.setItem(DB_KEYS.MARKET_STORES, JSON.stringify(stores));
+    this.syncDocumentToCloud('market_stores', stores);
+  },
+
+  addMarketStore(store) {
+    const stores = this.getMarketStores();
+    if (!store.id) store.id = 'store_' + Date.now();
+    stores.push(store);
+    this.saveMarketStores(stores);
+    return store;
+  },
+
+  updateMarketStore(id, updates) {
+    const stores = this.getMarketStores();
+    const idx = stores.findIndex(s => s.id === id);
+    if (idx !== -1) {
+      stores[idx] = { ...stores[idx], ...updates };
+      this.saveMarketStores(stores);
+      return stores[idx];
+    }
+    return null;
+  },
+
+  deleteMarketStore(id) {
+    let stores = this.getMarketStores();
+    stores = stores.filter(s => s.id !== id);
+    this.saveMarketStores(stores);
+    return true;
+  },
+
+  resetMarketStores() {
+    const defaults = typeof DEFAULT_MARKET_STORES !== 'undefined' ? DEFAULT_MARKET_STORES : [];
+    this.saveMarketStores(defaults);
+    return defaults;
   },
 
   // Insumos / Ingredientes
@@ -75,6 +392,7 @@ const DB = {
 
   saveIngredients(ingredients) {
     localStorage.setItem(DB_KEYS.INGREDIENTS, JSON.stringify(ingredients));
+    this.syncDocumentToCloud('ingredients', ingredients);
   },
 
   addIngredient(ingredient) {
@@ -122,6 +440,7 @@ const DB = {
 
   saveRecipes(recipes) {
     localStorage.setItem(DB_KEYS.RECIPES, JSON.stringify(recipes));
+    this.syncDocumentToCloud('recipes', recipes);
   },
 
   addRecipe(recipe) {
@@ -178,6 +497,7 @@ const DB = {
 
   saveQuotes(quotes) {
     localStorage.setItem(DB_KEYS.QUOTES, JSON.stringify(quotes));
+    this.syncDocumentToCloud('quotes', quotes);
   },
 
   addQuote(quote) {
@@ -492,6 +812,110 @@ const Calculator = {
       costMultiplier,
       isProfitable: netProfit > 0,
       breakEvenMultiplier
+    };
+  },
+
+  // Estimar porciones sugeridas de torta circular según diámetro de molde en cm
+  estimateCakePortionsByDiameter(diameterCm) {
+    const d = Number(diameterCm) || 18;
+    if (d <= 14) return 8;
+    if (d <= 16) return 12;
+    if (d <= 18) return 16;
+    if (d <= 20) return 20;
+    if (d <= 22) return 25;
+    if (d <= 24) return 30;
+    if (d <= 26) return 38;
+    if (d <= 28) return 45;
+    return Math.round(Math.pow(d / 18, 2) * 16);
+  },
+
+  // Escala los ingredientes, empaques, tiempos y costos de una receta en función de porciones o diámetro de molde
+  scaleRecipe(recipe, options = {}) {
+    if (!recipe) return null;
+
+    const basePortions = Math.max(1, Number(recipe.yieldPortions || recipe.yieldUnits || 1));
+    let scalingFactor = 1;
+
+    if (options.scalingFactor && options.scalingFactor > 0) {
+      scalingFactor = options.scalingFactor;
+    } else if (options.targetPortions && options.targetPortions > 0) {
+      scalingFactor = options.targetPortions / basePortions;
+    } else if (options.targetDiameterCm && options.baseDiameterCm && options.baseDiameterCm > 0) {
+      // Escalado por área de molde circular: (D_meta / D_base)^2
+      scalingFactor = Math.pow(options.targetDiameterCm / options.baseDiameterCm, 2);
+    }
+
+    const targetPortions = options.targetPortions || Math.max(1, Math.round(basePortions * scalingFactor));
+    const targetUnits = Math.max(1, Math.round((recipe.yieldUnits || 1) * (recipe.type === 'cake' ? 1 : scalingFactor)));
+
+    // Escalar Ingredientes
+    const scaledIngredients = (recipe.ingredients || []).map(item => {
+      const originalQty = Number(item.quantity || 0);
+      let newQty = originalQty * scalingFactor;
+
+      // Redondeo inteligente según unidad
+      if (item.unit === 'g' || item.unit === 'ml' || item.unit === 'cc') {
+        newQty = newQty >= 50 ? Math.round(newQty) : Number(newQty.toFixed(1));
+      } else if (item.unit === 'u' || item.unit === 'un' || item.unit === 'unidad') {
+        // Redondear unidades a enteros o medios (ej. 2.5 huevos)
+        newQty = Math.round(newQty * 2) / 2;
+        if (newQty < 1 && originalQty >= 1) newQty = 1;
+      } else {
+        newQty = Number(newQty.toFixed(2));
+      }
+
+      return {
+        ...item,
+        originalQuantity: originalQty,
+        quantity: newQty
+      };
+    });
+
+    // Escalar Empaque
+    const scaledPackaging = (recipe.packaging || []).map(item => {
+      let newQty = Number(item.quantity || 0);
+      if (recipe.type !== 'cake') {
+        newQty = Math.ceil(newQty * scalingFactor);
+      }
+      return {
+        ...item,
+        originalQuantity: Number(item.quantity || 0),
+        quantity: newQty
+      };
+    });
+
+    // Escalar Mano de Obra: La preparación no crece 1:1 linealmente, usamos factor de esfuerzo 0.75
+    const originalLabor = Number(recipe.laborHours || 0);
+    const scaledLaborHours = Number((originalLabor * Math.pow(scalingFactor, 0.75)).toFixed(2));
+
+    // Escalar Gastos Generales
+    const originalOverhead = Number(recipe.overheadCost || 0);
+    const scaledOverhead = Math.round(originalOverhead * Math.pow(scalingFactor, 0.8));
+
+    const scaledRecipe = {
+      ...recipe,
+      name: options.newName || (recipe.type === 'cake' 
+        ? `${recipe.name.replace(/\s*\(\d+\s*porc[a-zA-Z.]*\)/gi, '').replace(/\s*\(\d+\s*personas\)/gi, '').trim()} (${targetPortions} Personas)` 
+        : `${recipe.name} (${targetUnits} un)`),
+      yieldPortions: targetPortions,
+      yieldUnits: targetUnits,
+      laborHours: scaledLaborHours,
+      overheadCost: scaledOverhead,
+      ingredients: scaledIngredients,
+      packaging: scaledPackaging,
+      scalingFactor: Number(scalingFactor.toFixed(4)),
+      isScaledCopy: true
+    };
+
+    // Calcular costos completos de la nueva receta escalada
+    const costs = this.calculateRecipeFullCosts(scaledRecipe);
+
+    return {
+      recipe: scaledRecipe,
+      scalingFactor,
+      basePortions,
+      targetPortions,
+      costs
     };
   },
 

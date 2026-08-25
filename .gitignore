@@ -1,0 +1,7 @@
+# Archivo de configuración local con llaves secretas
+js/config.local.js
+
+# Node / dependencias si existieran
+node_modules/
+.DS_Store
+Thumbs.db
