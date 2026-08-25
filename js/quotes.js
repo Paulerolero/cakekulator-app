@@ -93,33 +93,30 @@ const QuotesModule = {
             const balance = q.remainingBalance || (total - deposit);
 
             return `
-              <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col justify-between group">
+              <div onclick="QuotesModule.openEditor('${q.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500 transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div class="p-4">
                   <!-- Top Bar -->
                   <div class="flex items-start justify-between gap-2 mb-2">
                     <div>
                       <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xs font-black text-pink-600 bg-pink-50 px-2 py-0.5 rounded-md font-mono">${q.code || 'COT'}</span>
+                        <span class="text-xs font-black text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/60 px-2 py-0.5 rounded-md font-mono">${q.code || 'COT'}</span>
                         <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${statusInfo.badgeClass}">${statusInfo.label}</span>
                       </div>
-                      <h3 class="font-bold text-gray-900 text-base leading-tight">${q.customerName || 'Cliente sin nombre'}</h3>
-                      ${q.customerPhone ? `<p class="text-xs text-gray-500 flex items-center gap-1 mt-0.5">📞 ${q.customerPhone}</p>` : ''}
+                      <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">${q.customerName || 'Cliente sin nombre'}</h3>
+                      ${q.customerPhone ? `<p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">📞 ${q.customerPhone}</p>` : ''}
                     </div>
                     <div class="flex items-center gap-1">
-                      <button onclick="QuotesModule.openEditor('${q.id}')" title="Editar" class="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                      </button>
-                      <button onclick="QuotesModule.deleteQuote('${q.id}')" title="Eliminar" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                      <button onclick="event.stopPropagation(); QuotesModule.deleteQuote('${q.id}')" title="Eliminar cotización" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                       </button>
                     </div>
                   </div>
 
                   <!-- Detalle Evento -->
-                  <div class="bg-gray-50/80 rounded-xl p-2.5 text-xs text-gray-600 space-y-1 mb-3">
-                    ${q.eventName ? `<div class="font-medium text-gray-800">🎉 ${q.eventName}</div>` : ''}
-                    ${q.eventDate ? `<div class="text-gray-500">📅 Fecha: <span class="font-semibold text-gray-700">${q.eventDate}</span></div>` : ''}
-                    <div class="text-[11px] text-gray-500">🛒 ${(q.items || []).length} productos en el pedido</div>
+                  <div class="bg-gray-50/80 dark:bg-slate-800/60 rounded-xl p-2.5 text-xs text-gray-600 dark:text-gray-300 space-y-1 mb-3">
+                    ${q.eventName ? `<div class="font-medium text-gray-800 dark:text-gray-200">🎉 ${q.eventName}</div>` : ''}
+                    ${q.eventDate ? `<div class="text-gray-500 dark:text-gray-400">📅 Fecha: <span class="font-semibold text-gray-700 dark:text-gray-300">${q.eventDate}</span></div>` : ''}
+                    <div class="text-[11px] text-gray-500 dark:text-gray-400">🛒 ${(q.items || []).length} productos en el pedido</div>
                   </div>
 
                   <!-- Resumen Financiero -->
@@ -140,11 +137,11 @@ const QuotesModule = {
                 </div>
 
                 <!-- Footer Botones de Exportar -->
-                <div class="p-3 bg-gray-50/80 border-t border-gray-100 grid grid-cols-2 gap-2">
-                  <button onclick="QuotesModule.openWhatsAppModal('${q.id}')" class="py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-200 transition active:scale-95">
+                <div class="p-3 bg-gray-50/80 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-800 grid grid-cols-2 gap-2">
+                  <button onclick="event.stopPropagation(); QuotesModule.openWhatsAppModal('${q.id}')" class="py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-200/80 transition active:scale-95 cursor-pointer">
                     <span>💬</span> WhatsApp & PDF
                   </button>
-                  <button onclick="QuotesModule.viewPrintModal('${q.id}')" class="py-2 px-2.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-800 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
+                  <button onclick="event.stopPropagation(); QuotesModule.viewPrintModal('${q.id}')" class="py-2 px-2.5 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-800 dark:text-gray-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
                     <span>📄</span> Ver / PDF
                   </button>
                 </div>

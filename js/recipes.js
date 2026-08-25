@@ -90,7 +90,7 @@ const RecipesModule = {
             const costs = Calculator.calculateRecipeFullCosts(recipe, ingredientsMap);
             const isCake = recipe.type === 'cake';
             return `
-              <div class="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden flex flex-col justify-between group">
+              <div onclick="RecipesModule.openEditor('${recipe.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500 transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div class="p-4">
                   <!-- Header Card -->
                   <div class="flex items-start justify-between gap-2 mb-2">
@@ -99,51 +99,51 @@ const RecipesModule = {
                         <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md ${this.getCategoryBadgeClass(recipe.category)}">
                           ${recipe.category || 'General'}
                         </span>
-                        <span class="px-2 py-0.5 text-[10px] font-medium rounded-md bg-purple-50 text-purple-700">
+                        <span class="px-2 py-0.5 text-[10px] font-medium rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
                           ${isCake ? `🎂 Torta (${recipe.yieldPortions} porciones)` : `📦 Lote de ${recipe.yieldUnits} ${recipe.unitName || 'un'}`}
                         </span>
                       </div>
-                      <h3 class="font-bold text-gray-900 text-base leading-tight">${recipe.name}</h3>
+                      <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">${recipe.name}</h3>
                     </div>
                     <div class="flex items-center gap-1">
-                      <button onclick="RecipesModule.duplicateRecipe('${recipe.id}')" title="Duplicar receta" class="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition">
+                      <button onclick="event.stopPropagation(); RecipesModule.duplicateRecipe('${recipe.id}')" title="Duplicar receta" class="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                       </button>
-                      <button onclick="RecipesModule.deleteRecipe('${recipe.id}', '${recipe.name}')" title="Eliminar" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                      <button onclick="event.stopPropagation(); RecipesModule.deleteRecipe('${recipe.id}', '${recipe.name}')" title="Eliminar" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                       </button>
                     </div>
                   </div>
 
-                  ${recipe.description ? `<p class="text-xs text-gray-500 line-clamp-2 mb-3">${recipe.description}</p>` : ''}
+                  ${recipe.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">${recipe.description}</p>` : ''}
 
                   <!-- Métricas de Costo -->
-                  <div class="grid grid-cols-2 gap-2 bg-pink-50/40 rounded-xl p-2.5 mb-3 text-xs">
+                  <div class="grid grid-cols-2 gap-2 bg-pink-50/40 dark:bg-slate-800/60 rounded-xl p-2.5 mb-3 text-xs">
                     <div>
-                      <span class="text-gray-500 text-[11px] block">Costo Total Lote:</span>
-                      <span class="font-bold text-gray-900 text-sm">${Calculator.formatCurrency(costs.totalBatchCost)}</span>
+                      <span class="text-gray-500 dark:text-gray-400 text-[11px] block">Costo Total Lote:</span>
+                      <span class="font-bold text-gray-900 dark:text-gray-100 text-sm">${Calculator.formatCurrency(costs.totalBatchCost)}</span>
                     </div>
                     <div>
-                      <span class="text-gray-500 text-[11px] block">${isCake ? 'Costo por Porción:' : 'Costo Unitario:'}</span>
-                      <span class="font-bold text-pink-600 text-sm">
+                      <span class="text-gray-500 dark:text-gray-400 text-[11px] block">${isCake ? 'Costo por Porción:' : 'Costo Unitario:'}</span>
+                      <span class="font-bold text-pink-600 dark:text-pink-400 text-sm">
                         ${Calculator.formatCurrency(isCake ? costs.costPerPortion : costs.costPerUnit)}
                       </span>
                     </div>
                   </div>
 
                   <!-- Desglose Miniatura -->
-                  <div class="space-y-1 text-[11px] text-gray-500 border-t border-gray-100 pt-2 mb-2">
+                  <div class="space-y-1 text-[11px] text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-slate-800 pt-2 mb-2">
                     <div class="flex justify-between">
                       <span>Insumos (${(recipe.ingredients || []).length} items):</span>
-                      <span class="font-medium text-gray-700">${Calculator.formatCurrency(costs.ingredientsCost)}</span>
+                      <span class="font-medium text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(costs.ingredientsCost)}</span>
                     </div>
                     <div class="flex justify-between">
                       <span>Empaque & Presentación:</span>
-                      <span class="font-medium text-gray-700">${Calculator.formatCurrency(costs.packagingCost)}</span>
+                      <span class="font-medium text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(costs.packagingCost)}</span>
                     </div>
                     <div class="flex justify-between">
                       <span>Mano de obra (${recipe.laborHours || 0} hrs):</span>
-                      <span class="font-medium text-gray-700">${Calculator.formatCurrency(costs.laborCost)}</span>
+                      <span class="font-medium text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(costs.laborCost)}</span>
                     </div>
                   </div>
 
@@ -165,14 +165,11 @@ const RecipesModule = {
                 </div>
 
                 <!-- Footer Acciones -->
-                <div class="p-3 bg-gray-50/70 border-t border-gray-100 grid grid-cols-3 gap-1.5">
-                  <button onclick="RecipesModule.openEditor('${recipe.id}')" class="py-2 px-2 bg-white hover:bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-gray-700 flex items-center justify-center gap-1 transition">
-                    <span>✏️</span> Editar
-                  </button>
-                  <button onclick="RecipesModule.openScalingModal('${recipe.id}')" title="Agrandar o achicar receta por personas o molde" class="py-2 px-2 bg-pink-50 hover:bg-pink-100 text-pink-700 border border-pink-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition active:scale-95">
+                <div class="p-3 bg-gray-50/70 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-800 grid grid-cols-2 gap-2">
+                  <button onclick="event.stopPropagation(); RecipesModule.openScalingModal('${recipe.id}')" title="Agrandar o achicar receta por personas o molde" class="py-2 px-2.5 bg-pink-50 dark:bg-slate-800 hover:bg-pink-100 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
                     <span>📏</span> Escalar
                   </button>
-                  <button onclick="SimulatorModule.loadRecipeForSimulation('${recipe.id}')" class="py-2 px-2 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 shadow-sm shadow-pink-200 transition active:scale-95">
+                  <button onclick="event.stopPropagation(); SimulatorModule.loadRecipeForSimulation('${recipe.id}')" class="py-2 px-2.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm shadow-pink-200/80 transition active:scale-95 cursor-pointer">
                     <span>📊</span> Simular
                   </button>
                 </div>

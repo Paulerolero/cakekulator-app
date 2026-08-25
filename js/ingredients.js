@@ -89,37 +89,34 @@ const IngredientsModule = {
             const baseInfo = Calculator.getIngredientBaseUnitCost(ing);
             const unitLabel = baseInfo.baseUnit === 'g' ? 'gramo' : (baseInfo.baseUnit === 'ml' ? 'ml' : 'unidad');
             return `
-              <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition relative flex flex-col justify-between group">
+              <div onclick="IngredientsModule.openModal('${ing.id}')" class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500 transition relative flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div>
                   <div class="flex items-start justify-between gap-2">
                     <div>
                       <span class="inline-block px-2 py-0.5 text-[11px] font-medium rounded-md ${this.getCategoryBadgeClass(ing.category)} mb-1">
                         ${ing.category || 'General'}
                       </span>
-                      <h4 class="font-bold text-gray-900 text-base leading-tight">${ing.name}</h4>
+                      <h4 class="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">${ing.name}</h4>
                     </div>
-                    <div class="flex items-center gap-1 opacity-90 group-hover:opacity-100">
-                      <button onclick="IngredientsModule.openModal('${ing.id}')" title="Editar" class="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 rounded-lg transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                      </button>
-                      <button onclick="IngredientsModule.deleteConfirm('${ing.id}', '${ing.name}')" title="Eliminar" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                    <div class="flex items-center gap-1">
+                      <button onclick="event.stopPropagation(); IngredientsModule.deleteConfirm('${ing.id}', '${ing.name}')" title="Eliminar insumo" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                       </button>
                     </div>
                   </div>
 
                   <!-- Formato de Compra -->
-                  <div class="mt-3 bg-pink-50/50 rounded-xl p-2.5 text-xs text-gray-600 space-y-1">
+                  <div class="mt-3 bg-pink-50/50 dark:bg-slate-800/60 rounded-xl p-2.5 text-xs text-gray-600 dark:text-gray-300 space-y-1">
                     <div class="flex justify-between items-center">
-                      <span class="text-gray-500">Formato compra:</span>
-                      <span class="font-medium text-gray-800">${ing.packageQty} ${ing.packageUnit}</span>
+                      <span class="text-gray-500 dark:text-gray-400">Formato compra:</span>
+                      <span class="font-medium text-gray-800 dark:text-gray-200">${ing.packageQty} ${ing.packageUnit}</span>
                     </div>
                     <div class="flex justify-between items-center">
-                      <span class="text-gray-500">Precio compra:</span>
-                      <span class="font-semibold text-gray-900">${Calculator.formatCurrency(ing.packagePrice)}</span>
+                      <span class="text-gray-500 dark:text-gray-400">Precio compra:</span>
+                      <span class="font-semibold text-gray-900 dark:text-gray-100">${Calculator.formatCurrency(ing.packagePrice)}</span>
                     </div>
                     ${ing.yieldWastePercent > 0 ? `
-                      <div class="flex justify-between items-center text-amber-600">
+                      <div class="flex justify-between items-center text-amber-600 dark:text-amber-400">
                         <span>Merma / Desperdicio:</span>
                         <span class="font-medium">${ing.yieldWastePercent}%</span>
                       </div>
@@ -128,9 +125,9 @@ const IngredientsModule = {
                 </div>
 
                 <!-- Costo Base Calculado -->
-                <div class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <span class="text-xs text-gray-500">Costo por ${unitLabel}:</span>
-                  <span class="text-sm font-bold text-pink-600 bg-pink-50 px-2 py-0.5 rounded-md">
+                <div class="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Costo por ${unitLabel}:</span>
+                  <span class="text-sm font-bold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/50 px-2 py-0.5 rounded-md">
                     ${settings.currencySymbol} ${baseInfo.costPerBase < 10 ? baseInfo.costPerBase.toFixed(2) : Math.round(baseInfo.costPerBase)} / ${baseInfo.baseUnit}
                   </span>
                 </div>
