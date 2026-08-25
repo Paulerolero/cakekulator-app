@@ -488,6 +488,55 @@ const App = {
           </button>
         </form>
 
+        <!-- Apariencia y Modo Oscuro / Claro -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4 text-sm transition-colors">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-10 h-10 rounded-2xl bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 flex items-center justify-center text-xl shadow-2xs">
+                <span>🎨</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-800 dark:text-gray-100 text-sm">Tema Visual y Modo Oscuro</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Personaliza la interfaz según tu preferencia o iluminación ambiental.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <button 
+              type="button" 
+              onclick="App.setTheme('light')" 
+              id="settings-theme-light" 
+              class="p-4 rounded-2xl border-2 transition text-left flex items-center justify-between cursor-pointer ${!document.documentElement.classList.contains('dark') ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 ring-2 ring-pink-400/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-pink-200'}"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">☀️</span>
+                <div>
+                  <div class="font-bold text-xs text-gray-900 dark:text-gray-100">Modo Claro</div>
+                  <div class="text-[11px] text-gray-500 dark:text-gray-400">Pastel, suave y luminoso</div>
+                </div>
+              </div>
+              <span class="text-pink-600 font-bold text-xs ${!document.documentElement.classList.contains('dark') ? 'opacity-100' : 'opacity-0'}">✓ Activo</span>
+            </button>
+
+            <button 
+              type="button" 
+              onclick="App.setTheme('dark')" 
+              id="settings-theme-dark" 
+              class="p-4 rounded-2xl border-2 transition text-left flex items-center justify-between cursor-pointer ${document.documentElement.classList.contains('dark') ? 'border-pink-500 bg-pink-50/50 dark:bg-slate-800 ring-2 ring-pink-400/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-pink-200'}"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">🌙</span>
+                <div>
+                  <div class="font-bold text-xs text-gray-900 dark:text-gray-100">Modo Oscuro</div>
+                  <div class="text-[11px] text-gray-500 dark:text-gray-400">Alto contraste y descanso</div>
+                </div>
+              </div>
+              <span class="text-pink-600 dark:text-pink-400 font-bold text-xs ${document.documentElement.classList.contains('dark') ? 'opacity-100' : 'opacity-0'}">✓ Activo</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Conexión Nube & Cuenta Google -->
         <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm space-y-4 text-sm">
           <div class="flex items-center justify-between">
@@ -701,6 +750,19 @@ const App = {
     }
   },
 
+  // Helpers de Bloqueo de Scroll al Abrir/Cerrar Modales en Móviles
+  lockBodyScroll() {
+    document.body.classList.add('modal-open');
+  },
+
+  unlockBodyScroll() {
+    // Verificar si queda algún modal abierto antes de desbloquear
+    const openModals = document.querySelectorAll('#modals-root > div:not(.hidden), #recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #ingredient-modal:not(.hidden), #recipe-scaling-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #market-custom-search-modal:not(.hidden), #market-store-manager-modal:not(.hidden), #firebase-config-modal:not(.hidden), #gemini-api-modal:not(.hidden)');
+    if (!openModals || openModals.length === 0) {
+      document.body.classList.remove('modal-open');
+    }
+  },
+
   // Modo Oscuro / Claro (Modo Claro por defecto)
   initDarkMode() {
     const isDark = localStorage.getItem('cakekulator_dark_mode') === 'true';
@@ -713,18 +775,25 @@ const App = {
     this.updateDarkModeIcon();
   },
 
-  toggleDarkMode() {
-    const isCurrentlyDark = document.documentElement.classList.contains('dark');
-    if (isCurrentlyDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('cakekulator_dark_mode', 'false');
-      this.showToast('☀️ Modo Claro activado');
-    } else {
+  setTheme(theme) {
+    if (theme === 'dark') {
       document.documentElement.classList.add('dark');
       localStorage.setItem('cakekulator_dark_mode', 'true');
       this.showToast('🌙 Modo Oscuro activado');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('cakekulator_dark_mode', 'false');
+      this.showToast('☀️ Modo Claro activado');
     }
     this.updateDarkModeIcon();
+    if (this.currentTab === 'settings') {
+      this.renderSettings();
+    }
+  },
+
+  toggleDarkMode() {
+    const isCurrentlyDark = document.documentElement.classList.contains('dark');
+    this.setTheme(isCurrentlyDark ? 'light' : 'dark');
   },
 
   updateDarkModeIcon() {

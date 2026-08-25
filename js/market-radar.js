@@ -640,33 +640,34 @@ const MarketRadarModule = {
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'market-custom-search-modal';
-      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/60 backdrop-blur-xs';
-      document.body.appendChild(modal);
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
     }
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
 
     const allStores = this.getStores();
     const enabledStores = allStores.filter(s => s.enabled !== false);
 
     modal.innerHTML = `
-      <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-pink-100 space-y-4 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 space-y-4 max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto flex flex-col modal-animate-in">
         
         <!-- Header -->
-        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">
           <div class="flex items-center gap-2.5">
             <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-600 text-white flex items-center justify-center text-xl shadow-md shadow-pink-200">
               🔎
             </div>
             <div>
-              <h3 class="font-bold text-gray-900 text-base">Búsqueda Directa en Tiendas de Chile</h3>
-              <p class="text-xs text-gray-500">Ingresa el producto y compara precios en tiempo real</p>
+              <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base">Búsqueda Directa en Tiendas de Chile</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Ingresa el producto y compara precios en tiempo real</p>
             </div>
           </div>
-          <button onclick="document.getElementById('market-custom-search-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100">✕</button>
+          <button onclick="MarketRadarModule.closeCustomSearchModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
         <!-- Input de Búsqueda -->
         <div class="space-y-2">
-          <label class="block text-xs font-bold text-gray-700">¿Qué insumo o producto deseas cotizar?</label>
+          <label class="block text-xs font-bold text-gray-700 dark:text-gray-300">¿Qué insumo o producto deseas cotizar?</label>
           <div class="flex gap-2">
             <input 
               type="text" 
@@ -680,30 +681,30 @@ const MarketRadarModule = {
         </div>
 
         <!-- Botones de Acción Rápida -->
-        <div class="flex flex-wrap items-center gap-2 pt-1 border-b border-gray-100 pb-3">
-          <span class="text-xs font-bold text-gray-500 mr-1">Búsqueda masiva:</span>
-          <button onclick="MarketRadarModule.launchCategorySearch('Supermercados')" class="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold transition flex items-center gap-1 shadow-2xs">
+        <div class="flex flex-wrap items-center gap-2 pt-1 border-b border-gray-100 dark:border-slate-800 pb-3">
+          <span class="text-xs font-bold text-gray-500 dark:text-gray-400 mr-1">Búsqueda masiva:</span>
+          <button onclick="MarketRadarModule.launchCategorySearch('Supermercados')" class="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 text-blue-700 dark:text-blue-300 text-xs font-bold transition flex items-center gap-1 shadow-2xs">
             <span>🛒</span> Abrir Todos los Supermercados
           </button>
-          <button onclick="MarketRadarModule.launchCategorySearch('Distribuidoras')" class="px-3 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold transition flex items-center gap-1 shadow-2xs">
+          <button onclick="MarketRadarModule.launchCategorySearch('Distribuidoras')" class="px-3 py-1.5 rounded-xl bg-pink-50 dark:bg-pink-950/40 hover:bg-pink-100 text-pink-700 dark:text-pink-300 text-xs font-bold transition flex items-center gap-1 shadow-2xs">
             <span>🎂</span> Abrir Todas las Distribuidoras
           </button>
         </div>
 
         <!-- Lista de Tiendas con Botón Individual -->
         <div class="overflow-y-auto flex-1 pr-1 space-y-2">
-          <span class="text-xs font-bold text-gray-700 block mb-2">O busca individualmente en la tienda que prefieras:</span>
+          <span class="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-2">O busca individualmente en la tienda que prefieras:</span>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             ${enabledStores.map(store => `
               <button 
                 onclick="MarketRadarModule.launchSearchForStore('${store.id}')" 
-                class="flex items-center justify-between p-3 rounded-2xl border border-gray-200 hover:border-pink-400 hover:bg-pink-50/40 text-left transition group active:scale-98"
+                class="flex items-center justify-between p-3 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-pink-400 hover:bg-pink-50/40 dark:hover:bg-slate-800 text-left transition group active:scale-98"
               >
                 <div class="flex items-center gap-2.5 truncate">
                   <span class="text-2xl">${store.icon || '🏬'}</span>
                   <div class="truncate">
-                    <span class="font-black text-xs text-gray-900 group-hover:text-pink-600 transition block truncate">${store.name}</span>
+                    <span class="font-black text-xs text-gray-900 dark:text-gray-100 group-hover:text-pink-600 transition block truncate">${store.name}</span>
                     <span class="text-[10px] text-gray-400 block truncate">${store.description || store.category}</span>
                   </div>
                 </div>
@@ -717,9 +718,16 @@ const MarketRadarModule = {
     `;
 
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
     setTimeout(() => {
       document.getElementById('custom-market-query')?.focus();
     }, 100);
+  },
+
+  closeCustomSearchModal() {
+    const modal = document.getElementById('market-custom-search-modal');
+    if (modal) modal.classList.add('hidden');
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   searchSpecificStore(storeId) {
@@ -771,43 +779,44 @@ const MarketRadarModule = {
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'market-store-manager-modal';
-      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/60 backdrop-blur-xs';
-      document.body.appendChild(modal);
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
     }
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
 
     const stores = this.getStores();
 
     modal.innerHTML = `
-      <div class="bg-white rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-pink-100 space-y-4 max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 space-y-4 max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] my-auto flex flex-col modal-animate-in">
         
         <!-- Header -->
-        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">
           <div class="flex items-center gap-2.5">
             <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-gray-800 to-gray-900 text-white flex items-center justify-center text-xl shadow-md">
               ⚙️
             </div>
             <div>
-              <h3 class="font-bold text-gray-900 text-base">Gestionar Tiendas y Distribuidoras</h3>
-              <p class="text-xs text-gray-500">Agrega tus proveedores locales o desactiva los que no utilices</p>
+              <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base">Gestionar Tiendas y Distribuidoras</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Agrega tus proveedores locales o desactiva los que no utilices</p>
             </div>
           </div>
-          <button onclick="document.getElementById('market-store-manager-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100">✕</button>
+          <button onclick="MarketRadarModule.closeStoreManagerModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
         <!-- Formulario para Agregar Nueva Tienda -->
-        <div class="bg-pink-50/50 p-4 rounded-2xl border border-pink-100 space-y-3">
-          <h4 class="font-bold text-xs text-pink-800 flex items-center gap-1.5">
+        <div class="bg-pink-50/50 dark:bg-slate-800/60 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 space-y-3">
+          <h4 class="font-bold text-xs text-pink-800 dark:text-pink-300 flex items-center gap-1.5">
             <span>➕</span> Agregar Nueva Tienda o Distribuidora Personalizada
           </h4>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
             <div>
-              <label class="block font-semibold text-gray-700 mb-1">Nombre de la Tienda *</label>
+              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre de la Tienda *</label>
               <input type="text" id="new-store-name" placeholder="Ej. Distribuidora Santa Ana" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white font-bold" />
             </div>
 
             <div>
-              <label class="block font-semibold text-gray-700 mb-1">Categoría</label>
+              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
               <select id="new-store-cat" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white font-medium">
                 <option value="Supermercados">Supermercados</option>
                 <option value="Distribuidoras de Pastelería" selected>Distribuidoras de Pastelería</option>
@@ -817,17 +826,17 @@ const MarketRadarModule = {
             </div>
 
             <div>
-              <label class="block font-semibold text-gray-700 mb-1">URL Sitio Web / Portal *</label>
+              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">URL Sitio Web / Portal *</label>
               <input type="url" id="new-store-portal" placeholder="https://www.tienda.cl" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white" />
             </div>
 
             <div>
-              <label class="block font-semibold text-gray-700 mb-1">URL de Búsqueda Directa (Opcional)</label>
+              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">URL de Búsqueda Directa (Opcional)</label>
               <input type="url" id="new-store-search" placeholder="https://www.tienda.cl/buscar?q=" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white text-gray-600" />
             </div>
 
             <div class="sm:col-span-2">
-              <label class="block font-semibold text-gray-700 mb-1">Descripción / Nota</label>
+              <label class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">Descripción / Nota</label>
               <input type="text" id="new-store-desc" placeholder="Ej. Sucursal La Florida, buenos precios en manjar y chocolate" class="w-full p-2.5 rounded-xl border border-gray-200 bg-white" />
             </div>
           </div>
@@ -842,7 +851,7 @@ const MarketRadarModule = {
         <!-- Lista de Tiendas Actuales -->
         <div class="overflow-y-auto flex-1 pr-1 space-y-2">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-bold text-gray-700">Tiendas registradas (${stores.length}):</span>
+            <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Tiendas registradas (${stores.length}):</span>
             <button onclick="MarketRadarModule.confirmResetStores()" class="text-[11px] text-gray-500 hover:text-pink-600 underline font-semibold">
               Restablecer Predeterminadas
             </button>
@@ -850,13 +859,13 @@ const MarketRadarModule = {
 
           <div class="space-y-2">
             ${stores.map(store => `
-              <div class="p-3 bg-white rounded-2xl border border-gray-200 hover:border-gray-300 flex items-center justify-between gap-3 transition">
+              <div class="p-3 bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-gray-300 flex items-center justify-between gap-3 transition">
                 <div class="flex items-center gap-3 truncate">
                   <span class="text-2xl shrink-0">${store.icon || '🏬'}</span>
                   <div class="truncate">
                     <div class="flex items-center gap-2">
-                      <h5 class="font-bold text-xs text-gray-900 truncate">${store.name}</h5>
-                      <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${store.category === 'Supermercados' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700'}">
+                      <h5 class="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">${store.name}</h5>
+                      <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full ${store.category === 'Supermercados' ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300'}">
                         ${store.category}
                       </span>
                     </div>
@@ -892,6 +901,13 @@ const MarketRadarModule = {
     `;
 
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+  },
+
+  closeStoreManagerModal() {
+    const modal = document.getElementById('market-store-manager-modal');
+    if (modal) modal.classList.add('hidden');
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   saveNewStore() {

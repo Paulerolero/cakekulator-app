@@ -11,19 +11,22 @@ const RecipeScannerModule = {
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'recipe-scanner-modal';
-      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-gray-900/60 backdrop-blur-xs';
-      document.body.appendChild(modal);
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
     }
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
 
     this.scannedRecipe = null;
     this.isProcessing = false;
     this.renderCaptureStep();
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
   closeModal() {
     const modal = document.getElementById('recipe-scanner-modal');
     if (modal) modal.classList.add('hidden');
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   renderCaptureStep() {
@@ -31,10 +34,10 @@ const RecipeScannerModule = {
     if (!modal) return;
 
     modal.innerHTML = `
-      <div class="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-pink-100 max-h-[88vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 max-h-[calc(100dvh-1.5rem)] sm:max-h-[88vh] my-auto flex flex-col modal-animate-in">
         
         <!-- Header -->
-        <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3.5">
+        <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3 mb-3.5">
           <div class="flex items-center gap-2 sm:gap-2.5">
             <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-purple-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-xs">
               📸

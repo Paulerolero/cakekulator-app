@@ -100,11 +100,6 @@
 
       <!-- Right Header Actions (Google Auth, Install PWA, Settings) -->
       <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <!-- Botón Modo Oscuro / Claro (Oculto) -->
-        <button onclick="App.toggleDarkMode()" id="theme-toggle-btn" title="Cambiar modo oscuro / claro" class="hidden p-1.5 sm:p-2 rounded-xl text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 transition">
-          <span id="theme-toggle-icon" class="text-sm sm:text-base">🌙</span>
-        </button>
-
         <!-- Contenedor de Autenticación con Google -->
         <div id="auth-header-container"></div>
 
@@ -132,27 +127,30 @@
     <section id="settings-view" class="hidden"></section>
   </main>
 
+  <!-- Contenedor Portal para Modales Globales (Fuera de las vistas para centrado perfecto) -->
+  <div id="modals-root"></div>
+
   <!-- Mobile Bottom Navigation Bar -->
   <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-1 py-1 sm:px-2 sm:py-1.5 flex items-center justify-around shadow-lg transition-colors duration-200" style="padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));">
-    <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1 px-1 rounded-xl text-gray-500 dark:text-gray-400">
-      <span class="text-lg leading-none">🏠</span>
-      <span class="text-[10px] font-semibold">Inicio</span>
+    <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      <span class="text-lg leading-none pointer-events-none">🏠</span>
+      <span class="text-[10px] font-semibold pointer-events-none">Inicio</span>
     </button>
-    <button onclick="App.switchTab('quotes')" data-tab="quotes" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1 px-1 rounded-xl text-gray-500">
-      <span class="text-lg leading-none">📋</span>
-      <span class="text-[10px] font-semibold">Cotizar</span>
+    <button onclick="App.switchTab('quotes')" data-tab="quotes" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      <span class="text-lg leading-none pointer-events-none">📋</span>
+      <span class="text-[10px] font-semibold pointer-events-none">Cotizar</span>
     </button>
-    <button onclick="App.switchTab('recipes')" data-tab="recipes" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1 px-1 rounded-xl text-gray-500">
-      <span class="text-lg leading-none">🎂</span>
-      <span class="text-[10px] font-semibold">Recetas</span>
+    <button onclick="App.switchTab('recipes')" data-tab="recipes" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      <span class="text-lg leading-none pointer-events-none">🎂</span>
+      <span class="text-[10px] font-semibold pointer-events-none">Recetas</span>
     </button>
-    <button onclick="App.switchTab('ingredients')" data-tab="ingredients" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1 px-1 rounded-xl text-gray-500">
-      <span class="text-lg leading-none">📦</span>
-      <span class="text-[10px] font-semibold">Insumos</span>
+    <button onclick="App.switchTab('ingredients')" data-tab="ingredients" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      <span class="text-lg leading-none pointer-events-none">📦</span>
+      <span class="text-[10px] font-semibold pointer-events-none">Insumos</span>
     </button>
-    <button onclick="App.switchTab('market-radar')" data-tab="market-radar" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1 px-1 rounded-xl text-emerald-600 font-bold">
-      <span class="text-lg leading-none">🛒</span>
-      <span class="text-[10px] font-bold">Ofertas</span>
+    <button onclick="App.switchTab('market-radar')" data-tab="market-radar" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-emerald-600 dark:text-emerald-400 font-bold active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      <span class="text-lg leading-none pointer-events-none">🛒</span>
+      <span class="text-[10px] font-bold pointer-events-none">Ofertas</span>
     </button>
   </nav>
 

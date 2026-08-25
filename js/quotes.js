@@ -153,15 +153,22 @@ const QuotesModule = {
           }).join('')}
         </div>
       `}
+    `;
+  },
 
-      <!-- Modal Editor de Cotización -->
-      <div id="quote-editor-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
-        <div class="bg-white rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+  ensureEditorModal() {
+    let modal = document.getElementById('quote-editor-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'quote-editor-modal';
+      modal.className = 'fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto flex flex-col modal-animate-in border border-pink-100 dark:border-slate-800">
           <div class="bg-gradient-to-r from-pink-500 to-rose-400 p-4 text-white flex items-center justify-between shrink-0">
             <h3 id="quote-editor-title" class="font-bold text-lg flex items-center gap-2">
               <span>📋</span> Nueva Cotización para Cliente
             </h3>
-            <button onclick="QuotesModule.closeEditor()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10">
+            <button onclick="QuotesModule.closeEditor()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -171,34 +178,34 @@ const QuotesModule = {
             <input type="hidden" id="q-code" value="">
 
             <!-- 1. Datos del Cliente -->
-            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-3">
-              <h4 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+            <div class="bg-gray-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 space-y-3">
+              <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-1.5">
                 <span class="w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs">1</span>
                 Datos del Cliente y Evento
               </h4>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Nombre del Cliente *</label>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre del Cliente *</label>
                   <input type="text" id="q-customer-name" required placeholder="Ej. Camila González" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Teléfono / WhatsApp</label>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Teléfono / WhatsApp</label>
                   <input type="tel" id="q-customer-phone" placeholder="Ej. +56 9 8765 4321" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                 </div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Motivo / Evento</label>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Motivo / Evento</label>
                   <input type="text" id="q-event-name" placeholder="Ej. Cumpleaños, Baby Shower" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Fecha del Evento</label>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Fecha del Evento</label>
                   <input type="date" id="q-event-date" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Estado</label>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Estado</label>
                   <select id="q-status" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                     <option value="draft">Borrador</option>
                     <option value="sent">Enviada</option>
@@ -210,9 +217,9 @@ const QuotesModule = {
             </div>
 
             <!-- 2. Productos y Cantidades -->
-            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-3">
+            <div class="bg-gray-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 space-y-3">
               <div class="flex items-center justify-between">
-                <h4 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+                <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-1.5">
                   <span class="w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs">2</span>
                   Productos del Pedido
                 </h4>
@@ -228,22 +235,22 @@ const QuotesModule = {
 
             <!-- 3. Totales, Descuento y Abono -->
             <div class="bg-pink-50/70 dark:bg-slate-800/80 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 space-y-3">
-              <h4 class="font-bold text-gray-800 text-sm flex items-center gap-1.5">
+              <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-1.5">
                 <span class="w-5 h-5 bg-pink-500 text-white rounded-full flex items-center justify-center text-xs">3</span>
                 Condiciones de Pago & Totales
               </h4>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Descuento (%)</label>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Descuento (%)</label>
                   <input type="number" min="0" max="100" id="q-discount-pct" value="0" oninput="QuotesModule.recalculateTotals()" class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Abono Requerido (%)</label>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Abono Requerido (%)</label>
                   <input type="number" min="0" max="100" id="q-deposit-pct" value="50" oninput="QuotesModule.recalculateTotals()" class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                 </div>
                 <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Tipo de Entrega</label>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tipo de Entrega</label>
                   <select id="q-delivery" class="w-full px-3 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
                     <option value="Retiro en taller">Retiro en taller</option>
                     <option value="Despacho a domicilio">Despacho a domicilio</option>
@@ -252,24 +259,24 @@ const QuotesModule = {
               </div>
 
               <!-- Resumen Calculado en Vivo -->
-              <div class="bg-white p-4 rounded-2xl border border-pink-200 space-y-2 text-xs">
-                <div class="flex justify-between items-center text-gray-600">
+              <div class="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-pink-200 dark:border-slate-700 space-y-2 text-xs">
+                <div class="flex justify-between items-center text-gray-600 dark:text-gray-400">
                   <span>Subtotal Pedido:</span>
-                  <span id="q-live-subtotal" class="font-bold text-gray-800 text-sm">$ 0</span>
+                  <span id="q-live-subtotal" class="font-bold text-gray-800 dark:text-gray-100 text-sm">$ 0</span>
                 </div>
-                <div class="flex justify-between items-center text-rose-600">
+                <div class="flex justify-between items-center text-rose-600 dark:text-rose-400">
                   <span>Descuento aplicado:</span>
                   <span id="q-live-discount" class="font-bold">-$ 0</span>
                 </div>
-                <div class="flex justify-between items-center pt-2 border-t border-gray-100 text-base font-black text-gray-900">
+                <div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-slate-700 text-base font-black text-gray-900 dark:text-white">
                   <span>TOTAL COTIZACIÓN:</span>
                   <span id="q-live-total" class="text-pink-600 text-lg">$ 0</span>
                 </div>
-                <div class="flex justify-between items-center pt-1 text-emerald-700 font-bold text-xs bg-emerald-50 p-2 rounded-xl">
+                <div class="flex justify-between items-center pt-1 text-emerald-700 dark:text-emerald-400 font-bold text-xs bg-emerald-50 dark:bg-slate-800 p-2 rounded-xl">
                   <span>Abono para Reserva (50%):</span>
                   <span id="q-live-deposit">$ 0</span>
                 </div>
-                <div class="flex justify-between items-center text-gray-600 text-xs px-2">
+                <div class="flex justify-between items-center text-gray-600 dark:text-gray-400 text-xs px-2">
                   <span>Saldo al momento de entrega:</span>
                   <span id="q-live-balance" class="font-bold">$ 0</span>
                 </div>
@@ -278,12 +285,12 @@ const QuotesModule = {
 
             <!-- 4. Notas y Condiciones -->
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Notas y Condiciones del Presupuesto</label>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Notas y Condiciones del Presupuesto</label>
               <textarea id="q-notes" rows="2" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white"></textarea>
             </div>
 
-            <div class="flex gap-3 pt-3 border-t border-gray-200">
-              <button type="button" onclick="QuotesModule.closeEditor()" class="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 font-semibold hover:bg-gray-50 transition">
+            <div class="flex gap-3 pt-3 border-t border-gray-200 dark:border-slate-700">
+              <button type="button" onclick="QuotesModule.closeEditor()" class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-slate-800 transition">
                 Cancelar
               </button>
               <button type="submit" class="flex-1 py-3 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold shadow-lg shadow-pink-200 transition">
@@ -292,11 +299,20 @@ const QuotesModule = {
             </div>
           </form>
         </div>
-      </div>
+      `;
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
+    }
+  },
 
-      <!-- Modal de Envío WhatsApp & PDF Personalizado -->
-      <div id="quote-whatsapp-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
-        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+  ensureWhatsAppModal() {
+    let modal = document.getElementById('quote-whatsapp-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'quote-whatsapp-modal';
+      modal.className = 'fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] my-auto flex flex-col modal-animate-in border border-pink-100 dark:border-slate-800">
           <div class="bg-emerald-600 dark:bg-emerald-700 p-4 text-white flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5">
               <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl shadow-xs">
@@ -307,78 +323,87 @@ const QuotesModule = {
                 <p class="text-xs text-emerald-100" id="wa-modal-subtitle">Mensaje personalizado con PDF formal adjunto</p>
               </div>
             </div>
-            <button onclick="QuotesModule.closeWhatsAppModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10">✕</button>
+            <button onclick="QuotesModule.closeWhatsAppModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">✕</button>
           </div>
 
           <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs flex-1">
             <!-- Teléfono Destino -->
-            <div class="bg-emerald-50/60 p-3.5 rounded-2xl border border-emerald-100 space-y-1.5">
-              <label class="block font-bold text-emerald-900">Número de WhatsApp del Cliente:</label>
+            <div class="bg-emerald-50/60 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-emerald-100 dark:border-slate-700 space-y-1.5">
+              <label class="block font-bold text-emerald-900 dark:text-emerald-300">Número de WhatsApp del Cliente:</label>
               <div class="flex items-center gap-2">
                 <input 
                   type="tel" 
                   id="wa-recipient-phone" 
                   placeholder="Ej: +56 9 8765 4321" 
-                  class="flex-1 px-3.5 py-2 rounded-xl border border-emerald-200 bg-white font-semibold text-gray-800 text-sm focus:ring-2 focus:ring-emerald-400"
+                  class="flex-1 px-3.5 py-2 rounded-xl border border-emerald-200 dark:border-slate-600 bg-white font-semibold text-gray-800 dark:text-gray-100 text-sm focus:ring-2 focus:ring-emerald-400"
                 />
               </div>
-              <p class="text-[11px] text-emerald-700">Incluye el código de país (ej. +56 para Chile) para enviar directo al chat.</p>
+              <p class="text-[11px] text-emerald-700 dark:text-emerald-400">Incluye el código de país (ej. +56 para Chile) para enviar directo al chat.</p>
             </div>
 
             <!-- Previsualización del Mensaje Editable -->
             <div class="space-y-1.5">
               <div class="flex items-center justify-between">
-                <label class="font-bold text-gray-800 flex items-center gap-1.5">
+                <label class="font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                   <span>💬</span> Texto Personalizado del Mensaje:
                 </label>
-                <button onclick="QuotesModule.copyMessageToClipboard()" class="text-pink-600 hover:text-pink-700 font-bold text-[11px] flex items-center gap-1">
+                <button onclick="QuotesModule.copyMessageToClipboard()" class="text-pink-600 dark:text-pink-400 hover:underline font-bold text-[11px] flex items-center gap-1">
                   <span>📋</span> Copiar Texto
                 </button>
               </div>
               <textarea 
                 id="wa-message-preview" 
-                rows="11" 
-                class="w-full p-3.5 rounded-2xl border border-gray-200 bg-gray-50 text-gray-800 font-mono text-[11px] leading-relaxed focus:ring-2 focus:ring-pink-400 focus:bg-white shadow-inner"
+                rows="10" 
+                class="w-full p-3.5 rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-950 text-gray-800 dark:text-gray-100 font-mono text-[11px] leading-relaxed focus:ring-2 focus:ring-pink-400 focus:bg-white shadow-inner"
               ></textarea>
             </div>
 
             <!-- Estado del Archivo PDF -->
-            <div class="bg-pink-50/70 p-3.5 rounded-2xl border border-pink-100 flex items-center justify-between gap-2">
+            <div class="bg-pink-50/70 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-pink-100 dark:border-slate-700 flex items-center justify-between gap-2">
               <div class="flex items-center gap-2.5">
                 <div class="text-2xl">📄</div>
                 <div>
-                  <span class="font-bold text-gray-900 block" id="wa-pdf-filename">Cotizacion.pdf</span>
-                  <span class="text-[11px] text-pink-700">Resumen en PDF con logo, desglose y términos</span>
+                  <span class="font-bold text-gray-900 dark:text-gray-100 block" id="wa-pdf-filename">Cotizacion.pdf</span>
+                  <span class="text-[11px] text-pink-700 dark:text-pink-400">Resumen en PDF con logo, desglose y términos</span>
                 </div>
               </div>
-              <button onclick="QuotesModule.downloadActiveQuotePDF()" class="px-3 py-1.5 bg-white hover:bg-pink-100 text-pink-700 border border-pink-200 font-bold rounded-xl shadow-2xs transition flex items-center gap-1 cursor-pointer">
+              <button onclick="QuotesModule.downloadActiveQuotePDF()" class="px-3 py-1.5 bg-white dark:bg-slate-800 hover:bg-pink-100 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-slate-600 font-bold rounded-xl shadow-2xs transition flex items-center gap-1 cursor-pointer">
                 <span>⬇️</span> Descargar PDF
               </button>
             </div>
           </div>
 
           <!-- Footer Botones de Envío -->
-          <div class="p-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
+          <div class="p-4 bg-gray-50 dark:bg-slate-800 border-t border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
             <button 
               onclick="QuotesModule.openDirectWhatsApp()" 
-              class="w-full sm:w-auto py-2.5 px-4 bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 font-bold text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+              class="w-full sm:w-auto py-2.5 px-4 bg-white dark:bg-slate-900 hover:bg-gray-100 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-slate-600 font-bold text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <span>💬</span> Solo Mensaje WhatsApp
             </button>
 
             <button 
               onclick="QuotesModule.shareQuoteWithPDF()" 
-              class="w-full sm:w-auto py-3 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs rounded-xl shadow-md shadow-emerald-200 transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+              class="w-full sm:w-auto py-3 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>🚀</span> Enviar por WhatsApp con PDF Adjunto
             </button>
           </div>
         </div>
-      </div>
+      `;
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
+    }
+  },
 
-      <!-- Modal de Vista Imprimible / PDF de Cotización -->
-      <div id="quote-print-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-2 sm:p-4">
-        <div class="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+  ensurePrintModal() {
+    let modal = document.getElementById('quote-print-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'quote-print-modal';
+      modal.className = 'fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] my-auto flex flex-col modal-animate-in border border-pink-100 dark:border-slate-800">
           <div class="bg-gray-900 p-4 text-white flex items-center justify-between shrink-0 no-print">
             <h3 class="font-bold text-base flex items-center gap-2">
               <span>🖨️</span> Vista Previa de Presupuesto para Cliente
@@ -390,18 +415,20 @@ const QuotesModule = {
               <button onclick="window.print()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-xl text-xs font-bold transition flex items-center gap-1">
                 <span>🖨️</span> Imprimir
               </button>
-              <button onclick="QuotesModule.closePrintModal()" class="text-white/80 hover:text-white p-1 rounded-full">
+              <button onclick="QuotesModule.closePrintModal()" class="text-white/80 hover:text-white p-1 rounded-full transition">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
           </div>
 
-          <div id="printable-quote-content" class="p-6 overflow-y-auto bg-white text-gray-900 text-sm print-area">
+          <div id="printable-quote-content" class="p-4 sm:p-6 overflow-y-auto bg-white text-gray-900 text-sm print-area flex-1">
             <!-- Renderizado dinámico del formato formal de presupuesto -->
           </div>
         </div>
-      </div>
-    `;
+      `;
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
+    }
   },
 
   getStatusBadge(status) {
@@ -435,12 +462,10 @@ const QuotesModule = {
 
   openEditor(quoteId = null) {
     this.editingQuoteId = quoteId;
-    let modal = document.getElementById('quote-editor-modal');
-    if (!modal) {
-      this.render();
-      modal = document.getElementById('quote-editor-modal');
-    }
+    this.ensureEditorModal();
+    const modal = document.getElementById('quote-editor-modal');
     if (!modal) return;
+
     const form = document.getElementById('quote-form');
     const title = document.getElementById('quote-editor-title');
     const itemsTable = document.getElementById('quote-items-table');
@@ -481,11 +506,13 @@ const QuotesModule = {
 
     this.recalculateTotals();
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
   closeEditor() {
     const modal = document.getElementById('quote-editor-modal');
     if (modal) modal.classList.add('hidden');
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   addItemRow(selectedRecipeId = '', qty = 1, unitPrice = '', customName = '') {
@@ -738,6 +765,7 @@ const QuotesModule = {
     if (!quote) return;
 
     this.activeWhatsAppQuoteId = quoteId;
+    this.ensureWhatsAppModal();
     const modal = document.getElementById('quote-whatsapp-modal');
     if (!modal) return;
 
@@ -752,11 +780,13 @@ const QuotesModule = {
     if (subtitle) subtitle.textContent = `Presupuesto ${quote.code} para ${quote.customerName}`;
 
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
   closeWhatsAppModal() {
     const modal = document.getElementById('quote-whatsapp-modal');
     if (modal) modal.classList.add('hidden');
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   copyMessageToClipboard() {
@@ -1019,14 +1049,22 @@ const QuotesModule = {
     if (!quote) return;
 
     this.viewingPrintId = id;
+    this.ensurePrintModal();
     const container = document.getElementById('printable-quote-content');
-    container.innerHTML = this.getQuoteHTMLForPDF(quote);
+    if (container) {
+      container.innerHTML = this.getQuoteHTMLForPDF(quote);
+    }
 
-    document.getElementById('quote-print-modal').classList.remove('hidden');
+    const modal = document.getElementById('quote-print-modal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+    }
   },
 
   closePrintModal() {
     const modal = document.getElementById('quote-print-modal');
     if (modal) modal.classList.add('hidden');
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   }
 };

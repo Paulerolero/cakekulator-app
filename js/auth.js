@@ -363,18 +363,18 @@ const AuthModule = {
     }, 3500);
   },
 
-  // Modal de Inicio de Sesión Moderno y Acorde a la Pastelería
   showLoginRequiredModal() {
     let modal = document.getElementById('login-prompt-modal');
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'login-prompt-modal';
-      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/70 backdrop-blur-md animate-in fade-in duration-300';
-      document.body.appendChild(modal);
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
     }
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-md overflow-y-auto';
 
     modal.innerHTML = `
-      <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-pink-100 text-center relative animate-in zoom-in-95 duration-200 overflow-hidden">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-pink-100 dark:border-slate-800 text-center relative modal-animate-in max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] my-auto overflow-y-auto">
         
         <!-- Elemento decorativo de fondo -->
         <div class="absolute -top-16 -right-16 w-36 h-36 bg-gradient-to-br from-pink-200/40 to-rose-200/30 rounded-full blur-2xl pointer-events-none"></div>
@@ -384,50 +384,50 @@ const AuthModule = {
         <button 
           onclick="AuthModule.closeLoginModal()" 
           title="Cerrar y continuar sin cuenta"
-          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition"
+          class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition cursor-pointer"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
 
         <!-- Icono de Marca Pastelera -->
         <div class="mx-auto w-16 h-16 rounded-3xl bg-gradient-to-tr from-pink-500 via-rose-400 to-pink-400 p-0.5 shadow-lg shadow-pink-200/80 mb-4 flex items-center justify-center">
-          <div class="w-full h-full bg-white rounded-[22px] flex items-center justify-center text-3xl select-none">
+          <div class="w-full h-full bg-white dark:bg-slate-900 rounded-[22px] flex items-center justify-center text-3xl select-none">
             🎂
           </div>
         </div>
 
-        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50 border border-pink-100 text-pink-700 text-[11px] font-bold mb-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-950/50 border border-pink-100 dark:border-pink-900 text-pink-700 dark:text-pink-300 text-[11px] font-bold mb-2">
           <span>✨</span> Sincronización en la Nube
         </div>
 
-        <h3 class="text-2xl font-black text-gray-900 tracking-tight mb-1 font-heading">
+        <h3 class="text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight mb-1 font-heading">
           Tu Pastelería Siempre Conectada
         </h3>
-        <p class="text-xs text-gray-500 mb-6 max-w-xs mx-auto leading-relaxed">
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-6 max-w-xs mx-auto leading-relaxed">
           Accede a tus recetas, costos e insumos desde cualquier celular, tablet o computador sin perder nada.
         </p>
 
         <!-- Tarjetas de Beneficios con diseño pastelero -->
-        <div class="bg-gradient-to-b from-pink-50/70 to-rose-50/40 rounded-2xl p-4 text-left space-y-2.5 mb-6 border border-pink-100/70">
+        <div class="bg-gradient-to-b from-pink-50/70 to-rose-50/40 dark:from-slate-800/80 dark:to-slate-800/40 rounded-2xl p-4 text-left space-y-3 mb-6 border border-pink-100/70 dark:border-slate-700">
           <div class="flex items-start gap-3">
             <span class="text-lg leading-none">🎂</span>
             <div>
-              <h5 class="text-xs font-bold text-gray-800">Recetas y Fichas Técnicas</h5>
-              <p class="text-[11px] text-gray-500">Tus costes, ingredientes y porciones siempre respaldados.</p>
+              <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200">Recetas y Fichas Técnicas</h5>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400">Tus costes, ingredientes y porciones siempre respaldados.</p>
             </div>
           </div>
           <div class="flex items-start gap-3">
             <span class="text-lg leading-none">📦</span>
             <div>
-              <h5 class="text-xs font-bold text-gray-800">Insumos e Inventario</h5>
-              <p class="text-[11px] text-gray-500">Actualiza precios en tu celular y se reflejan en tu PC al instante.</p>
+              <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200">Insumos e Inventario</h5>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400">Actualiza precios en tu celular y se reflejan en tu PC al instante.</p>
             </div>
           </div>
           <div class="flex items-start gap-3">
             <span class="text-lg leading-none">⚡</span>
             <div>
-              <h5 class="text-xs font-bold text-gray-800">Sincronización en Vivo</h5>
-              <p class="text-[11px] text-gray-500">Firestore guarda tus cambios automáticamente segundo a segundo.</p>
+              <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200">Sincronización en Vivo</h5>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400">Firestore guarda tus cambios automáticamente segundo a segundo.</p>
             </div>
           </div>
         </div>
@@ -437,7 +437,7 @@ const AuthModule = {
           <button 
             onclick="AuthModule.loginWithGoogle()"
             id="google-login-main-btn"
-            class="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-50/90 text-gray-800 border-2 border-gray-200 hover:border-pink-300 font-bold py-3.5 px-4 rounded-2xl shadow-sm hover:shadow-md hover:shadow-pink-100 transition-all duration-200 text-sm mb-3 group cursor-pointer"
+            class="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-800 dark:text-gray-100 border-2 border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-500 font-bold py-3.5 px-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 text-sm mb-3 group cursor-pointer"
           >
             <svg class="w-5 h-5 group-hover:scale-110 transition-transform" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -449,7 +449,7 @@ const AuthModule = {
           </button>
         </div>
 
-        <p class="text-[10px] text-gray-400 flex items-center justify-center gap-1 mb-4">
+        <p class="text-[10px] text-gray-400 dark:text-gray-400 flex items-center justify-center gap-1 mb-4">
           <svg class="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
           Conexión segura y cifrada con Firebase Cloud
         </p>
@@ -457,7 +457,7 @@ const AuthModule = {
         <!-- Botón secundario para modo local -->
         <button 
           onclick="AuthModule.closeLoginModal()"
-          class="text-xs text-gray-400 hover:text-pink-600 font-semibold py-1 transition"
+          class="text-xs text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 font-semibold py-1 transition cursor-pointer"
         >
           Continuar en modo local (sin sincronizar)
         </button>
@@ -465,6 +465,7 @@ const AuthModule = {
     `;
 
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
   renderLoginModalLoading(isLoading) {
@@ -502,6 +503,7 @@ const AuthModule = {
     if (modal) {
       modal.classList.add('hidden');
     }
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   // Modal de Diagnóstico / Configuración de Firebase
@@ -510,24 +512,25 @@ const AuthModule = {
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'firebase-config-modal';
-      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs';
-      document.body.appendChild(modal);
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
     }
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
 
     const currentConfig = FirebaseService.getConfig();
     const isLive = FirebaseService.isConfigured && this.currentUser;
 
     modal.innerHTML = `
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-pink-100 max-h-[90vh] overflow-y-auto space-y-4">
-        <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl border border-pink-100 dark:border-slate-800 max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto overflow-y-auto space-y-4 modal-animate-in">
+        <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">
           <div class="flex items-center gap-2.5">
             <span class="text-2xl">🔥</span>
             <div>
-              <h3 class="font-bold text-gray-900 text-base font-heading">Estado de Conexión Nube</h3>
+              <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base font-heading">Estado de Conexión Nube</h3>
               <p class="text-xs text-gray-400">Firebase Firestore & Google Authentication</p>
             </div>
           </div>
-          <button onclick="document.getElementById('firebase-config-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 p-1">
+          <button onclick="AuthModule.closeConfigModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">
             ✕
           </button>
         </div>
@@ -577,8 +580,8 @@ const AuthModule = {
           <div class="flex items-center gap-2">
             <button 
               type="button" 
-              onclick="document.getElementById('firebase-config-modal').classList.add('hidden')" 
-              class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50"
+              onclick="AuthModule.closeConfigModal()" 
+              class="px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
             >
               Cerrar
             </button>
@@ -595,6 +598,15 @@ const AuthModule = {
     `;
 
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+  },
+
+  closeConfigModal() {
+    const modal = document.getElementById('firebase-config-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   saveConfigFromModal() {

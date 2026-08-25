@@ -151,35 +151,42 @@ const IngredientsModule = {
           <span class="text-xs font-black tracking-wide pr-1">Agregar Boleta</span>
         </button>
       </div>
+    `;
+  },
 
-      <!-- Modal de Insumo (Overlay) -->
-      <div id="ingredient-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-          <div class="bg-gradient-to-r from-pink-500 to-rose-400 p-4 text-white flex items-center justify-between">
+  ensureModal() {
+    let modal = document.getElementById('ingredient-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'ingredient-modal';
+      modal.className = 'fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
+      modal.innerHTML = `
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-md shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto flex flex-col modal-animate-in border border-pink-100 dark:border-slate-800">
+          <div class="bg-gradient-to-r from-pink-500 to-rose-400 p-4 text-white flex items-center justify-between shrink-0">
             <h3 id="ingredient-modal-title" class="font-bold text-lg flex items-center gap-2">
               <span>🍓</span> Nuevo Insumo
             </h3>
-            <button onclick="IngredientsModule.closeModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10">
+            <button onclick="IngredientsModule.closeModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
 
-          <form id="ingredient-form" onsubmit="IngredientsModule.saveForm(event)" class="p-5 space-y-4 text-sm max-h-[80vh] overflow-y-auto">
+          <form id="ingredient-form" onsubmit="IngredientsModule.saveForm(event)" class="p-4 sm:p-5 space-y-4 text-sm overflow-y-auto flex-1">
             <input type="hidden" id="ing-id" value="">
 
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Nombre del Insumo / Empaque *</label>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre del Insumo / Empaque *</label>
               <input 
                 type="text" 
                 id="ing-name" 
                 required 
                 placeholder="Ej. Harina sin polvos, Mantequilla sin sal, Caja torta"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white"
               />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Categoría</label>
+              <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
               <select id="ing-category" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white">
                 <option value="Secos">Secos (Harina, Azúcar, Polvos, Cacao)</option>
                 <option value="Lácteos y Grasas">Lácteos y Grasas (Mantequilla, Crema, Leche, Queso)</option>
@@ -196,7 +203,7 @@ const IngredientsModule = {
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Cantidad Comprada *</label>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Cantidad Comprada *</label>
                 <input 
                   type="number" 
                   step="any" 
@@ -204,38 +211,42 @@ const IngredientsModule = {
                   id="ing-qty" 
                   required 
                   placeholder="Ej. 1000, 250, 30"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white"
                 />
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Unidad de Medida *</label>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Unidad de Medida *</label>
                 <select id="ing-unit" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white">
                   <option value="g">Gramos (g)</option>
                   <option value="kg">Kilos (kg)</option>
                   <option value="ml">Mililitros (ml)</option>
                   <option value="l">Litros (L)</option>
-                  <option value="u">Unidades (u)</option>
+                  <option value="un">Unidades (un)</option>
+                  <option value="caja">Caja / Paquete</option>
+                  <option value="taza">Taza / Cup</option>
+                  <option value="cda">Cucharada (cda)</option>
+                  <option value="cdta">Cucharadita (cdta)</option>
                 </select>
               </div>
             </div>
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Precio de Compra ($) *</label>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Precio Total Pagado ($) *</label>
                 <input 
                   type="number" 
                   step="any" 
-                  min="0" 
+                  min="0.01" 
                   id="ing-price" 
                   required 
-                  placeholder="Ej. 1200, 2500, 6500"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  placeholder="Ej. 1290, 4500"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white font-bold"
                 />
               </div>
 
               <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Merma / Desperdicio (%)</label>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Merma / Desperdicio (%)</label>
                 <input 
                   type="number" 
                   step="1" 
@@ -244,20 +255,20 @@ const IngredientsModule = {
                   id="ing-waste" 
                   value="0" 
                   placeholder="0"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white"
                 />
                 <span class="text-[10px] text-gray-400">Ej. 10% en cáscaras de frutas</span>
               </div>
             </div>
 
             <!-- Vista previa del costo calculado en vivo -->
-            <div id="ing-live-cost" class="bg-pink-50 p-3 rounded-xl text-xs text-pink-800 flex justify-between items-center font-medium">
+            <div id="ing-live-cost" class="bg-pink-50 dark:bg-slate-800 p-3 rounded-xl text-xs text-pink-800 dark:text-pink-300 flex justify-between items-center font-medium border border-pink-100 dark:border-slate-700">
               <span>Costo unitario calculado:</span>
-              <span id="ing-live-cost-val" class="font-bold text-pink-600">$ 0</span>
+              <span id="ing-live-cost-val" class="font-bold text-pink-600 dark:text-pink-400">$ 0</span>
             </div>
 
-            <div class="flex gap-2 pt-2">
-              <button type="button" onclick="IngredientsModule.closeModal()" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-medium hover:bg-gray-50 transition">
+            <div class="flex gap-2 pt-2 border-t border-gray-100 dark:border-slate-700">
+              <button type="button" onclick="IngredientsModule.closeModal()" class="flex-1 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-slate-800 transition">
                 Cancelar
               </button>
               <button type="submit" class="flex-1 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-semibold shadow-md shadow-pink-200 transition">
@@ -266,10 +277,11 @@ const IngredientsModule = {
             </div>
           </form>
         </div>
-      </div>
-    `;
-
-    this.attachLiveCostListeners();
+      `;
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
+      this.attachLiveCostListeners();
+    }
   },
 
   getCategoryBadgeClass(category) {
@@ -310,14 +322,11 @@ const IngredientsModule = {
 
   openModal(id = null) {
     this.editingId = id;
-    let modal = document.getElementById('ingredient-modal');
-    if (!modal) {
-      this.render();
-      modal = document.getElementById('ingredient-modal');
-    }
+    this.ensureModal();
+    const modal = document.getElementById('ingredient-modal');
     if (!modal) return;
-    const title = document.getElementById('ingredient-modal-title');
     const form = document.getElementById('ingredient-form');
+    const title = document.getElementById('ingredient-modal-title');
     if (!form || !title) return;
 
     if (id) {
@@ -326,7 +335,7 @@ const IngredientsModule = {
       title.innerHTML = '<span>✏️</span> Editar Insumo';
       document.getElementById('ing-id').value = ing.id;
       document.getElementById('ing-name').value = ing.name;
-      document.getElementById('ing-category').value = ing.category || 'Secos';
+      document.getElementById('ing-category').value = ing.category;
       document.getElementById('ing-qty').value = ing.packageQty;
       document.getElementById('ing-unit').value = ing.packageUnit;
       document.getElementById('ing-price').value = ing.packagePrice;
@@ -340,12 +349,14 @@ const IngredientsModule = {
 
     this.updateLiveCostPreview();
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
   closeModal() {
     const modal = document.getElementById('ingredient-modal');
     if (modal) modal.classList.add('hidden');
     this.editingId = null;
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   attachLiveCostListeners() {

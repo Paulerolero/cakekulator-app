@@ -55,33 +55,34 @@ const GeminiService = {
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'gemini-key-modal';
-      modal.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xs';
-      document.body.appendChild(modal);
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
     }
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
 
     const currentKey = this.getApiKey();
 
     modal.innerHTML = `
-      <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-pink-100 animate-in fade-in zoom-in-95 duration-200">
-        <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 modal-animate-in max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto flex flex-col">
+        <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3 mb-4 shrink-0">
           <div class="flex items-center gap-2.5">
             <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center text-xl shadow-md">
               ✨
             </div>
             <div>
-              <h3 class="font-bold text-gray-900 text-base">Configurar Google Gemini IA</h3>
+              <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base">Configurar Google Gemini IA</h3>
               <p class="text-xs text-gray-400">Escaneo inteligente con visión artificial</p>
             </div>
           </div>
-          <button onclick="GeminiService.closeKeyModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 transition">✕</button>
+          <button onclick="GeminiService.closeKeyModal()" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">✕</button>
         </div>
 
-        <div class="space-y-4 text-xs text-gray-600">
+        <div class="space-y-4 text-xs text-gray-600 dark:text-gray-300 overflow-y-auto flex-1">
           <p>Para escanear boletas y recetas con máxima precisión mediante <b>Google Gemini AI</b>, necesitas una API Key gratuita de Google AI Studio.</p>
           
-          <div class="bg-purple-50 p-3.5 rounded-2xl border border-purple-100 text-purple-800 space-y-1">
+          <div class="bg-purple-50 dark:bg-purple-950/40 p-3.5 rounded-2xl border border-purple-100 dark:border-purple-900 text-purple-800 dark:text-purple-200 space-y-1">
             <p class="font-bold flex items-center gap-1.5"><span>💡</span> ¿Cómo obtener tu clave gratis?</p>
-            <ol class="list-decimal list-inside space-y-0.5 text-[11px] text-purple-700">
+            <ol class="list-decimal list-inside space-y-0.5 text-[11px] text-purple-700 dark:text-purple-300">
               <li>Entra a <a href="https://aistudio.google.com/app/apikey" target="_blank" class="underline font-bold hover:text-purple-900">Google AI Studio (Click aquí)</a>.</li>
               <li>Inicia sesión con tu cuenta de Google.</li>
               <li>Haz clic en <b>"Create API Key"</b> y cópiala aquí.</li>
@@ -89,12 +90,12 @@ const GeminiService = {
           </div>
 
           <div>
-            <label class="block font-bold text-gray-700 mb-1.5">Tu Gemini API Key:</label>
+            <label class="block font-bold text-gray-700 dark:text-gray-300 mb-1.5">Tu Gemini API Key:</label>
             <input type="password" id="gemini-api-key-input" value="${currentKey}" placeholder="AIzaSy..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-400 bg-gray-50/50 font-mono text-xs">
           </div>
 
           <div class="flex gap-2 pt-2">
-            <button onclick="GeminiService.closeKeyModal()" class="flex-1 py-2.5 border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 transition">
+            <button onclick="GeminiService.closeKeyModal()" class="flex-1 py-2.5 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition">
               Cancelar
             </button>
             <button onclick="GeminiService.saveKeyFromModal()" class="flex-1 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl shadow-md hover:opacity-90 transition">
@@ -107,11 +108,13 @@ const GeminiService = {
 
     window._geminiKeySuccessCallback = onSuccessCallback;
     modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
   closeKeyModal() {
     const modal = document.getElementById('gemini-key-modal');
     if (modal) modal.classList.add('hidden');
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
   saveKeyFromModal() {
