@@ -152,7 +152,7 @@ const App = {
 
     this.currentTab = tabName;
 
-    const views = ['dashboard-view', 'quotes-view', 'whatsapp-bot-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
+    const views = ['dashboard-view', 'quotes-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
     views.forEach(v => {
       const el = document.getElementById(v);
       if (el) el.classList.add('hidden');
@@ -190,11 +190,6 @@ const App = {
         break;
       case 'quotes':
         QuotesModule.render();
-        break;
-      case 'whatsapp-bot':
-        if (typeof WhatsAppBotModule !== 'undefined') {
-          WhatsAppBotModule.init();
-        }
         break;
       case 'recipes':
         RecipesModule.render();
@@ -598,39 +593,6 @@ const App = {
                 ⚙️
               </button>
             </div>
-          </div>
-        </div>
-
-        <!-- Conexión a WhatsApp Bot de Respuestas Automáticas -->
-        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4 text-sm">
-          <div class="flex items-center justify-between">
-            <h3 class="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-2">
-              <span>💬</span> WhatsApp Bot de Cotizaciones
-            </h3>
-            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
-              Inteligencia Artificial
-            </span>
-          </div>
-
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            Conecta tu número de WhatsApp para que el bot responda cotizaciones automáticamente a tus clientes utilizando los precios de tus recetas y solicitud de abono.
-          </p>
-
-          <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-2xl p-4 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl shrink-0">
-                📲
-              </div>
-              <div>
-                <h4 class="font-bold text-xs leading-tight">Vincular y Gestionar WhatsApp Bot</h4>
-                <p class="text-[11px] text-emerald-100 mt-0.5">Escanear código QR, historial en vivo y conmutar auto-respuesta.</p>
-              </div>
-            </div>
-
-            <button type="button" onclick="App.switchTab('whatsapp-bot')" class="w-full sm:w-auto px-4 py-2 bg-white text-emerald-800 font-bold text-xs rounded-xl shadow-xs hover:bg-emerald-50 transition shrink-0 cursor-pointer flex items-center justify-center gap-1.5">
-              <span>Configurar Bot</span>
-              <span>→</span>
-            </button>
           </div>
         </div>
 
