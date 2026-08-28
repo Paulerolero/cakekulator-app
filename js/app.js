@@ -268,7 +268,7 @@ const App = {
       </div>
 
       <!-- Métricas Clave (KPIs) con Acceso Directo -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
+      <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mb-4 sm:mb-6">
         <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Recetas & Costeo" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-pink-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
           <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-pink-100 transition duration-200">
             🎂
@@ -296,16 +296,6 @@ const App = {
           <div class="min-w-0">
             <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-emerald-600 transition">Cotizaciones</span>
             <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${pendingQuotes.length}</span>
-          </div>
-        </div>
-
-        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones y Presupuestos" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-purple-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-purple-100 transition duration-200">
-            💰
-          </div>
-          <div class="min-w-0">
-            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-purple-600 transition">Presupuestado</span>
-            <span class="text-sm sm:text-lg font-black text-gray-900 truncate block">${Calculator.formatCurrency(totalQuotedAmount)}</span>
           </div>
         </div>
       </div>

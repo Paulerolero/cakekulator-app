@@ -521,83 +521,6 @@ const SimulatorModule = {
           </table>
         </div>
       </div>
-
-      <!-- Modal: Agregar a Cotización (Nueva o Existente) -->
-      <div id="sim-add-to-quote-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-[60] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto no-scrollbar">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-pink-100 dark:border-slate-800 my-auto">
-          <div class="bg-gradient-to-r from-pink-500 to-rose-400 p-4 text-white flex items-center justify-between">
-            <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
-              <span>📋</span> Agregar a Presupuesto
-            </h3>
-            <button onclick="SimulatorModule.closeAddToQuoteModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
-
-          <div class="p-5 space-y-4 text-sm max-h-[calc(100dvh-6rem)] sm:max-h-[82vh] overflow-y-auto">
-            <!-- Producto a Agregar -->
-            <div class="bg-pink-50/60 dark:bg-slate-800/80 p-3.5 rounded-2xl border border-pink-100 dark:border-slate-700 space-y-2">
-              <div class="flex justify-between items-start gap-2">
-                <div class="flex-1">
-                  <span class="text-[10px] font-bold text-pink-700 dark:text-pink-400 uppercase tracking-wider block">Producto Simulado</span>
-                  <input type="text" id="sim-modal-name" value="${recipeName}" class="font-bold text-gray-900 dark:text-gray-100 bg-transparent border-b border-pink-200 dark:border-slate-600 focus:outline-none focus:border-pink-500 text-sm w-full">
-                </div>
-                <div class="text-right shrink-0">
-                  <span class="text-[10px] text-gray-400 block font-medium">Precio Unitario</span>
-                  <span class="text-base font-black text-pink-600 dark:text-pink-400">${Calculator.formatCurrency(this.currentPrice)}</span>
-                </div>
-              </div>
-
-              <!-- Selector de Cantidad -->
-              <div class="flex justify-between items-center pt-2 border-t border-pink-100/80 dark:border-slate-700">
-                <label class="text-xs font-semibold text-gray-700 dark:text-gray-300">Cantidad a Cotizar:</label>
-                <div class="flex items-center gap-2">
-                  <input type="number" min="1" step="1" id="sim-modal-qty" value="1" oninput="SimulatorModule.onSimModalQtyChange(this.value)" class="w-16 px-2.5 py-1 text-center font-bold text-sm rounded-xl border border-pink-200 dark:border-slate-600 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 dark:text-white">
-                  <span class="text-xs text-gray-500 dark:text-gray-400">${this.getModeLabel(isCakeOrPie)}s</span>
-                </div>
-              </div>
-
-              <div class="flex justify-between items-center text-xs pt-1 font-bold text-gray-800 dark:text-gray-200">
-                <span>Subtotal Estimado:</span>
-                <span id="sim-modal-subtotal" class="text-pink-600 dark:text-pink-400 text-sm">${Calculator.formatCurrency(this.currentPrice)}</span>
-              </div>
-            </div>
-
-            <!-- Opciones de Destino -->
-            <div class="space-y-3 pt-1">
-              <!-- Opción 1: Crear Nueva Cotización -->
-              <button type="button" onclick="SimulatorModule.confirmCreateNewQuote()" class="w-full py-3 px-4 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-2xl shadow-md shadow-pink-200 transition flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-95 cursor-pointer">
-                <span>✨</span> Crear Nueva Cotización con este Producto
-              </button>
-
-              <div class="relative flex py-1 items-center">
-                <div class="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
-                <span class="flex-shrink mx-3 text-[11px] font-semibold text-gray-400 uppercase">O a una existente</span>
-                <div class="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
-              </div>
-
-              <!-- Opción 2: Añadir a Cotización Existente -->
-              <div class="bg-gray-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-gray-200 dark:border-slate-700 space-y-2.5">
-                <label class="block text-xs font-bold text-gray-700 dark:text-gray-300">Seleccionar Cotización Guardada:</label>
-                ${allQuotes.length > 0 ? `
-                  <select id="sim-modal-target-quote" class="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs font-medium text-gray-800 dark:text-gray-100">
-                    ${allQuotes.map(q => `
-                      <option value="${q.id}">
-                        ${q.code} - ${q.customerName || 'Cliente'} (${Calculator.formatCurrency(q.total)})
-                      </option>
-                    `).join('')}
-                  </select>
-                  <button type="button" onclick="SimulatorModule.confirmAddToExistingQuote()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1.5 shadow-sm active:scale-95 cursor-pointer">
-                    <span>📥</span> Añadir a Esta Cotización
-                  </button>
-                ` : `
-                  <p class="text-xs text-gray-500 dark:text-gray-400">No tienes cotizaciones guardadas aún. Usa el botón superior para crear una nueva.</p>
-                `}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     `;
   },
 
@@ -750,9 +673,163 @@ const SimulatorModule = {
   },
 
   // ==========================================
-  // Acciones de Agregar a Cotización
+  // Acciones de Agregar a Cotización (Centrado en Portal Global)
   // ==========================================
+  ensureAddToQuoteModal() {
+    const root = document.getElementById('modals-root') || document.body;
+    let modal = document.getElementById('sim-add-to-quote-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'sim-add-to-quote-modal';
+      root.appendChild(modal);
+    } else if (modal.parentElement !== root) {
+      root.appendChild(modal);
+    }
+    modal.className = 'fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto no-scrollbar hidden';
+
+    let recipeName = 'Cálculo Libre / Manual';
+    let isCakeOrPie = false;
+
+    if (this.selectedRecipeId && this.selectedRecipeId !== 'custom') {
+      const rec = DB.getRecipeById(this.selectedRecipeId);
+      if (rec) {
+        recipeName = rec.name;
+        isCakeOrPie = rec.type === 'cake' || rec.type === 'pie';
+      }
+    }
+
+    const allQuotes = DB.getQuotes();
+
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-pink-100 dark:border-slate-800 my-auto flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] modal-animate-in">
+        
+        <!-- Header Estándar de Modal -->
+        <div class="bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-xs shrink-0">
+              📋
+            </div>
+            <div>
+              <h3 class="font-bold text-base sm:text-lg leading-tight text-white">
+                Agregar a Presupuesto
+              </h3>
+              <p class="text-xs text-pink-100 mt-0.5">Crea una nueva cotización o añade este producto a una existente</p>
+            </div>
+          </div>
+          <button onclick="SimulatorModule.closeAddToQuoteModal()" class="text-white/80 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition cursor-pointer text-lg leading-none shrink-0" title="Cerrar">
+            ✕
+          </button>
+        </div>
+
+        <!-- Contenido Desplazable -->
+        <div class="p-4 sm:p-6 space-y-4 text-xs sm:text-sm overflow-y-auto flex-1">
+          
+          <!-- Tarjeta del Producto Simulado -->
+          <div class="bg-pink-50/60 dark:bg-slate-800/80 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 space-y-3">
+            <div class="space-y-1">
+              <label class="block text-[11px] font-bold text-pink-700 dark:text-pink-400 uppercase tracking-wider">Nombre del Producto en la Cotización</label>
+              <input 
+                type="text" 
+                id="sim-modal-name" 
+                value="${recipeName}" 
+                placeholder="Ej. Torta de Chocolate 20 personas"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-pink-200 dark:border-slate-600 bg-white dark:bg-slate-800 font-bold text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-pink-400"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-1 border-t border-pink-100 dark:border-slate-700">
+              <div>
+                <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 block mb-1">Precio Unitario:</span>
+                <span class="text-sm sm:text-base font-black text-pink-600 dark:text-pink-400 block">${Calculator.formatCurrency(this.currentPrice)}</span>
+              </div>
+              
+              <div>
+                <label class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Cantidad a Cotizar:</label>
+                <div class="flex items-center gap-1.5">
+                  <input 
+                    type="number" 
+                    min="1" 
+                    step="1" 
+                    id="sim-modal-qty" 
+                    value="1" 
+                    oninput="SimulatorModule.onSimModalQtyChange(this.value)" 
+                    class="w-16 px-2.5 py-1 text-center font-bold text-xs sm:text-sm rounded-xl border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 dark:text-white focus:ring-2 focus:ring-pink-400"
+                  />
+                  <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">${this.getModeLabel(isCakeOrPie)}s</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-pink-100 dark:border-slate-700 font-bold text-xs sm:text-sm">
+              <span class="text-gray-700 dark:text-gray-300">Subtotal Estimado:</span>
+              <span id="sim-modal-subtotal" class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400">${Calculator.formatCurrency(this.currentPrice)}</span>
+            </div>
+          </div>
+
+          <!-- Opciones de Destino -->
+          <div class="space-y-3.5 pt-1">
+            <!-- Opción 1: Crear Nueva Cotización -->
+            <button 
+              type="button" 
+              onclick="SimulatorModule.confirmCreateNewQuote()" 
+              class="w-full py-3.5 px-4 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl sm:rounded-2xl shadow-md shadow-pink-200/80 dark:shadow-none transition flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-95 cursor-pointer"
+            >
+              <span>✨</span> Crear Nueva Cotización con este Producto
+            </button>
+
+            <!-- Separador -->
+            <div class="relative flex py-1 items-center">
+              <div class="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
+              <span class="flex-shrink mx-3 text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">O a una cotización existente</span>
+              <div class="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
+            </div>
+
+            <!-- Opción 2: Añadir a Cotización Existente -->
+            <div class="bg-gray-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-gray-200 dark:border-slate-700 space-y-3">
+              <label class="block text-xs font-bold text-gray-700 dark:text-gray-300">Seleccionar Cotización Guardada:</label>
+              ${allQuotes.length > 0 ? `
+                <select 
+                  id="sim-modal-target-quote" 
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-600 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs font-semibold text-gray-800 dark:text-gray-100"
+                >
+                  ${allQuotes.map(q => `
+                    <option value="${q.id}">
+                      ${q.code} - ${q.customerName || 'Cliente'} (${Calculator.formatCurrency(q.total)})
+                    </option>
+                  `).join('')}
+                </select>
+                <button 
+                  type="button" 
+                  onclick="SimulatorModule.confirmAddToExistingQuote()" 
+                  class="w-full py-2.5 sm:py-3 bg-gray-900 hover:bg-black dark:bg-slate-700 dark:hover:bg-slate-600 text-white font-bold rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-2 shadow-sm active:scale-95 cursor-pointer"
+                >
+                  <span>📥</span> Añadir a Esta Cotización
+                </button>
+              ` : `
+                <p class="text-xs text-gray-500 dark:text-gray-400 py-1">No tienes cotizaciones guardadas aún. Usa el botón superior para crear una nueva.</p>
+              `}
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer con Botón Cancelar -->
+        <div class="p-3 sm:p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700/80 flex justify-end shrink-0">
+          <button 
+            type="button" 
+            onclick="SimulatorModule.closeAddToQuoteModal()" 
+            class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-slate-800 transition text-xs cursor-pointer"
+          >
+            Cancelar
+          </button>
+        </div>
+
+      </div>
+    `;
+  },
+
   openAddToQuoteModal() {
+    this.ensureAddToQuoteModal();
     App.openModal('sim-add-to-quote-modal');
     this.onSimModalQtyChange(1);
   },

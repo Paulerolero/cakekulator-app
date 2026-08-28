@@ -399,71 +399,81 @@ const MarketRadarModule = {
 
     container.innerHTML = `
       <!-- Barra Superior de Acciones de Radar -->
-      <div class="flex items-center justify-between gap-2 mb-2.5 sm:mb-3">
-        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] sm:text-xs font-bold border border-emerald-100">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>${enabledStores.length} Tiendas activas</span>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 mb-2.5 sm:mb-3">
+        <div class="flex items-center justify-between gap-2">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 text-[11px] sm:text-xs font-bold border border-emerald-100 dark:border-emerald-900">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>${enabledStores.length} Tiendas activas</span>
+          </div>
+
+          <!-- Botón de refrescar visible junto al badge en móvil -->
+          <button onclick="MarketRadarModule.refreshPricesLive()" title="Actualizar precios del radar" class="sm:hidden p-1.5 rounded-xl bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 transition active:scale-95 cursor-pointer border border-emerald-200 dark:border-slate-700">
+            <span class="text-xs">🔄</span>
+          </button>
         </div>
 
-        <div class="flex items-center gap-1.5 sm:gap-2">
-          <button onclick="MarketRadarModule.openCustomSearchModal()" class="px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs shadow-pink-200 active:scale-95 cursor-pointer whitespace-nowrap">
-            <span>🔍</span> Buscar en Tiendas
+        <div class="grid grid-cols-2 sm:flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+          <button onclick="MarketRadarModule.openCustomSearchModal()" class="px-2.5 sm:px-3.5 py-2 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs shadow-pink-200 active:scale-95 cursor-pointer truncate">
+            <span>🔍</span> <span class="truncate">Buscar en Tiendas</span>
           </button>
-          <button onclick="MarketRadarModule.openStoreManagerModal()" class="px-3 py-1.5 sm:py-2 rounded-xl bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-gray-200 shadow-2xs active:scale-95 cursor-pointer whitespace-nowrap">
-            <span>⚙️</span> Tiendas (${allStores.length})
+          <button onclick="MarketRadarModule.openStoreManagerModal()" class="px-2.5 sm:px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-gray-200 dark:border-slate-700 shadow-2xs active:scale-95 cursor-pointer truncate">
+            <span>⚙️</span> <span class="truncate">Tiendas (${allStores.length})</span>
           </button>
-          <button onclick="MarketRadarModule.refreshPricesLive()" title="Actualizar precios del radar" class="p-1.5 sm:p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition active:scale-95 cursor-pointer border border-emerald-200">
+          <button onclick="MarketRadarModule.refreshPricesLive()" title="Actualizar precios del radar" class="hidden sm:flex p-2 rounded-xl bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 transition active:scale-95 cursor-pointer border border-emerald-200 dark:border-slate-700 items-center justify-center">
             <span>🔄</span>
           </button>
         </div>
       </div>
 
       <!-- Barra de Filtros de Ofertas -->
-      <div class="bg-white p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs space-y-2.5 sm:space-y-3.5 mb-3 sm:mb-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-2.5 sm:gap-3">
+      <div class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 dark:border-slate-800 shadow-xs space-y-2.5 sm:space-y-3.5 mb-3 sm:mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-2 sm:gap-3">
           <!-- Búsqueda -->
-          <div class="sm:col-span-2 md:col-span-6 relative">
+          <div class="md:col-span-6 relative">
             <input 
               type="text" 
               placeholder="Buscar en ofertas (Manjar, Harina, Mantequilla)..." 
               value="${this.searchQuery}"
               oninput="MarketRadarModule.onSearch(this.value)"
-              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 text-xs bg-gray-50/50 focus:bg-white"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-400 text-xs bg-gray-50/50 focus:bg-white"
             />
             <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5 sm:top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </div>
 
-          <!-- Filtro por Tienda -->
-          <div class="md:col-span-3">
-            <select 
-              onchange="MarketRadarModule.filterByStore(this.value)"
-              class="w-full py-2 sm:py-2.5 px-3 rounded-xl border border-gray-200 text-xs font-medium bg-white focus:ring-2 focus:ring-pink-400"
-            >
-              <option value="all" ${this.selectedStore === 'all' ? 'selected' : ''}>🏬 Todas las Tiendas</option>
-              ${allStores.map(s => `
-                <option value="${s.name}" ${this.selectedStore === s.name ? 'selected' : ''}>${s.icon || '🏬'} ${s.name}</option>
-              `).join('')}
-            </select>
-          </div>
+          <!-- Filtros en 2 columnas en mobile, 6 columnas en desktop -->
+          <div class="grid grid-cols-2 md:col-span-6 gap-2 sm:gap-3">
+            <!-- Filtro por Tienda -->
+            <div>
+              <select 
+                onchange="MarketRadarModule.filterByStore(this.value)"
+                class="w-full py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 text-xs font-medium bg-white focus:ring-2 focus:ring-pink-400 truncate"
+              >
+                <option value="all" ${this.selectedStore === 'all' ? 'selected' : ''}>🏬 Todas las Tiendas</option>
+                ${allStores.map(s => `
+                  <option value="${s.name}" ${this.selectedStore === s.name ? 'selected' : ''}>${s.icon || '🏬'} ${s.name}</option>
+                `).join('')}
+              </select>
+            </div>
 
-          <!-- Ordenar por -->
-          <div class="md:col-span-3">
-            <select 
-              onchange="MarketRadarModule.changeSort(this.value)"
-              class="w-full py-2 sm:py-2.5 px-3 rounded-xl border border-gray-200 text-xs font-medium bg-white focus:ring-2 focus:ring-pink-400"
-            >
-              <option value="discount" ${this.sortBy === 'discount' ? 'selected' : ''}>🔥 Mayor Descuento (%)</option>
-              <option value="price-asc" ${this.sortBy === 'price-asc' ? 'selected' : ''}>💲 Menor Precio ($)</option>
-            </select>
+            <!-- Ordenar por -->
+            <div>
+              <select 
+                onchange="MarketRadarModule.changeSort(this.value)"
+                class="w-full py-2 sm:py-2.5 px-2.5 sm:px-3 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-200 text-xs font-medium bg-white focus:ring-2 focus:ring-pink-400 truncate"
+              >
+                <option value="discount" ${this.sortBy === 'discount' ? 'selected' : ''}>🔥 Descuento (%)</option>
+                <option value="price-asc" ${this.sortBy === 'price-asc' ? 'selected' : ''}>💲 Menor Precio ($)</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <!-- Categorías Pills -->
-        <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-medium">
+        <!-- Categorías Pills con scroll horizontal suave -->
+        <div class="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-medium max-w-full touch-pan-x overscroll-x-contain">
           ${categories.map(cat => `
             <button 
               onclick="MarketRadarModule.filterByCategory('${cat}')"
-              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl whitespace-nowrap transition ${this.activeCategory === cat ? 'bg-pink-600 text-white font-bold shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-pink-50'}"
+              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl whitespace-nowrap transition shrink-0 cursor-pointer ${this.activeCategory === cat ? 'bg-pink-600 text-white font-bold shadow-xs' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-slate-700'}"
             >
               ${cat === 'all' ? '✨ Todas' : cat}
             </button>
@@ -473,53 +483,53 @@ const MarketRadarModule = {
 
       <!-- Listado de Ofertas Destacadas -->
       ${filtered.length === 0 ? `
-        <div class="bg-white dark:bg-slate-900 rounded-3xl p-10 text-center border border-pink-100 dark:border-slate-800 shadow-sm space-y-3">
-          <div class="w-16 h-16 rounded-full bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 flex items-center justify-center text-3xl mx-auto">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-10 text-center border border-pink-100 dark:border-slate-800 shadow-sm space-y-3">
+          <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 flex items-center justify-center text-2xl sm:text-3xl mx-auto">
             🛒
           </div>
-          <h3 class="text-base font-bold text-gray-800 dark:text-gray-200">No encontramos ofertas para este filtro</h3>
+          <h3 class="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-200">No encontramos ofertas para este filtro</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">Prueba buscando en el catálogo general o haz una búsqueda directa en las tiendas con el botón superior.</p>
           <button onclick="MarketRadarModule.openCustomSearchModal()" class="px-4 py-2 rounded-xl bg-pink-600 text-white text-xs font-bold shadow-md shadow-pink-200 hover:bg-pink-700 transition">
             🔍 Buscar en Tiendas
           </button>
         </div>
       ` : `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 mb-8">
           ${filtered.map(item => {
             const unitPrice = item.offerPrice / item.packageQty;
             const existingLocal = this.findMatchingLocalIngredient(item);
             return `
-              <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-pink-100/90 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group">
+              <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100/90 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group">
                 
-                <div class="mb-4">
+                <div class="mb-3 sm:mb-4">
                   <!-- Header del Producto -->
-                  <div class="flex items-start justify-between gap-2 mb-2.5">
-                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300">
-                      <span>${item.storeLogo}</span> ${item.store}
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 sm:py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 truncate max-w-[70%]">
+                      <span>${item.storeLogo}</span> <span class="truncate">${item.store}</span>
                     </span>
-                    <span class="inline-flex items-center gap-0.5 text-xs font-black px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/60">
+                    <span class="inline-flex items-center gap-0.5 text-xs font-black px-2 py-0.5 sm:py-1 rounded-full bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/60 shrink-0">
                       -${item.discountPct}%
                     </span>
                   </div>
 
-                  <h4 class="font-bold text-sm sm:text-base text-gray-900 dark:text-gray-100 leading-snug group-hover:text-pink-600 dark:group-hover:text-pink-400 transition mb-1">${item.name}</h4>
-                  <span class="text-xs text-gray-500 dark:text-gray-400 block">Marca: ${item.brand} · Formato: ${item.packageQty} ${item.packageUnit}</span>
+                  <h4 class="font-bold text-xs sm:text-base text-gray-900 dark:text-gray-100 leading-snug group-hover:text-pink-600 dark:group-hover:text-pink-400 transition mb-1">${item.name}</h4>
+                  <span class="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 block">Marca: ${item.brand} · Formato: ${item.packageQty} ${item.packageUnit}</span>
                 </div>
 
-                <!-- Precios y Comparador con Márgenes Generosos -->
-                <div class="bg-gray-50/80 dark:bg-slate-800/80 p-3.5 sm:p-4 rounded-2xl space-y-2 mb-4 border border-gray-100 dark:border-slate-700/60">
+                <!-- Precios y Comparador -->
+                <div class="bg-gray-50/80 dark:bg-slate-800/80 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl space-y-1.5 mb-3 sm:mb-4 border border-gray-100 dark:border-slate-700/60">
                   <div class="flex items-baseline justify-between">
                     <div>
                       <span class="text-xs text-gray-400 dark:text-gray-500 line-through mr-1.5">${Calculator.formatCurrency(item.normalPrice)}</span>
-                      <span class="text-lg font-black text-emerald-600 dark:text-emerald-400">${Calculator.formatCurrency(item.offerPrice)}</span>
+                      <span class="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400">${Calculator.formatCurrency(item.offerPrice)}</span>
                     </div>
-                    <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    <span class="text-[11px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400">
                       ${Calculator.formatCurrency(Math.round(unitPrice))} / ${item.packageUnit}
                     </span>
                   </div>
 
                   ${existingLocal ? `
-                    <div class="pt-2 border-t border-gray-200/70 dark:border-slate-700 flex items-center justify-between text-xs">
+                    <div class="pt-1.5 border-t border-gray-200/70 dark:border-slate-700 flex items-center justify-between text-[11px] sm:text-xs">
                       <span class="text-gray-500 dark:text-gray-400">Tu costo actual:</span>
                       <span class="font-bold ${item.offerPrice < existingLocal.packagePrice ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}">
                         ${Calculator.formatCurrency(existingLocal.packagePrice)}
@@ -529,20 +539,20 @@ const MarketRadarModule = {
                   ` : ''}
                 </div>
 
-                <!-- Acciones del Producto con Mayor Separación -->
-                <div class="grid grid-cols-2 gap-3 pt-1 mt-auto">
+                <!-- Acciones del Producto -->
+                <div class="grid grid-cols-2 gap-2 sm:gap-3 pt-0.5 mt-auto">
                   <a 
                     href="${item.productUrl}" 
                     target="_blank" 
-                    class="py-2.5 px-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-500 hover:bg-pink-50/50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-200 font-bold text-xs flex items-center justify-center gap-1.5 transition text-center shadow-2xs"
+                    class="py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl border border-gray-200 dark:border-slate-700 hover:border-pink-300 dark:hover:border-pink-500 hover:bg-pink-50/50 dark:hover:bg-slate-800 text-gray-700 dark:text-gray-200 font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 transition text-center shadow-2xs truncate"
                   >
-                    <span>🔗</span> Ver Oferta
+                    <span>🔗</span> <span class="truncate">Ver Oferta</span>
                   </a>
                   <button 
                     onclick="MarketRadarModule.applyOfferToInventory('${item.id}')"
-                    class="py-2.5 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-pink-200/80 dark:shadow-none transition active:scale-95 cursor-pointer"
+                    class="py-2 sm:py-2.5 px-2 sm:px-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-[11px] sm:text-xs flex items-center justify-center gap-1 shadow-md shadow-pink-200/80 dark:shadow-none transition active:scale-95 cursor-pointer truncate"
                   >
-                    <span>📥</span> Usar Precio
+                    <span>📥</span> <span class="truncate">Usar Precio</span>
                   </button>
                 </div>
 
@@ -862,25 +872,25 @@ const MarketRadarModule = {
 
             <div class="space-y-2.5">
               ${stores.map(store => `
-                <div class="p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-pink-200 dark:hover:border-pink-900 flex items-center justify-between gap-3 transition shadow-2xs">
-                  <div class="flex items-center gap-3 truncate">
-                    <span class="text-2xl shrink-0">${store.icon || '🏬'}</span>
-                    <div class="truncate">
-                      <div class="flex items-center gap-2">
+                <div class="p-3 sm:p-3.5 bg-white dark:bg-slate-800/90 rounded-2xl border border-gray-200 dark:border-slate-700 hover:border-pink-200 dark:hover:border-pink-900 flex items-center justify-between gap-2 sm:gap-3 transition shadow-2xs">
+                  <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1 truncate">
+                    <span class="text-xl sm:text-2xl shrink-0">${store.icon || '🏬'}</span>
+                    <div class="min-w-0 flex-1 truncate">
+                      <div class="flex items-center gap-1.5 truncate">
                         <h5 class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate">${store.name}</h5>
-                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${store.category === 'Supermercados' ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300'}">
+                        <span class="text-[8px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full shrink-0 ${store.category === 'Supermercados' ? 'bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300' : 'bg-pink-50 dark:bg-pink-950 text-pink-700 dark:text-pink-300'}">
                           ${store.category}
                         </span>
                       </div>
-                      <p class="text-[11px] text-gray-400 dark:text-gray-400 truncate mt-0.5">${store.description || store.portalUrl}</p>
+                      <p class="text-[10px] sm:text-[11px] text-gray-400 dark:text-gray-400 truncate mt-0.5">${store.description || store.portalUrl}</p>
                     </div>
                   </div>
 
-                  <div class="flex items-center gap-2 shrink-0">
+                  <div class="flex items-center gap-1 sm:gap-2 shrink-0">
                     <!-- Toggle Activo -->
                     <button 
                       onclick="MarketRadarModule.toggleStoreEnabled('${store.id}')"
-                      class="px-3 py-1.5 rounded-xl text-[11px] font-bold transition cursor-pointer ${store.enabled !== false ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400'}"
+                      class="px-2.5 sm:px-3 py-1.5 rounded-xl text-[10px] sm:text-[11px] font-bold transition cursor-pointer ${store.enabled !== false ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400'}"
                       title="${store.enabled !== false ? 'Tienda Activa en el Radar' : 'Tienda Oculta'}"
                     >
                       ${store.enabled !== false ? '✓ Activa' : 'Oculta'}
@@ -890,7 +900,7 @@ const MarketRadarModule = {
                     <button 
                       onclick="MarketRadarModule.deleteStoreConfirm('${store.id}', '${store.name}')" 
                       title="Eliminar tienda de mi lista" 
-                      class="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer"
+                      class="p-1.5 sm:p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer"
                     >
                       🗑️
                     </button>

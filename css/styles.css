@@ -350,6 +350,25 @@ body.modal-open {
   z-index: 60;
 }
 
+#modals-root > div,
+#sim-add-to-quote-modal {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 70 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0.75rem !important;
+}
+
+#modals-root > div.hidden,
+#sim-add-to-quote-modal.hidden {
+  display: none !important;
+}
+
 /* Estilos de respaldo para modales en Dark Mode */
 html.dark .modal-card-custom,
 html.dark #recipe-editor-modal > div,
