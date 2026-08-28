@@ -7,6 +7,7 @@ const DB_KEYS = {
   INGREDIENTS: 'cakekulator_ingredients',
   RECIPES: 'cakekulator_recipes',
   QUOTES: 'cakekulator_quotes',
+  CUSTOMERS: 'cakekulator_customers',
   MARKET_STORES: 'cakekulator_market_stores',
   PRICE_HISTORY: 'cakekulator_price_history'
 };
@@ -16,6 +17,7 @@ const LEGACY_DB_KEYS = {
   INGREDIENTS: 'dulcecalculo_ingredients',
   RECIPES: 'dulcecalculo_recipes',
   QUOTES: 'dulcecalculo_quotes',
+  CUSTOMERS: 'dulcecalculo_customers',
   MARKET_STORES: 'dulcecalculo_market_stores'
 };
 
@@ -42,6 +44,9 @@ const DB = {
     }
     if (!localStorage.getItem(DB_KEYS.QUOTES)) {
       this.saveQuotes(DEFAULT_QUOTES);
+    }
+    if (!localStorage.getItem(DB_KEYS.CUSTOMERS) && typeof DEFAULT_CUSTOMERS !== 'undefined') {
+      this.saveCustomers(DEFAULT_CUSTOMERS);
     }
     if (!localStorage.getItem(DB_KEYS.MARKET_STORES) && typeof DEFAULT_MARKET_STORES !== 'undefined') {
       this.saveMarketStores(DEFAULT_MARKET_STORES);
@@ -111,11 +116,12 @@ const DB = {
       const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
       
       // Primera verificación inicial de datos en la nube
-      const [settingsDoc, ingDoc, recDoc, quoteDoc, storeDoc] = await Promise.all([
+      const [settingsDoc, ingDoc, recDoc, quoteDoc, custDoc, storeDoc] = await Promise.all([
         userDocRef.doc('settings').get(),
         userDocRef.doc('ingredients').get(),
         userDocRef.doc('recipes').get(),
         userDocRef.doc('quotes').get(),
+        userDocRef.doc('customers').get(),
         userDocRef.doc('market_stores').get()
       ]);
 
@@ -123,6 +129,7 @@ const DB = {
                            (ingDoc.exists && ingDoc.data()?.data) ||
                            (recDoc.exists && recDoc.data()?.data) ||
                            (quoteDoc.exists && quoteDoc.data()?.data) ||
+                           (custDoc.exists && custDoc.data()?.data) ||
                            (storeDoc.exists && storeDoc.data()?.data);
 
       if (settingsDoc.exists && settingsDoc.data()?.data) {
@@ -136,6 +143,9 @@ const DB = {
       }
       if (quoteDoc.exists && quoteDoc.data()?.data) {
         localStorage.setItem(DB_KEYS.QUOTES, JSON.stringify(quoteDoc.data().data));
+      }
+      if (custDoc.exists && custDoc.data()?.data) {
+        localStorage.setItem(DB_KEYS.CUSTOMERS, JSON.stringify(custDoc.data().data));
       }
       if (storeDoc.exists && storeDoc.data()?.data) {
         localStorage.setItem(DB_KEYS.MARKET_STORES, JSON.stringify(storeDoc.data().data));
@@ -181,6 +191,7 @@ const DB = {
       { name: 'ingredients', key: DB_KEYS.INGREDIENTS },
       { name: 'recipes', key: DB_KEYS.RECIPES },
       { name: 'quotes', key: DB_KEYS.QUOTES },
+      { name: 'customers', key: DB_KEYS.CUSTOMERS },
       { name: 'market_stores', key: DB_KEYS.MARKET_STORES },
       { name: 'price_history', key: DB_KEYS.PRICE_HISTORY }
     ];
@@ -277,6 +288,7 @@ const DB = {
     const ingredients = this.getIngredients();
     const recipes = this.getRecipes();
     const quotes = this.getQuotes();
+    const customers = this.getCustomers();
     const marketStores = this.getMarketStores();
     const priceHistory = this.getPriceHistory();
     const now = Date.now();
@@ -286,6 +298,7 @@ const DB = {
       userDocRef.doc('ingredients').set({ data: ingredients, updatedAt: now }),
       userDocRef.doc('recipes').set({ data: recipes, updatedAt: now }),
       userDocRef.doc('quotes').set({ data: quotes, updatedAt: now }),
+      userDocRef.doc('customers').set({ data: customers, updatedAt: now }),
       userDocRef.doc('market_stores').set({ data: marketStores, updatedAt: now }),
       userDocRef.doc('price_history').set({ data: priceHistory, updatedAt: now })
     ]);
@@ -306,6 +319,7 @@ const DB = {
     localStorage.removeItem(DB_KEYS.INGREDIENTS);
     localStorage.removeItem(DB_KEYS.RECIPES);
     localStorage.removeItem(DB_KEYS.QUOTES);
+    localStorage.removeItem(DB_KEYS.CUSTOMERS);
     localStorage.removeItem(DB_KEYS.MARKET_STORES);
     this.init();
   },
@@ -575,15 +589,163 @@ const DB = {
     this.saveQuotes(list);
   },
 
+  // ==========================================
+  // Clientes & Fechas Especiales (CRM Pastelero)
+  // ==========================================
+  getCustomers() {
+    try {
+      const data = localStorage.getItem(DB_KEYS.CUSTOMERS);
+      if (data) {
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) return parsed;
+      }
+      return typeof DEFAULT_CUSTOMERS !== 'undefined' ? DEFAULT_CUSTOMERS : [];
+    } catch (e) {
+      console.error('Error al cargar clientes:', e);
+      return typeof DEFAULT_CUSTOMERS !== 'undefined' ? DEFAULT_CUSTOMERS : [];
+    }
+  },
+
+  getCustomerById(id) {
+    const list = this.getCustomers();
+    return list.find(item => item.id === id) || null;
+  },
+
+  saveCustomers(customers) {
+    localStorage.setItem(DB_KEYS.CUSTOMERS, JSON.stringify(customers));
+    this.syncDocumentToCloud('customers', customers);
+  },
+
+  addCustomer(customer) {
+    const list = this.getCustomers();
+    if (!customer.id) {
+      customer.id = 'cust_' + Date.now();
+    }
+    if (!customer.createdAt) {
+      customer.createdAt = new Date().toISOString();
+    }
+    if (customer.isFavorite === undefined) {
+      customer.isFavorite = false;
+    }
+    if (!Array.isArray(customer.specialDates)) {
+      customer.specialDates = [];
+    }
+    if (!Array.isArray(customer.purchases)) {
+      customer.purchases = [];
+    }
+    list.unshift(customer);
+    this.saveCustomers(list);
+    return customer;
+  },
+
+  updateCustomer(id, updatedData) {
+    const list = this.getCustomers();
+    const index = list.findIndex(item => item.id === id);
+    if (index !== -1) {
+      list[index] = { ...list[index], ...updatedData };
+      this.saveCustomers(list);
+      return list[index];
+    }
+    return null;
+  },
+
+  deleteCustomer(id) {
+    let list = this.getCustomers();
+    list = list.filter(item => item.id !== id);
+    this.saveCustomers(list);
+    return true;
+  },
+
+  toggleCustomerFavorite(id) {
+    const list = this.getCustomers();
+    const index = list.findIndex(item => item.id === id);
+    if (index !== -1) {
+      list[index].isFavorite = !list[index].isFavorite;
+      this.saveCustomers(list);
+      return list[index].isFavorite;
+    }
+    return false;
+  },
+
+  addCustomerSpecialDate(customerId, specialDate) {
+    const list = this.getCustomers();
+    const customer = list.find(item => item.id === customerId);
+    if (customer) {
+      if (!customer.specialDates) customer.specialDates = [];
+      if (!specialDate.id) specialDate.id = 'sd_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+      customer.specialDates.push(specialDate);
+      this.saveCustomers(list);
+      return specialDate;
+    }
+    return null;
+  },
+
+  deleteCustomerSpecialDate(customerId, specialDateId) {
+    const list = this.getCustomers();
+    const customer = list.find(item => item.id === customerId);
+    if (customer && customer.specialDates) {
+      customer.specialDates = customer.specialDates.filter(sd => sd.id !== specialDateId);
+      this.saveCustomers(list);
+      return true;
+    }
+    return false;
+  },
+
+  addCustomerPurchase(customerId, purchase) {
+    const list = this.getCustomers();
+    const customer = list.find(item => item.id === customerId);
+    if (customer) {
+      if (!customer.purchases) customer.purchases = [];
+      if (!purchase.id) purchase.id = 'pur_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+      if (!purchase.date) purchase.date = new Date().toISOString().split('T')[0];
+      customer.purchases.unshift(purchase);
+      this.saveCustomers(list);
+      return purchase;
+    }
+    return null;
+  },
+
+  deleteCustomerPurchase(customerId, purchaseId) {
+    const list = this.getCustomers();
+    const customer = list.find(item => item.id === customerId);
+    if (customer && customer.purchases) {
+      customer.purchases = customer.purchases.filter(p => p.id !== purchaseId);
+      this.saveCustomers(list);
+      return true;
+    }
+    return false;
+  },
+
+  findCustomerByPhoneOrName(phone, name) {
+    const list = this.getCustomers();
+    const cleanPhone = phone ? String(phone).replace(/\D/g, '') : '';
+    const cleanName = name ? String(name).trim().toLowerCase() : '';
+
+    return list.find(c => {
+      if (cleanPhone && c.phone) {
+        const cPhone = String(c.phone).replace(/\D/g, '');
+        if (cPhone && (cPhone.includes(cleanPhone) || cleanPhone.includes(cPhone))) {
+          return true;
+        }
+      }
+      if (cleanName && c.name) {
+        if (c.name.trim().toLowerCase() === cleanName) return true;
+      }
+      return false;
+    }) || null;
+  },
+
   // Exportar / Importar / Reset
   exportAllData() {
     return JSON.stringify({
-      version: '1.0.0',
+      version: '1.1.0',
       exportedAt: new Date().toISOString(),
       settings: this.getSettings(),
       ingredients: this.getIngredients(),
       recipes: this.getRecipes(),
-      quotes: this.getQuotes()
+      quotes: this.getQuotes(),
+      customers: this.getCustomers(),
+      marketStores: this.getMarketStores()
     }, null, 2);
   },
 
@@ -594,6 +756,8 @@ const DB = {
       if (data.ingredients) this.saveIngredients(data.ingredients);
       if (data.recipes) this.saveRecipes(data.recipes);
       if (data.quotes) this.saveQuotes(data.quotes);
+      if (data.customers) this.saveCustomers(data.customers);
+      if (data.marketStores) this.saveMarketStores(data.marketStores);
       return true;
     } catch (e) {
       console.error('Error importando datos:', e);
@@ -606,6 +770,8 @@ const DB = {
     localStorage.removeItem(DB_KEYS.INGREDIENTS);
     localStorage.removeItem(DB_KEYS.RECIPES);
     localStorage.removeItem(DB_KEYS.QUOTES);
+    localStorage.removeItem(DB_KEYS.CUSTOMERS);
+    localStorage.removeItem(DB_KEYS.MARKET_STORES);
     this.init();
   }
 };

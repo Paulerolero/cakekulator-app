@@ -190,7 +190,8 @@ const QuotesModule = {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre del Cliente *</label>
-                  <input type="text" id="q-customer-name" required placeholder="Ej. Camila González" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="text" id="q-customer-name" required list="customers-list-datalist" oninput="QuotesModule.handleCustomerInput(this.value)" placeholder="Ej. Camila González" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <datalist id="customers-list-datalist"></datalist>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Teléfono / WhatsApp</label>
@@ -510,9 +511,27 @@ const QuotesModule = {
       this.addItemRow();
     }
 
+    // Poblar datalist de clientes
+    const datalist = document.getElementById('customers-list-datalist');
+    if (datalist && typeof DB.getCustomers === 'function') {
+      const customers = DB.getCustomers();
+      datalist.innerHTML = customers.map(c => `<option value="${c.name}">${c.phone ? `(${c.phone})` : ''}</option>`).join('');
+    }
+
     this.recalculateTotals();
     App.openModal('quote-editor-modal');
     if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+  },
+
+  handleCustomerInput(nameVal) {
+    if (!nameVal || typeof DB.findCustomerByPhoneOrName !== 'function') return;
+    const match = DB.findCustomerByPhoneOrName(null, nameVal);
+    if (match) {
+      const phoneInput = document.getElementById('q-customer-phone');
+      if (phoneInput && !phoneInput.value) {
+        phoneInput.value = match.phone || '';
+      }
+    }
   },
 
   closeEditor() {
@@ -751,10 +770,46 @@ const QuotesModule = {
       notes
     };
 
+    let savedQuote;
     if (id) {
-      DB.updateQuote(id, data);
+      savedQuote = DB.updateQuote(id, data);
     } else {
-      DB.addQuote(data);
+      savedQuote = DB.addQuote(data);
+    }
+
+    // Sincronizar o registrar en CRM de Clientes automáticamente
+    if (customerName && typeof DB.findCustomerByPhoneOrName === 'function') {
+      let cust = DB.findCustomerByPhoneOrName(customerPhone, customerName);
+      const itemsSummary = (items || []).map(it => `${it.quantity}x ${it.recipeName}`).join(', ');
+      
+      if (!cust && customerName.length > 2) {
+        cust = DB.addCustomer({
+          name: customerName,
+          phone: customerPhone,
+          email: '',
+          address: '',
+          isFavorite: false,
+          notes: `Registrado desde cotización ${code || 'COT'}.`,
+          specialDates: [],
+          purchases: []
+        });
+      }
+
+      if (cust) {
+        // Si no tiene esta compra registrada, añadirla al historial del cliente
+        const existingPur = (cust.purchases || []).find(p => p.quoteId === (savedQuote?.id || id));
+        if (!existingPur) {
+          DB.addCustomerPurchase(cust.id, {
+            quoteId: savedQuote?.id || id,
+            date: eventDate || new Date().toISOString().split('T')[0],
+            occasion: eventName || 'Cotización ' + (code || ''),
+            items: itemsSummary,
+            total,
+            status: status === 'approved' ? 'completed' : 'pending',
+            notes: notes || ''
+          });
+        }
+      }
     }
 
     this.closeEditor();

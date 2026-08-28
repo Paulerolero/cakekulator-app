@@ -105,6 +105,10 @@
           class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>📋</span> Presupuesto
         </button>
+        <button onclick="App.switchTab('customers')" data-tab="customers"
+          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+          <span>👥</span> Clientes
+        </button>
         <button onclick="App.switchTab('recipes')" data-tab="recipes"
           class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>🎂</span> Recetas
@@ -153,6 +157,7 @@
     <!-- View Containers -->
     <section id="dashboard-view"></section>
     <section id="quotes-view" class="hidden"></section>
+    <section id="customers-view" class="hidden"></section>
     <section id="recipes-view" class="hidden"></section>
     <section id="ingredients-view" class="hidden"></section>
     <section id="market-radar-view" class="hidden"></section>
@@ -165,37 +170,42 @@
 
   <!-- Mobile Bottom Navigation Bar -->
   <nav
-    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-1 py-1 sm:px-2 sm:py-1.5 flex items-center justify-around shadow-lg transition-colors duration-200"
+    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-0.5 py-1 sm:px-1 sm:py-1.5 flex items-center justify-around shadow-lg transition-colors duration-200"
     style="padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));">
     <button onclick="App.switchTab('dashboard')" data-tab="dashboard"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">🏠</span>
-      <span class="text-[10px] font-semibold pointer-events-none">Inicio</span>
+      <span class="text-[9px] font-semibold pointer-events-none">Inicio</span>
     </button>
     <button onclick="App.switchTab('quotes')" data-tab="quotes"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">📋</span>
-      <span class="text-[10px] font-semibold pointer-events-none">Cotizar</span>
+      <span class="text-[9px] font-semibold pointer-events-none">Cotizar</span>
+    </button>
+    <button onclick="App.switchTab('customers')" data-tab="customers"
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      <span class="text-lg leading-none pointer-events-none">👥</span>
+      <span class="text-[9px] font-semibold pointer-events-none">Clientes</span>
     </button>
     <button onclick="App.switchTab('recipes')" data-tab="recipes"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">🎂</span>
-      <span class="text-[10px] font-semibold pointer-events-none">Recetas</span>
+      <span class="text-[9px] font-semibold pointer-events-none">Recetas</span>
     </button>
     <button onclick="App.switchTab('ingredients')" data-tab="ingredients"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">📦</span>
-      <span class="text-[10px] font-semibold pointer-events-none">Insumos</span>
+      <span class="text-[9px] font-semibold pointer-events-none">Insumos</span>
     </button>
     <button onclick="App.switchTab('market-radar')" data-tab="market-radar"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">🛒</span>
-      <span class="text-[10px] font-semibold pointer-events-none">Ofertas</span>
+      <span class="text-[9px] font-semibold pointer-events-none">Ofertas</span>
     </button>
     <button onclick="App.switchTab('finance')" data-tab="finance"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">📊</span>
-      <span class="text-[10px] font-semibold pointer-events-none">Finanzas</span>
+      <span class="text-[9px] font-semibold pointer-events-none">Finanzas</span>
     </button>
   </nav>
 
@@ -214,6 +224,7 @@
   <script src="js/recipes.js?v=3.3"></script>
   <script src="js/simulator.js?v=3.3"></script>
   <script src="js/quotes.js?v=3.3"></script>
+  <script src="js/customers.js?v=3.3"></script>
   <script src="js/receipts.js?v=3.3"></script>
   <script src="js/app.js?v=3.3"></script>
 </body>

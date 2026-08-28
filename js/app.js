@@ -44,7 +44,7 @@ const App = {
 
   updateNavVisibility() {
     const isLoggedIn = typeof AuthModule !== 'undefined' && !!AuthModule.currentUser;
-    const authOnlyTabs = ['quotes', 'market-radar', 'finance'];
+    const authOnlyTabs = ['quotes', 'customers', 'market-radar', 'finance'];
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
       const tab = btn.dataset.tab;
@@ -72,7 +72,7 @@ const App = {
     const getTabsOrder = () => {
       const isLoggedIn = typeof AuthModule !== 'undefined' && !!AuthModule.currentUser;
       return isLoggedIn 
-        ? ['dashboard', 'quotes', 'recipes', 'ingredients', 'market-radar', 'finance']
+        ? ['dashboard', 'quotes', 'customers', 'recipes', 'ingredients', 'market-radar', 'finance']
         : ['dashboard', 'recipes', 'ingredients'];
     };
 
@@ -84,7 +84,7 @@ const App = {
       if (target.closest('input, textarea, select, option, [contenteditable="true"]')) return true;
       
       // Modales activos abiertos
-      const openModal = document.querySelector('#recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #ingredient-modal:not(.hidden), #quote-whatsapp-modal:not(.hidden), #quote-print-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #custom-search-modal:not(.hidden), #store-manager-modal:not(.hidden), #firebase-config-modal:not(.hidden)');
+      const openModal = document.querySelector('#recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #customer-detail-modal, #customer-editor-modal, #customer-whatsapp-modal, #ingredient-modal:not(.hidden), #quote-whatsapp-modal:not(.hidden), #quote-print-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #custom-search-modal:not(.hidden), #store-manager-modal:not(.hidden), #firebase-config-modal:not(.hidden)');
       if (openModal) return true;
 
       // Tablas o contenedores con scroll horizontal propio
@@ -156,7 +156,7 @@ const App = {
 
     this.currentTab = tabName;
 
-    const views = ['dashboard-view', 'finance-view', 'quotes-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
+    const views = ['dashboard-view', 'finance-view', 'quotes-view', 'customers-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
     views.forEach(v => {
       const el = document.getElementById(v);
       if (el) el.classList.add('hidden');
@@ -203,6 +203,11 @@ const App = {
       case 'quotes':
         QuotesModule.render();
         break;
+      case 'customers':
+        if (typeof CustomersModule !== 'undefined') {
+          CustomersModule.render();
+        }
+        break;
       case 'recipes':
         RecipesModule.render();
         break;
@@ -240,7 +245,9 @@ const App = {
     const recipes = DB.getRecipes();
     const ingredients = DB.getIngredients();
     const quotes = DB.getQuotes();
+    const customers = DB.getCustomers();
     const settings = DB.getSettings();
+    const upcomingEvents = typeof CustomersModule !== 'undefined' ? CustomersModule.getUpcomingEvents(30) : [];
 
     // Calcular estadísticas
     let totalStockValue = 0;
@@ -263,7 +270,7 @@ const App = {
               ${settings.businessName || 'Mi Pastelería Artesanal'}
             </h1>
             <p class="text-pink-100 text-[11px] sm:text-xs mt-1 leading-snug line-clamp-2 sm:line-clamp-none">
-              Costea con precisión tus tortas, alfajores, galletas y cupcakes. Nunca más cobres a ciegas.
+              Costea con precisión tus tortas, alfajores, galletas y cupcakes. Fideliza a tus clientes y anticipa sus fechas clave.
             </p>
           </div>
         </div>
@@ -275,43 +282,75 @@ const App = {
       </div>
 
       <!-- Métricas Clave (KPIs) con Acceso Directo -->
-      <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mb-4 sm:mb-6">
-        <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Recetas & Costeo" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-pink-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-pink-100 transition duration-200">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3.5 mb-4 sm:mb-6">
+        <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Recetas & Costeo" class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 dark:border-slate-700 shadow-xs hover:shadow-md hover:border-pink-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-pink-100 transition duration-200">
             🎂
           </div>
           <div class="min-w-0">
-            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-pink-600 transition">Recetas</span>
-            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${recipes.length}</span>
+            <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium block truncate group-hover:text-pink-600 transition">Recetas</span>
+            <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${recipes.length}</span>
           </div>
         </div>
 
-        <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos & Empaques" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-amber-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-amber-100 transition duration-200">
+        <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos & Empaques" class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 dark:border-slate-700 shadow-xs hover:shadow-md hover:border-amber-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-amber-100 transition duration-200">
             📦
           </div>
           <div class="min-w-0">
-            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-amber-600 transition">Insumos</span>
-            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${ingredients.length}</span>
+            <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium block truncate group-hover:text-amber-600 transition">Insumos</span>
+            <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${ingredients.length}</span>
           </div>
         </div>
 
-        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-emerald-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-emerald-100 transition duration-200">
+        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 dark:border-slate-700 shadow-xs hover:shadow-md hover:border-emerald-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-emerald-100 transition duration-200">
             📋
           </div>
           <div class="min-w-0">
-            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-emerald-600 transition">Cotizaciones</span>
-            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${pendingQuotes.length}</span>
+            <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium block truncate group-hover:text-emerald-600 transition">Cotizaciones</span>
+            <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${pendingQuotes.length}</span>
+          </div>
+        </div>
+
+        <div onclick="App.switchTab('customers')" role="button" tabindex="0" title="Ver Clientes & Fechas Especiales" class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 dark:border-slate-700 shadow-xs hover:shadow-md hover:border-purple-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+          <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-purple-100 transition duration-200">
+            👥
+          </div>
+          <div class="min-w-0">
+            <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-medium block truncate group-hover:text-purple-600 transition">Clientes</span>
+            <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${customers.length}</span>
           </div>
         </div>
       </div>
+
+      <!-- Alerta de Fechas Especiales & Cumpleaños Próximos (CRM) -->
+      ${upcomingEvents.length > 0 ? `
+        <div class="bg-pink-50/90 dark:bg-slate-800/90 rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 border border-pink-200 dark:border-slate-700 shadow-xs mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-pink-600 text-white flex items-center justify-center text-xl shrink-0 shadow-xs">
+              🎂
+            </div>
+            <div>
+              <h4 class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100">
+                ¡Tienes ${upcomingEvents.length} fecha(s) especial(es) en los próximos 30 días!
+              </h4>
+              <p class="text-[11px] sm:text-xs text-gray-600 dark:text-gray-400">
+                ${upcomingEvents[0].customerName}: ${upcomingEvents[0].title} (${upcomingEvents[0].formattedDate})
+              </p>
+            </div>
+          </div>
+          <button onclick="App.switchTab('customers')" class="px-3.5 py-1.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold transition shadow-xs shrink-0 cursor-pointer">
+            Ver Clientes & WhatsApp →
+          </button>
+        </div>
+      ` : ''}
 
       <!-- Simulador de Precios y Rentabilidad Integrado en Inicio -->
       <div id="dashboard-simulator-container" class="mb-4 sm:mb-6"></div>
 
       <!-- Recetas Destacadas y Accesos Rápidos -->
-      <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 shadow-sm mb-4 sm:mb-6">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 dark:border-slate-700 shadow-sm mb-4 sm:mb-6">
         <div class="flex items-center justify-between mb-3 sm:mb-4">
           <h3 class="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
             <span>🧁</span> Fichas de Recetas Rápidas
