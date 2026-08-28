@@ -134,6 +134,205 @@ const WhatsAppBotModule = {
   },
 
   /**
+   * Modal para configurar la URL del Servidor de WhatsApp (Render, Railway, ngrok o Local)
+   */
+  openServerConfigModal() {
+    let modal = document.getElementById('whatsapp-server-config-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'whatsapp-server-config-modal';
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
+    }
+
+    const currentUrl = this.getServerUrl();
+    const isHttpsDeployment = typeof window !== 'undefined' && window.location.protocol === 'https:';
+
+    modal.className = 'fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto no-scrollbar';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border border-emerald-100 dark:border-slate-800 my-auto flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] modal-animate-in">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-xs shrink-0">
+              ⚙️
+            </div>
+            <div>
+              <h3 class="font-bold text-base sm:text-lg leading-tight text-white">
+                Servidor de WhatsApp Bot
+              </h3>
+              <p class="text-xs text-emerald-100 mt-0.5">Conexión con el servicio backend de Baileys</p>
+            </div>
+          </div>
+          <button onclick="WhatsAppBotModule.closeServerConfigModal()" class="text-white/80 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition cursor-pointer text-lg leading-none shrink-0">
+            ✕
+          </button>
+        </div>
+
+        <!-- Contenido -->
+        <div class="p-4 sm:p-6 space-y-4 text-xs sm:text-sm overflow-y-auto flex-1">
+          ${isHttpsDeployment ? `
+            <div class="p-3.5 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200 text-xs space-y-1.5">
+              <div class="flex items-center gap-2 font-bold">
+                <span>⚠️</span>
+                <span>Despliegue en la Nube (Vercel / HTTPS)</span>
+              </div>
+              <p class="text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+                Al estar en Vercel, el navegador requiere que el servidor de WhatsApp use una URL <b>HTTPS</b> (como un despliegue en Render, Railway o un túnel ngrok/Cloudflare), ya que <code>http://localhost:3001</code> solo funciona cuando pruebas en tu propia máquina.
+              </p>
+            </div>
+          ` : ''}
+
+          <div class="space-y-2">
+            <label class="block font-bold text-gray-700 dark:text-gray-300 text-xs">URL del Servidor de WhatsApp:</label>
+            <input 
+              type="url" 
+              id="wa-config-server-url" 
+              value="${currentUrl}" 
+              placeholder="Ej: https://tu-bot.onrender.com o http://localhost:3001"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-mono text-xs text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-emerald-400"
+            />
+          </div>
+
+          <!-- Opciones Rápidas -->
+          <div class="space-y-2 pt-1">
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Preajustes rápidos:</span>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="document.getElementById('wa-config-server-url').value = 'http://localhost:3001'" class="p-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 hover:border-emerald-400 text-left transition text-xs">
+                <span class="font-bold block text-gray-900 dark:text-gray-100">💻 Local (Desarrollo)</span>
+                <span class="text-[10px] text-gray-400 font-mono">http://localhost:3001</span>
+              </button>
+              <button type="button" onclick="document.getElementById('wa-config-server-url').value = 'https://cakekulator-whatsapp-bot.onrender.com'" class="p-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 hover:border-emerald-400 text-left transition text-xs">
+                <span class="font-bold block text-gray-900 dark:text-gray-100">☁️ Servidor Render</span>
+                <span class="text-[10px] text-gray-400 font-mono">https://...onrender.com</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-gray-200 dark:border-slate-700 text-xs text-gray-600 dark:text-gray-300 space-y-1">
+            <span class="font-bold text-gray-800 dark:text-gray-200 block">ℹ️ ¿Cómo desplegar el bot en la nube?</span>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+              El bot usa Baileys para mantener una sesión de WhatsApp activa 24/7. Puedes desplegar la carpeta <code>whatsapp-server</code> gratis en <b>Render.com</b> o <b>Railway</b> conectando este repositorio GitHub.
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="p-3 sm:p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex justify-end gap-2 shrink-0">
+          <button type="button" onclick="WhatsAppBotModule.closeServerConfigModal()" class="px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-slate-800 text-xs cursor-pointer">
+            Cancelar
+          </button>
+          <button type="button" onclick="WhatsAppBotModule.saveServerConfig()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md shadow-emerald-200/50 text-xs transition cursor-pointer">
+            Guardar y Reconectar
+          </button>
+        </div>
+
+      </div>
+    `;
+    modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+  },
+
+  closeServerConfigModal() {
+    const modal = document.getElementById('whatsapp-server-config-modal');
+    if (modal) modal.classList.add('hidden');
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
+  },
+
+  saveServerConfig() {
+    const input = document.getElementById('wa-config-server-url');
+    if (input) {
+      this.setServerUrl(input.value);
+      if (typeof App !== 'undefined' && App.showToast) {
+        App.showToast('✅ Servidor de WhatsApp actualizado');
+      }
+    }
+    this.closeServerConfigModal();
+  },
+
+  /**
+   * Mostrar modal de error amigable con opciones
+   */
+  showConnectionErrorModal() {
+    let modal = document.getElementById('whatsapp-conn-error-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'whatsapp-conn-error-modal';
+      const root = document.getElementById('modals-root') || document.body;
+      root.appendChild(modal);
+    }
+
+    const currentUrl = this.getServerUrl();
+    modal.className = 'fixed inset-0 z-[75] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto no-scrollbar';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-rose-100 dark:border-slate-800 my-auto flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] modal-animate-in">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-rose-500 to-pink-600 p-4 text-white flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl">🔌</span>
+            <div>
+              <h3 class="font-bold text-base leading-tight">Servidor de WhatsApp No Disponible</h3>
+              <p class="text-[11px] text-rose-100 mt-0.5 font-mono">${currentUrl}</p>
+            </div>
+          </div>
+          <button onclick="document.getElementById('whatsapp-conn-error-modal').classList.add('hidden'); if (App.unlockBodyScroll) App.unlockBodyScroll();" class="text-white/80 hover:text-white p-1 rounded-xl text-base">✕</button>
+        </div>
+
+        <div class="p-5 space-y-3 text-xs text-gray-700 dark:text-gray-300 overflow-y-auto flex-1">
+          <p class="leading-relaxed">
+            No se pudo establecer conexión con el backend de WhatsApp. Esto ocurre habitualmente porque:
+          </p>
+
+          <div class="space-y-2">
+            <div class="p-3 rounded-xl bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 space-y-1">
+              <span class="font-bold text-gray-900 dark:text-gray-100 block">1. Si estás probando en Vercel (Producción):</span>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                Las funciones de Vercel son efímeras (serverless) y no pueden mantener Baileys conectado 24/7. Puedes desplegar <code>whatsapp-server</code> gratis en <b>Render.com</b> o <b>Railway</b> y configurar su URL HTTPS.
+              </p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-gray-50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 space-y-1">
+              <span class="font-bold text-gray-900 dark:text-gray-100 block">2. Si estás en local:</span>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                Asegúrate de ejecutar <code>npm start</code> en la carpeta <code>whatsapp-server</code>.
+              </p>
+            </div>
+
+            <div class="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 space-y-1">
+              <span class="font-bold text-purple-900 dark:text-purple-300 block">💡 Puedes probar el Simulador sin servidor:</span>
+              <p class="text-[11px] text-purple-700 dark:text-purple-400">
+                El <b>Simulador de Respuestas</b> funciona directamente en Vercel usando la IA de Gemini con tu catálogo de recetas y precios, sin necesidad de levantar ningún servidor.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 sm:p-4 bg-gray-50 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row gap-2 shrink-0">
+          <button 
+            type="button" 
+            onclick="document.getElementById('whatsapp-conn-error-modal').classList.add('hidden'); WhatsAppBotModule.openServerConfigModal();" 
+            class="flex-1 py-2.5 px-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-100 transition text-xs text-center cursor-pointer"
+          >
+            ⚙️ Configurar URL Servidor
+          </button>
+          <button 
+            type="button" 
+            onclick="document.getElementById('whatsapp-conn-error-modal').classList.add('hidden'); if (App.unlockBodyScroll) App.unlockBodyScroll();" 
+            class="flex-1 py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs transition text-center cursor-pointer shadow-xs"
+          >
+            Entendido
+          </button>
+        </div>
+
+      </div>
+    `;
+    modal.classList.remove('hidden');
+    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+  },
+
+  /**
    * Iniciar vinculación (solicitar QR)
    */
   async startSession() {
@@ -169,7 +368,7 @@ const WhatsAppBotModule = {
       console.error('[WhatsAppBot] Error al iniciar sesión de WhatsApp:', error);
       this.status = 'disconnected';
       this.render();
-      alert(`No se pudo conectar con el servidor de WhatsApp (${this.getServerUrl()}). Asegúrate de ejecutar "node server.js" en la carpeta whatsapp-server.`);
+      this.showConnectionErrorModal();
     }
   },
 
@@ -224,10 +423,142 @@ const WhatsAppBotModule = {
   },
 
   /**
-   * Ejecutar prueba en el simulador de chat
+   * Simulación directa y autónoma con Gemini (funciona 100% en Vercel sin backend)
+   */
+  async simulateDirectlyWithGemini(msgText) {
+    const settings = DB.getSettings();
+    const recipes = DB.getRecipes();
+    const quotes = DB.getQuotes();
+
+    const businessName = settings.businessName || 'Mi Pastelería';
+    const depositPercent = settings.defaultDepositPercent || 50;
+    const defaultNote = settings.quoteNote || `Para confirmar la fecha se solicita el ${depositPercent}% de abono. Saldo contra entrega.`;
+    const businessPhone = settings.businessPhone || '';
+
+    // Preparar catálogo de productos
+    const catalogSummary = recipes.map(r => {
+      let price = r.sellingPrice || r.suggestedBatchPrice || 0;
+      if (!price && r.suggestedUnitPrice) price = r.suggestedUnitPrice;
+      return {
+        id: r.id,
+        name: r.name,
+        type: r.type || 'units',
+        portionsOrUnits: r.yieldPortions || r.yieldUnits || 1,
+        price: price,
+        pricePerPortion: r.type === 'cake' && r.yieldPortions ? Math.round(price / r.yieldPortions) : null,
+        category: r.category || 'General',
+        notes: r.notes || ''
+      };
+    });
+
+    // Resumen de cotizaciones recientes
+    const recentQuotes = quotes.slice(0, 10).map(q => ({
+      code: q.code,
+      customerName: q.customerName,
+      total: q.total,
+      depositAmount: q.depositAmount,
+      remainingBalance: q.remainingBalance,
+      status: q.status,
+      eventDate: q.eventDate,
+      items: (q.items || []).map(i => `${i.quantity}x ${i.recipeName}`)
+    }));
+
+    const prompt = `
+Eres la asistente virtual inteligente y cálida de la pastelería "${businessName}".
+Tu objetivo es responder de forma cordial, impecable y profesional por WhatsApp a los clientes que solicitan información, cotizaciones de productos de repostería o consultan el estado de su pedido.
+
+--- CATÁLOGO DE PRODUCTOS DE LA PASTELERÍA ---
+${JSON.stringify(catalogSummary, null, 2)}
+
+--- POLÍTICAS DEL NEGOCIO ---
+- Abono requerido para reserva: ${depositPercent}% del total.
+- Saldo: se cancela al momento de la entrega o retiro.
+- Nota / Condiciones: "${defaultNote}"
+- Teléfono de contacto: "${businessPhone}"
+
+--- COTIZACIONES PREVIAS REGISTRADAS ---
+${JSON.stringify(recentQuotes, null, 2)}
+
+--- MENSAJE DEL CLIENTE ---
+Cliente: "Cliente Simulado"
+Mensaje: "${msgText}"
+
+--- INSTRUCCIONES ---
+1. Analiza el mensaje:
+   A) Si pide cotización de productos: calcula subtotales, Total general, Abono (${depositPercent}%) y Saldo restante. Redacta la respuesta en formato WhatsApp con negritas (*texto*), viñetas y emojis atractivos.
+   B) Si consulta por un folio previo: busca en las cotizaciones previas.
+   C) Si saluda o hace preguntas generales: responde amablemente con las opciones del catálogo de "${businessName}".
+
+--- FORMATO ESTRICTO DE SALIDA ---
+Devuelve estrictamente un objeto JSON (sin delimitadores de bloque markdown ni texto adicional):
+{
+  "intent": "quote_request" | "quote_lookup" | "general_inquiry" | "unknown",
+  "replyMessage": "Texto formateado en WhatsApp",
+  "shouldCreateQuote": true o false,
+  "newQuoteData": {
+    "customerName": "Cliente Simulado",
+    "customerPhone": "+56912345678",
+    "items": [
+      {
+        "recipeId": "id_si_existe_o_custom",
+        "recipeName": "Nombre",
+        "quantity": 1,
+        "unitPrice": 10000,
+        "subtotal": 10000
+      }
+    ],
+    "total": 10000,
+    "depositPercent": ${depositPercent},
+    "depositAmount": 5000,
+    "remainingBalance": 5000,
+    "notes": "Generado automáticamente por WhatsApp Bot"
+  }
+}`;
+
+    const rawResponse = await GeminiService.callGeminiText(prompt);
+    
+    // Limpiar respuesta JSON
+    let cleanJson = rawResponse.trim();
+    if (cleanJson.startsWith('```json')) cleanJson = cleanJson.replace(/^```json/, '');
+    if (cleanJson.startsWith('```')) cleanJson = cleanJson.replace(/^```/, '');
+    if (cleanJson.endsWith('```')) cleanJson = cleanJson.replace(/```$/, '');
+    cleanJson = cleanJson.trim();
+
+    const parsed = JSON.parse(cleanJson);
+
+    // Si debe crear la cotización, registrarla en la base de datos
+    if (parsed.shouldCreateQuote && parsed.newQuoteData && Array.isArray(parsed.newQuoteData.items) && parsed.newQuoteData.items.length > 0) {
+      const newQuote = {
+        id: 'quote_' + Date.now(),
+        code: DB.generateQuoteCode(),
+        createdAt: new Date().toISOString(),
+        customerName: parsed.newQuoteData.customerName || 'Cliente WhatsApp',
+        customerPhone: parsed.newQuoteData.customerPhone || '+56912345678',
+        eventDate: parsed.newQuoteData.eventDate || '',
+        items: parsed.newQuoteData.items,
+        total: parsed.newQuoteData.total || 0,
+        depositPercent: parsed.newQuoteData.depositPercent || depositPercent,
+        depositAmount: parsed.newQuoteData.depositAmount || 0,
+        remainingBalance: parsed.newQuoteData.remainingBalance || 0,
+        status: 'pending',
+        notes: parsed.newQuoteData.notes || 'Cotización generada desde WhatsApp Bot',
+        source: 'whatsapp_bot'
+      };
+
+      DB.saveQuote(newQuote);
+      parsed.savedQuote = newQuote;
+      if (typeof App !== 'undefined' && App.showToast) {
+        App.showToast(`🎉 ¡Nueva cotización ${newQuote.code} creada desde WhatsApp!`);
+      }
+    }
+
+    return parsed;
+  },
+
+  /**
+   * Ejecutar prueba en el simulador de chat (Soporta Servidor o Modo Directo Vercel)
    */
   async runSimulator() {
-    const uid = this.getUserId();
     const input = document.getElementById('bot-sim-input');
     const msgText = input ? input.value.trim() : '';
 
@@ -239,37 +570,68 @@ const WhatsAppBotModule = {
     this.isSimulating = true;
     this.render();
 
+    let data = null;
+
     try {
-      await this.syncCatalogToServer();
+      // 1. Intentar primero con el servidor backend si está disponible
+      try {
+        const response = await fetch(`${this.getServerUrl()}/api/whatsapp/simulate-chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            uid: this.getUserId() || 'test_user',
+            customerName: 'Cliente Simulado',
+            messageText: msgText
+          })
+        });
 
-      const response = await fetch(`${this.getServerUrl()}/api/whatsapp/simulate-chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          uid: uid || 'test_user',
-          customerName: 'Cliente Simulado',
-          messageText: msgText
-        })
-      });
+        if (response.ok) {
+          data = await response.json();
+        }
+      } catch (backendErr) {
+        console.log('[WhatsAppBot] Servidor backend no alcanzable, ejecutando en Modo Directo con Gemini...');
+      }
 
-      const data = await response.json();
+      // 2. Si no hay backend, procesar directamente en el navegador con Gemini IA
+      if (!data) {
+        data = await this.simulateDirectlyWithGemini(msgText);
+      }
+
       this.isSimulating = false;
+
+      // Registrar en el log de actividad
+      this.activityLogs.unshift({
+        type: 'received',
+        sender: 'Cliente Simulado',
+        text: msgText,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      this.activityLogs.unshift({
+        type: 'sent',
+        sender: 'Bot Cakekulator (Simulación)',
+        text: data.replyMessage,
+        savedQuote: data.savedQuote,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      if (this.activityLogs.length > 20) this.activityLogs.pop();
+
+      this.render();
 
       const resultContainer = document.getElementById('bot-sim-result');
       if (resultContainer) {
         resultContainer.classList.remove('hidden');
         resultContainer.innerHTML = `
-          <div class="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2 text-xs">
+          <div class="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2.5 text-xs animate-in fade-in">
             <div class="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
               <span class="flex items-center gap-1.5"><span>🤖</span> Respuesta del Bot (Gemini IA):</span>
-              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 font-mono">Intención: ${data.intent || 'quote'}</span>
+              <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 font-mono">Intención: ${data.intent || 'quote_request'}</span>
             </div>
-            <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-emerald-100 dark:border-slate-700 text-gray-800 dark:text-gray-100 whitespace-pre-wrap font-sans text-xs leading-relaxed shadow-inner">
+            <div class="bg-white dark:bg-slate-900 p-3.5 rounded-xl border border-emerald-100 dark:border-slate-700 text-gray-800 dark:text-gray-100 whitespace-pre-wrap font-sans text-xs leading-relaxed shadow-inner">
 ${data.replyMessage || 'No se obtuvo respuesta'}
             </div>
             ${data.savedQuote ? `
-              <div class="p-2 rounded-xl bg-pink-100/70 dark:bg-slate-800 border border-pink-200 dark:border-slate-700 flex items-center justify-between text-[11px]">
-                <span class="font-bold text-pink-800 dark:text-pink-300">📋 Cotización creada: ${data.savedQuote.code}</span>
+              <div class="p-2.5 rounded-xl bg-pink-50 dark:bg-pink-950/50 border border-pink-200 dark:border-pink-900 flex items-center justify-between text-xs">
+                <span class="font-bold text-pink-800 dark:text-pink-300">🎉 Cotización Guardada en tu Sistema: ${data.savedQuote.code}</span>
                 <span class="font-black text-gray-900 dark:text-white">${Calculator.formatCurrency(data.savedQuote.total)}</span>
               </div>
             ` : ''}
@@ -277,9 +639,10 @@ ${data.replyMessage || 'No se obtuvo respuesta'}
         `;
       }
     } catch (err) {
+      console.error('[WhatsAppBot] Error en simulación:', err);
       this.isSimulating = false;
       this.render();
-      alert('Error en simulación. Verifica que el servidor de WhatsApp esté en ejecución.');
+      alert('Error en simulación con Gemini IA: ' + err.message);
     }
   },
 
@@ -443,9 +806,14 @@ ${data.replyMessage || 'No se obtuvo respuesta'}
 
               <!-- Configuración del Servidor y Sincronización Manual -->
               <div class="pt-3 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-gray-500">
-                <span>Servidor: <b class="font-mono text-gray-700 dark:text-gray-300">${this.getServerUrl()}</b></span>
-                <button onclick="WhatsAppBotModule.syncCatalogToServer(); App.showToast('Catálogo sincronizado con el bot ✅');" class="text-pink-600 font-bold hover:underline flex items-center gap-1">
-                  <span>🔄</span> Sincronizar Catálogo
+                <div class="flex items-center gap-1.5 truncate mr-2">
+                  <span>Servidor:</span>
+                  <button onclick="WhatsAppBotModule.openServerConfigModal()" class="font-mono text-emerald-600 dark:text-emerald-400 font-bold hover:underline truncate cursor-pointer" title="Cambiar URL del Servidor de WhatsApp">
+                    ${this.getServerUrl()} ✏️
+                  </button>
+                </div>
+                <button onclick="WhatsAppBotModule.syncCatalogToServer(); App.showToast('Catálogo sincronizado con el bot ✅');" class="text-pink-600 font-bold hover:underline flex items-center gap-1 shrink-0 cursor-pointer">
+                  <span>🔄</span> Sincronizar
                 </button>
               </div>
             </div>
