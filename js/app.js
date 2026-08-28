@@ -33,10 +33,34 @@ const App = {
     // Navegación con botón atrás / gestos móviles para modales y scroll
     this.initBackAndScrollHandler();
 
+    // Actualizar visibilidad de pestañas protegidas (Presupuesto, Finanzas, Radar)
+    this.updateNavVisibility();
+
     // Renderizar pestaña inicial
     this.switchTab('dashboard');
 
     console.log('Cakekulator cargado correctamente con control de gestos.');
+  },
+
+  updateNavVisibility() {
+    const isLoggedIn = typeof AuthModule !== 'undefined' && !!AuthModule.currentUser;
+    const authOnlyTabs = ['quotes', 'market-radar', 'finance'];
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+      const tab = btn.dataset.tab;
+      if (authOnlyTabs.includes(tab)) {
+        if (isLoggedIn) {
+          btn.classList.remove('hidden');
+        } else {
+          btn.classList.add('hidden');
+        }
+      }
+    });
+
+    // Si el usuario no está logueado y se encuentra en una pestaña protegida, redirigir a inicio
+    if (!isLoggedIn && authOnlyTabs.includes(this.currentTab)) {
+      this.switchTab('dashboard');
+    }
   },
 
   initGestures() {
@@ -45,7 +69,12 @@ const App = {
     let startTime = 0;
     let isTracking = false;
 
-    const tabsOrder = ['dashboard', 'quotes', 'recipes', 'ingredients', 'market-radar', 'finance'];
+    const getTabsOrder = () => {
+      const isLoggedIn = typeof AuthModule !== 'undefined' && !!AuthModule.currentUser;
+      return isLoggedIn 
+        ? ['dashboard', 'quotes', 'recipes', 'ingredients', 'market-radar', 'finance']
+        : ['dashboard', 'recipes', 'ingredients'];
+    };
 
     const isInteractiveElement = (target) => {
       if (!target || !(target instanceof Element)) return false;
@@ -58,85 +87,60 @@ const App = {
       const openModal = document.querySelector('#recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #ingredient-modal:not(.hidden), #quote-whatsapp-modal:not(.hidden), #quote-print-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #custom-search-modal:not(.hidden), #store-manager-modal:not(.hidden), #firebase-config-modal:not(.hidden)');
       if (openModal) return true;
 
-      // Zonas de scroll horizontal interno (como categorías o tablas)
-      const scrollable = target.closest('.overflow-x-auto, [style*="overflow-x"], .no-scrollbar');
-      if (scrollable && scrollable.scrollWidth > scrollable.clientWidth + 10) {
-        return true;
-      }
+      // Tablas o contenedores con scroll horizontal propio
+      const scrollableX = target.closest('.overflow-x-auto, [style*="overflow-x: auto"]');
+      if (scrollableX && scrollableX.scrollWidth > scrollableX.clientWidth) return true;
 
       return false;
     };
 
-    const handleStart = (clientX, clientY, target) => {
-      if (isInteractiveElement(target)) {
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      if (isInteractiveElement(e.target)) {
         isTracking = false;
         return;
       }
-      startX = clientX;
-      startY = clientY;
+
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
       startTime = Date.now();
       isTracking = true;
-    };
-
-    const handleEnd = (clientX, clientY) => {
-      if (!isTracking) return;
-      isTracking = false;
-
-      const deltaX = clientX - startX;
-      const deltaY = clientY - startY;
-      const deltaTime = Date.now() - startTime;
-
-      const minDistance = 45; // px mínimos para detectar swipe
-      const maxTime = 600; // ms máximos
-      const isHorizontalDominant = Math.abs(deltaX) > Math.abs(deltaY) * 1.25;
-
-      if (deltaTime <= maxTime && Math.abs(deltaX) >= minDistance && isHorizontalDominant) {
-        const currentIndex = tabsOrder.indexOf(App.currentTab);
-        if (currentIndex === -1) return;
-
-        if (deltaX < -minDistance) {
-          // Deslizar izquierda -> Siguiente pestaña
-          if (currentIndex < tabsOrder.length - 1) {
-            const nextTab = tabsOrder[currentIndex + 1];
-            App.switchTab(nextTab, true, 'slide-left');
-          }
-        } else if (deltaX > minDistance) {
-          // Deslizar derecha -> Pestaña anterior
-          if (currentIndex > 0) {
-            const prevTab = tabsOrder[currentIndex - 1];
-            App.switchTab(prevTab, true, 'slide-right');
-          }
-        }
-      }
-    };
-
-    // Soporte nativo para pantallas táctiles de celular (iOS / Android / PWA)
-    window.addEventListener('touchstart', (e) => {
-      if (e.touches.length !== 1) {
-        isTracking = false;
-        return;
-      }
-      handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
     }, { passive: true });
 
     window.addEventListener('touchend', (e) => {
-      if (e.changedTouches.length !== 1) {
-        isTracking = false;
-        return;
+      if (!isTracking || e.changedTouches.length !== 1) return;
+      isTracking = false;
+
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const diffX = endX - startX;
+      const diffY = endY - startY;
+      const elapsedTime = Date.now() - startTime;
+
+      // Umbrales para gesto de swipe horizontal
+      const minDistance = 60;
+      const maxPerpendicular = 50;
+      const maxDuration = 400;
+
+      if (Math.abs(diffX) >= minDistance && Math.abs(diffY) <= maxPerpendicular && elapsedTime <= maxDuration) {
+        const tabsOrder = getTabsOrder();
+        const currentIndex = tabsOrder.indexOf(this.currentTab);
+        if (currentIndex === -1) return;
+
+        if (diffX < 0) {
+          // Deslizar hacia la izquierda (avanza a la siguiente pestaña)
+          if (currentIndex < tabsOrder.length - 1) {
+            const nextTab = tabsOrder[currentIndex + 1];
+            this.switchTab(nextTab, true, 'slide-left');
+          }
+        } else {
+          // Deslizar hacia la derecha (retrocede a la pestaña anterior)
+          if (currentIndex > 0) {
+            const prevTab = tabsOrder[currentIndex - 1];
+            this.switchTab(prevTab, true, 'slide-right');
+          }
+        }
       }
-      handleEnd(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
-    }, { passive: true });
-
-    // Soporte universal para pointer events (ratón, emuladores y trackpads)
-    window.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'touch') return; // Ya manejado por touchstart
-      if (e.button !== 0) return;
-      handleStart(e.clientX, e.clientY, e.target);
-    }, { passive: true });
-
-    window.addEventListener('pointerup', (e) => {
-      if (e.pointerType === 'touch') return;
-      handleEnd(e.clientX, e.clientY);
     }, { passive: true });
   },
 
@@ -182,6 +186,9 @@ const App = {
         btn.classList.add('text-gray-500', 'font-medium');
       }
     });
+
+    // Asegurar visibilidad de botones según sesión
+    this.updateNavVisibility();
 
     // Renderizar módulo correspondiente
     switch (tabName) {

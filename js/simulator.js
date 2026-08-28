@@ -829,6 +829,10 @@ const SimulatorModule = {
   },
 
   openAddToQuoteModal() {
+    if (typeof AuthModule !== 'undefined' && !AuthModule.currentUser) {
+      AuthModule.showLoginRequiredModal();
+      return;
+    }
     this.ensureAddToQuoteModal();
     App.openModal('sim-add-to-quote-modal');
     this.onSimModalQtyChange(1);

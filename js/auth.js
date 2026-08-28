@@ -21,6 +21,11 @@ const AuthModule = {
         this.hasCheckedAuth = true;
         this.isAuthenticating = false;
 
+        // Actualizar visibilidad de menús en tiempo real
+        if (typeof App !== 'undefined' && App.updateNavVisibility) {
+          App.updateNavVisibility();
+        }
+
         if (user) {
           console.log('👤 Sesión activa en Cakekulator:', user.displayName || user.email);
           this.closeLoginModal();
@@ -48,6 +53,9 @@ const AuthModule = {
     } else {
       this.hasCheckedAuth = true;
       this.updateSyncStatus('local', 'Modo Local');
+      if (typeof App !== 'undefined' && App.updateNavVisibility) {
+        App.updateNavVisibility();
+      }
     }
   },
 

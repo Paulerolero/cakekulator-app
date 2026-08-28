@@ -17,6 +17,12 @@ const QuotesModule = {
     const container = document.getElementById('quotes-view');
     if (!container) return;
 
+    const isLoggedIn = typeof AuthModule !== 'undefined' && AuthModule.currentUser;
+    if (!isLoggedIn) {
+      container.innerHTML = this.renderLoginGate();
+      return;
+    }
+
     const allQuotes = DB.getQuotes();
     const settings = DB.getSettings();
 
@@ -768,36 +774,46 @@ const QuotesModule = {
   // Generador de Mensaje Simplificado y Cercano para WhatsApp
   // ====================================================
   buildWhatsAppMessage(quote) {
-    const settings = DB.getSettings();
     const customerFirstName = (quote.customerName || 'Cliente').trim().split(' ')[0];
-    const businessName = settings.businessName || 'Mi Pastelería';
     const total = quote.total || quote.subtotal || 0;
-    const deposit = quote.depositAmount || (total * 0.5);
-    const balance = quote.remainingBalance || (total - deposit);
+    const depositPercent = quote.depositPercent || 50;
+    const deposit = quote.depositAmount || Math.round(total * (depositPercent / 100));
 
-    let itemsText = '';
+    // Formatear items con espaciado limpio
+    let itemsBlock = '';
     (quote.items || []).forEach(item => {
-      itemsText += `  • *${item.quantity}x* ${item.recipeName}: ${Calculator.formatCurrency(item.subtotal)}\n`;
+      itemsBlock += `\n${item.quantity} ${item.recipeName}: ${Calculator.formatCurrency(item.subtotal)}\n`;
+      if (item.notes) {
+        itemsBlock += `(${item.notes})\n`;
+      }
     });
 
-    let msg = `🎂 *COTIZACIÓN - ${businessName.toUpperCase()}*\n`;
-    msg += `¡Hola *${customerFirstName}*! 👋 Te comparto el presupuesto para tu pedido:\n\n`;
-    msg += `📄 *Folio:* \`${quote.code}\`\n`;
-    if (quote.eventDate) msg += `📅 *Fecha de Entrega:* ${quote.eventDate}\n`;
-    if (quote.deliveryOption) msg += `🚚 *Modalidad:* ${quote.deliveryOption}\n`;
-    msg += `\n🛒 *Detalle del Pedido:*\n${itemsText}`;
-    msg += `\n💰 *Total:* *${Calculator.formatCurrency(total)}*\n`;
-    msg += `💳 *Abono de Reserva (${quote.depositPercent || 50}%):* *${Calculator.formatCurrency(deposit)}*\n`;
-    if (balance > 0) {
-      msg += `💵 *Saldo restante:* ${Calculator.formatCurrency(balance)}\n`;
+    // Formatear fecha y entrega
+    let deliveryInfo = '';
+    if (quote.eventDate || quote.deliveryOption) {
+      let formattedDate = quote.eventDate || '';
+      if (formattedDate.includes('-') && formattedDate.length === 10) {
+        try {
+          const [year, month, day] = formattedDate.split('-');
+          const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+          formattedDate = `${parseInt(day)} de ${monthNames[parseInt(month) - 1]}`;
+        } catch (e) {}
+      }
+      
+      const optionText = quote.deliveryOption ? ` (${quote.deliveryOption})` : '';
+      deliveryInfo = `\n📅 Entrega: ${formattedDate}${optionText}.`;
     }
+
+    let msg = `¡Hola ${customerFirstName}! Te paso el resumen de tu cotización:\n`;
+    msg += itemsBlock;
+    if (deliveryInfo) {
+      msg += `${deliveryInfo}\n`;
+    }
+    msg += `💰 Total: ${Calculator.formatCurrency(total)} | Reserva (${depositPercent}%): ${Calculator.formatCurrency(deposit)}\n`;
     if (quote.notes) {
-      msg += `\n📝 *Nota:* ${quote.notes}\n`;
+      msg += `\n(${quote.notes})\n`;
     }
-    if (settings.businessPhone) {
-      msg += `\n📱 *Contacto:* ${settings.businessPhone}\n`;
-    }
-    msg += `\n🖼️ *Te adjunto la imagen con el presupuesto detallado.* ¡Quedo atenta/o para agendar tu fecha! ✨`;
+    msg += `\nTe adjunto también la imagen con el detalle. ¡Quedo atenta/o a tu confirmación para guardar el cupo!`;
 
     return msg;
   },
@@ -844,6 +860,18 @@ const QuotesModule = {
     });
   },
 
+  formatPhoneNumberForWhatsApp(rawPhone) {
+    if (!rawPhone) return '';
+    let cleaned = String(rawPhone).replace(/[^0-9]/g, '');
+    // Si tiene 9 dígitos y empieza con 9 (típico móvil en Chile ej. 987654321), anteponer prefijo país 56
+    if (cleaned.length === 9 && cleaned.startsWith('9')) {
+      cleaned = '56' + cleaned;
+    } else if (cleaned.length === 8) {
+      cleaned = '569' + cleaned;
+    }
+    return cleaned;
+  },
+
   openDirectWhatsApp() {
     const quote = DB.getQuoteById(this.activeWhatsAppQuoteId);
     if (!quote) return;
@@ -856,7 +884,8 @@ const QuotesModule = {
     const phoneInput = document.getElementById('wa-recipient-phone');
     const msgPreview = document.getElementById('wa-message-preview');
 
-    const phone = (phoneInput ? phoneInput.value : quote.customerPhone || '').replace(/[^0-9]/g, '');
+    const rawPhone = phoneInput ? phoneInput.value : quote.customerPhone || '';
+    const phone = this.formatPhoneNumberForWhatsApp(rawPhone);
     const message = msgPreview ? msgPreview.value : this.buildWhatsAppMessage(quote);
     const encodedMsg = encodeURIComponent(message);
 
@@ -866,7 +895,7 @@ const QuotesModule = {
 
     window.open(url, '_blank');
     this.closeWhatsAppModal();
-    App.showToast('📤 Cotización enviada por WhatsApp y marcada como "Enviada".');
+    App.showToast(phone ? `📤 Abriendo chat de WhatsApp con +${phone}...` : '📤 Abriendo WhatsApp...');
   },
 
   // Generador de HTML para Imagen PNG y Documento
@@ -1076,7 +1105,7 @@ const QuotesModule = {
     }
   },
 
-  // Compartir por WhatsApp con Imagen PNG Adjunta (Web Share API nativo)
+  // Compartir por WhatsApp con Imagen PNG Adjunta (Web Share API nativo / Portapapeles)
   async shareQuoteWithImage() {
     const quote = DB.getQuoteById(this.activeWhatsAppQuoteId);
     if (!quote) return;
@@ -1088,27 +1117,30 @@ const QuotesModule = {
 
     const phoneInput = document.getElementById('wa-recipient-phone');
     const msgPreview = document.getElementById('wa-message-preview');
-    const phone = (phoneInput ? phoneInput.value : quote.customerPhone || '').replace(/[^0-9]/g, '');
+    const rawPhone = phoneInput ? phoneInput.value : quote.customerPhone || '';
+    const phone = this.formatPhoneNumberForWhatsApp(rawPhone);
     const message = msgPreview ? msgPreview.value : this.buildWhatsAppMessage(quote);
     const filename = `Cotizacion_${quote.code}_${(quote.customerName || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_')}.png`;
 
     App.showToast('⏳ Preparando imagen de cotización...');
 
     let sharedNatively = false;
+    let imageBlob = null;
+
     try {
-      const imageBlob = await this.generateQuotePNGBlob(quote);
+      imageBlob = await this.generateQuotePNGBlob(quote);
       const imageFile = new File([imageBlob], filename, { type: 'image/png' });
 
       // Si el navegador soporta compartir archivos directamente (móviles Android, iOS, Safari, Chrome)
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [imageFile] })) {
         await navigator.share({
-          title: `Cotización ${quote.code} - ${quote.customerName}`,
+          title: `Cotización ${quote.code} - ${quote.customerName || 'Cliente'}`,
           text: message,
           files: [imageFile]
         });
         sharedNatively = true;
         this.closeWhatsAppModal();
-        App.showToast('✅ ¡Cotización e imagen enviadas con éxito!');
+        App.showToast('✅ ¡Cotización e imagen enviadas a WhatsApp!');
         return;
       }
     } catch (e) {
@@ -1117,28 +1149,37 @@ const QuotesModule = {
     }
 
     if (!sharedNatively) {
-      // Flujo de respaldo para computadores o navegadores que no comparten archivos directamente:
-      // 1. Descargar la imagen PNG automáticamente en la carpeta de descargas
-      try {
-        const imageBlob = await this.generateQuotePNGBlob(quote);
-        const url = URL.createObjectURL(imageBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.warn('Descarga automática fallback:', err);
+      // Flujo de alta comodidad para WhatsApp Web / Escritorio:
+      // 1. Copiar imagen al portapapeles para poder pegarla con Ctrl+V
+      let copiedImage = false;
+      if (imageBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': imageBlob })
+          ]);
+          copiedImage = true;
+        } catch (clipErr) {
+          console.warn('No se pudo copiar imagen al portapapeles:', clipErr);
+        }
       }
 
-      // 2. Copiar mensaje al portapapeles
-      try {
-        await navigator.clipboard.writeText(message);
-      } catch (err) {}
+      // 2. Descargar la imagen PNG automáticamente como archivo
+      if (imageBlob) {
+        try {
+          const url = URL.createObjectURL(imageBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (err) {
+          console.warn('Descarga automática fallback:', err);
+        }
+      }
 
-      // 3. Abrir WhatsApp Web / App con el chat del cliente
+      // 3. Abrir WhatsApp Web con el chat directo del cliente y el mensaje precargado
       const encodedMsg = encodeURIComponent(message);
       let waUrl = phone 
         ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`
@@ -1146,7 +1187,12 @@ const QuotesModule = {
 
       window.open(waUrl, '_blank');
       this.closeWhatsAppModal();
-      App.showToast('📲 WhatsApp abierto y presupuesto PNG descargado para adjuntar.');
+      
+      if (copiedImage) {
+        App.showToast(phone ? `📲 Chat con +${phone} abierto. ¡Pega la imagen con Ctrl+V!` : '📲 WhatsApp abierto. ¡Pega la imagen con Ctrl+V!');
+      } else {
+        App.showToast(phone ? `📲 Abriendo chat con +${phone}. Imagen descargada para adjuntar.` : '📲 WhatsApp abierto. Imagen descargada.');
+      }
     }
   },
 
@@ -1196,6 +1242,24 @@ const QuotesModule = {
   closePrintModal() {
     App.closeModal('quote-print-modal');
     if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
+  },
+
+  renderLoginGate() {
+    return `
+      <div class="max-w-lg mx-auto mt-12 text-center space-y-5">
+        <div class="w-20 h-20 rounded-3xl bg-pink-50 dark:bg-pink-950/40 flex items-center justify-center mx-auto text-4xl shadow-sm border border-pink-100 dark:border-pink-900">
+          📋
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100">Presupuestos y Cotizaciones</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
+          Inicia sesión con tu cuenta de Google para crear presupuestos formales, compartirlos por WhatsApp con imagen adjunta y llevar el control de tus ventas.
+        </p>
+        <button onclick="AuthModule.showLoginRequiredModal()" class="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-2xl text-sm shadow-md transition active:scale-95 cursor-pointer inline-flex items-center gap-2">
+          <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.24 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.11a7.12 7.12 0 0 1 0-4.22V7.05H2.18A11.96 11.96 0 0 0 0 12c0 1.94.46 3.77 1.28 5.39l3.66-2.84.9-.44z"/><path fill="currentColor" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.09 14.97 0 12 0 7.7 0 3.99 2.47 2.18 6.07l3.66 2.84c.87-2.6 3.3-4.16 6.16-4.16z"/></svg>
+          Iniciar Sesión con Google
+        </button>
+      </div>
+    `;
   }
 };
 
