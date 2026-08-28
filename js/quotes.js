@@ -182,35 +182,48 @@ const QuotesModule = {
 
             <!-- 1. Datos del Cliente -->
             <div class="bg-gray-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 space-y-3">
-              <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-1.5">
-                <span class="w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs">1</span>
-                Datos del Cliente y Evento
-              </h4>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-1.5">
+                  <span class="w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs">1</span>
+                  Datos del Cliente y Evento
+                </h4>
+                
+                <!-- Selector rápido de clientes existentes -->
+                <div class="flex items-center gap-1.5">
+                  <select 
+                    id="q-customer-select" 
+                    onchange="QuotesModule.onSelectExistingCustomer(this.value)"
+                    class="w-full sm:w-auto text-xs font-semibold px-3 py-1.5 rounded-xl border border-pink-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-pink-700 dark:text-pink-300 focus:ring-2 focus:ring-pink-400 outline-none cursor-pointer"
+                  >
+                    <option value="">👥 Seleccionar cliente existente...</option>
+                  </select>
+                </div>
+              </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre del Cliente *</label>
-                  <input type="text" id="q-customer-name" required list="customers-list-datalist" oninput="QuotesModule.handleCustomerInput(this.value)" placeholder="Ej. Camila González" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="text" id="q-customer-name" required list="customers-list-datalist" oninput="QuotesModule.handleCustomerInput(this.value)" placeholder="Ej. Camila González" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                   <datalist id="customers-list-datalist"></datalist>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Teléfono / WhatsApp</label>
-                  <input type="tel" id="q-customer-phone" placeholder="Ej. +56 9 8765 4321" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="tel" id="q-customer-phone" placeholder="Ej. +56 9 8765 4321" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                 </div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Motivo / Evento</label>
-                  <input type="text" id="q-event-name" placeholder="Ej. Cumpleaños, Baby Shower" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="text" id="q-event-name" placeholder="Ej. Cumpleaños Hija, Baby Shower" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Fecha del Evento</label>
-                  <input type="date" id="q-event-date" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="date" id="q-event-date" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Estado</label>
-                  <select id="q-status" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <select id="q-status" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                     <option value="draft">Borrador</option>
                     <option value="sent">Enviada</option>
                     <option value="approved">Aprobada / Pagada</option>
@@ -511,16 +524,44 @@ const QuotesModule = {
       this.addItemRow();
     }
 
-    // Poblar datalist de clientes
+    // Poblar selector y datalist de clientes
+    const custSelect = document.getElementById('q-customer-select');
     const datalist = document.getElementById('customers-list-datalist');
-    if (datalist && typeof DB.getCustomers === 'function') {
+    if (typeof DB.getCustomers === 'function') {
       const customers = DB.getCustomers();
-      datalist.innerHTML = customers.map(c => `<option value="${c.name}">${c.phone ? `(${c.phone})` : ''}</option>`).join('');
+      if (custSelect) {
+        custSelect.innerHTML = `
+          <option value="">👥 Seleccionar cliente existente...</option>
+          ${customers.map(c => `
+            <option value="${c.id}">
+              ${c.name} ${c.phone ? `(${c.phone})` : ''} ${c.isFavorite ? '⭐' : ''}
+            </option>
+          `).join('')}
+        `;
+      }
+      if (datalist) {
+        datalist.innerHTML = customers.map(c => `<option value="${c.name}">${c.phone ? `(${c.phone})` : ''}</option>`).join('');
+      }
     }
 
     this.recalculateTotals();
     App.openModal('quote-editor-modal');
     if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+  },
+
+  onSelectExistingCustomer(customerId) {
+    if (!customerId) return;
+    const customer = DB.getCustomerById(customerId);
+    if (!customer) return;
+
+    const nameInput = document.getElementById('q-customer-name');
+    const phoneInput = document.getElementById('q-customer-phone');
+    if (nameInput) nameInput.value = customer.name || '';
+    if (phoneInput) phoneInput.value = customer.phone || '';
+
+    if (customer.notes && typeof App !== 'undefined' && App.showToast) {
+      App.showToast(`Cliente seleccionado: ${customer.name} ✨`);
+    }
   },
 
   handleCustomerInput(nameVal) {
@@ -777,44 +818,165 @@ const QuotesModule = {
       savedQuote = DB.addQuote(data);
     }
 
-    // Sincronizar o registrar en CRM de Clientes automáticamente
-    if (customerName && typeof DB.findCustomerByPhoneOrName === 'function') {
-      let cust = DB.findCustomerByPhoneOrName(customerPhone, customerName);
+    // Verificar si el cliente ya existe en la agenda CRM
+    const existingCustomer = (customerName || customerPhone) && typeof DB.findCustomerByPhoneOrName === 'function'
+      ? DB.findCustomerByPhoneOrName(customerPhone, customerName)
+      : null;
+
+    if (existingCustomer) {
+      // Cliente EXISTENTE: registrar automáticamente la compra en su historial
       const itemsSummary = (items || []).map(it => `${it.quantity}x ${it.recipeName}`).join(', ');
-      
-      if (!cust && customerName.length > 2) {
-        cust = DB.addCustomer({
-          name: customerName,
-          phone: customerPhone,
-          email: '',
-          address: '',
-          isFavorite: false,
-          notes: `Registrado desde cotización ${code || 'COT'}.`,
-          specialDates: [],
-          purchases: []
+      const existingPur = (existingCustomer.purchases || []).find(p => p.quoteId === (savedQuote?.id || id));
+      if (!existingPur) {
+        DB.addCustomerPurchase(existingCustomer.id, {
+          quoteId: savedQuote?.id || id,
+          date: eventDate || new Date().toISOString().split('T')[0],
+          occasion: eventName || 'Cotización ' + (code || ''),
+          items: itemsSummary,
+          total,
+          status: status === 'approved' ? 'completed' : 'pending',
+          notes: notes || ''
         });
       }
+      this.closeEditor();
+      this.render();
+      App.showToast(id ? 'Presupuesto actualizado' : `Cotización vinculada a ${existingCustomer.name} 📋`);
+    } else if (customerName && customerName.length > 1) {
+      // Cliente NUEVO: guardar cotización y preguntar si desea crear el perfil de cliente
+      this.closeEditor();
+      this.render();
 
-      if (cust) {
-        // Si no tiene esta compra registrada, añadirla al historial del cliente
-        const existingPur = (cust.purchases || []).find(p => p.quoteId === (savedQuote?.id || id));
-        if (!existingPur) {
-          DB.addCustomerPurchase(cust.id, {
-            quoteId: savedQuote?.id || id,
-            date: eventDate || new Date().toISOString().split('T')[0],
-            occasion: eventName || 'Cotización ' + (code || ''),
-            items: itemsSummary,
-            total,
-            status: status === 'approved' ? 'completed' : 'pending',
-            notes: notes || ''
-          });
-        }
-      }
+      this.promptSaveNewCustomer({
+        id: savedQuote?.id || id,
+        code,
+        customerName,
+        customerPhone,
+        eventName,
+        eventDate,
+        items,
+        total,
+        status,
+        notes
+      });
+    } else {
+      this.closeEditor();
+      this.render();
+      App.showToast(id ? 'Presupuesto actualizado' : 'Cotización generada con éxito');
+    }
+  },
+
+  promptSaveNewCustomer(quoteData) {
+    const modalsRoot = document.getElementById('modals-root') || document.body;
+    let promptModal = document.getElementById('save-new-customer-prompt-modal');
+    if (!promptModal) {
+      promptModal = document.createElement('div');
+      promptModal.id = 'save-new-customer-prompt-modal';
+      modalsRoot.appendChild(promptModal);
     }
 
-    this.closeEditor();
-    this.render();
-    App.showToast(id ? 'Presupuesto actualizado' : 'Cotización generada con éxito');
+    this.pendingNewCustomerQuote = quoteData;
+
+    promptModal.className = 'fixed inset-0 z-[70] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto';
+    promptModal.innerHTML = `
+      <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 text-center animate-in fade-in zoom-in-95 duration-150 space-y-4">
+        
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 flex items-center justify-center text-3xl shadow-xs">
+          👤
+        </div>
+
+        <div>
+          <h3 class="font-black text-base sm:text-lg text-gray-900 dark:text-gray-100">
+            ¿Deseas guardar a este cliente?
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Has cotizado para <strong class="text-gray-800 dark:text-gray-200">${quoteData.customerName}</strong>. ¿Quieres registrar su perfil para recordar sus fechas, gustos y compras?
+          </p>
+        </div>
+
+        <div class="bg-pink-50/60 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-pink-100/80 dark:border-slate-700/80 text-left text-xs space-y-1.5">
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Cliente:</span>
+            <span class="font-bold text-gray-900 dark:text-gray-100">${quoteData.customerName}</span>
+          </div>
+          ${quoteData.customerPhone ? `
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Teléfono / WhatsApp:</span>
+              <span class="font-semibold text-gray-800 dark:text-gray-200">${quoteData.customerPhone}</span>
+            </div>
+          ` : ''}
+          ${quoteData.eventName ? `
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Motivo / Evento:</span>
+              <span class="font-bold text-pink-600 dark:text-pink-400">${quoteData.eventName}</span>
+            </div>
+          ` : ''}
+          ${quoteData.eventDate ? `
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Fecha del Evento:</span>
+              <span class="font-semibold text-gray-800 dark:text-gray-200">${quoteData.eventDate}</span>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 pt-2">
+          <button 
+            type="button" 
+            onclick="QuotesModule.dismissNewCustomerPrompt()"
+            class="py-2.5 px-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-slate-800 text-xs transition cursor-pointer"
+          >
+            No, salir
+          </button>
+          <button 
+            type="button" 
+            onclick="QuotesModule.confirmCreateCustomerFromQuote()"
+            class="py-2.5 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1"
+          >
+            <span>+</span> Sí, Crear Cliente
+          </button>
+        </div>
+
+      </div>
+    `;
+  },
+
+  dismissNewCustomerPrompt() {
+    const modal = document.getElementById('save-new-customer-prompt-modal');
+    if (modal) modal.remove();
+    this.pendingNewCustomerQuote = null;
+    App.showToast('✅ Cotización guardada');
+  },
+
+  confirmCreateCustomerFromQuote() {
+    const quoteData = this.pendingNewCustomerQuote;
+    const modal = document.getElementById('save-new-customer-prompt-modal');
+    if (modal) modal.remove();
+    this.pendingNewCustomerQuote = null;
+
+    if (!quoteData) return;
+
+    if (typeof CustomersModule !== 'undefined' && CustomersModule.openCustomerEditor) {
+      let specialDateObj = null;
+      if (quoteData.eventDate && quoteData.eventName) {
+        const parts = quoteData.eventDate.split('-');
+        if (parts.length === 3) {
+          specialDateObj = {
+            day: parseInt(parts[2], 10),
+            month: parseInt(parts[1], 10),
+            title: quoteData.eventName,
+            type: (quoteData.eventName.toLowerCase().includes('cumple') || quoteData.eventName.toLowerCase().includes('hija') || quoteData.eventName.toLowerCase().includes('hijo')) ? 'birthday' : 'anniversary',
+            advanceDays: 7
+          };
+        }
+      }
+
+      CustomersModule.openCustomerEditor(null, {
+        name: quoteData.customerName || '',
+        phone: quoteData.customerPhone || '',
+        notes: quoteData.notes || (quoteData.eventName ? `Motivo pedido: ${quoteData.eventName}` : ''),
+        specialDate: specialDateObj,
+        quoteToLink: quoteData
+      });
+    }
   },
 
   deleteQuote(id) {

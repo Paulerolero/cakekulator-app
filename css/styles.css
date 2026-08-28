@@ -398,7 +398,11 @@ html.dark #sim-add-to-quote-modal > div {
 
 @media (max-width: 768px) {
   body {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(5.2rem + env(safe-area-inset-bottom, 0px));
+    transition: padding-bottom 0.3s ease;
+  }
+  body.is-dashboard-active {
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -428,3 +432,76 @@ html.dark #sim-add-to-quote-modal > div {
 #finance-view canvas {
   max-width: 100%;
 }
+
+/* ==========================================
+   Navegación Móvil y Desktop - Animaciones y Efectos Activos
+   ========================================== */
+.nav-btn {
+  position: relative;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, opacity;
+}
+
+.nav-btn .nav-icon {
+  font-size: 1.35rem;
+  line-height: 1.1;
+  display: block;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.28s ease;
+}
+
+/* Inactivos: Muted, en escala de grises, opacidad baja */
+.nav-btn:not(.nav-active) {
+  opacity: 0.52;
+  filter: grayscale(100%);
+  transform: scale(0.92) translateY(0);
+}
+
+.nav-btn:not(.nav-active):hover {
+  opacity: 0.85;
+  filter: grayscale(20%);
+  transform: scale(1) translateY(0);
+}
+
+/* Activo: Destacado, coloreado, más grande que el resto y elevado con animación */
+.nav-btn.nav-active {
+  opacity: 1 !important;
+  filter: grayscale(0%) !important;
+  z-index: 10;
+}
+
+/* En Barra Móvil */
+nav.md\:hidden .nav-btn.nav-active {
+  transform: scale(1.16) translateY(-5px) !important;
+  background-color: rgba(253, 242, 248, 0.95);
+  box-shadow: 0 4px 12px -2px rgba(219, 39, 119, 0.25), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 1.5px solid rgba(244, 114, 182, 0.6);
+}
+
+.dark nav.md\:hidden .nav-btn.nav-active {
+  background-color: rgba(80, 7, 36, 0.65);
+  box-shadow: 0 4px 14px -2px rgba(244, 114, 182, 0.3);
+  border: 1.5px solid rgba(244, 114, 182, 0.4);
+}
+
+nav.md\:hidden .nav-btn.nav-active .nav-icon {
+  transform: scale(1.22);
+  filter: drop-shadow(0 2px 4px rgba(219, 39, 119, 0.3));
+}
+
+/* En Desktop Header */
+header .nav-btn:not(.nav-active) {
+  transform: scale(1) translateY(0);
+  opacity: 0.7;
+}
+
+header .nav-btn.nav-active {
+  transform: scale(1.06) translateY(-1px) !important;
+  background-color: rgba(253, 242, 248, 0.95);
+  border: 1px solid rgba(244, 114, 182, 0.5);
+}
+
+.dark header .nav-btn.nav-active {
+  background-color: rgba(80, 7, 36, 0.5);
+  border: 1px solid rgba(244, 114, 182, 0.3);
+}
+

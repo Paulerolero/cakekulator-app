@@ -35,18 +35,13 @@ const SimulatorModule = {
       this.simMode = isCakeOrPie ? 'batch' : 'unit';
     }
     this.currentPrice = 0; // Forzar cálculo de precio sugerido
-    App.switchTab('dashboard');
-    const el = document.getElementById('dashboard-simulator-container') || document.getElementById('simulator-view');
-    if (el) {
-      this.render();
-      setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 50);
-    }
+    App.switchTab('simulator');
   },
 
   render(targetId = null) {
     const container = (targetId && document.getElementById(targetId)) ||
-                      document.getElementById('dashboard-simulator-container') ||
-                      document.getElementById('simulator-view');
+                      document.getElementById('simulator-view') ||
+                      document.getElementById('dashboard-simulator-container');
     if (!container) return;
 
     const allRecipes = DB.getRecipes();

@@ -98,32 +98,36 @@
       <nav
         class="hidden md:flex items-center gap-1 bg-pink-50/50 dark:bg-slate-800/60 p-1.5 rounded-2xl border border-pink-100/60 dark:border-slate-700/60">
         <button onclick="App.switchTab('dashboard')" data-tab="dashboard"
-          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-          <span>🏠</span> Inicio
+          class="nav-btn px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span class="nav-icon text-base">🏠</span> <span>Inicio</span>
+        </button>
+        <button onclick="App.switchTab('simulator')" data-tab="simulator"
+          class="nav-btn px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span class="nav-icon text-base">🧮</span> <span>Simular</span>
         </button>
         <button onclick="App.switchTab('quotes')" data-tab="quotes"
-          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-          <span>📋</span> Presupuesto
-        </button>
-        <button onclick="App.switchTab('customers')" data-tab="customers"
-          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-          <span>👥</span> Clientes
+          class="nav-btn px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span class="nav-icon text-base">📋</span> <span>Cotizar</span>
         </button>
         <button onclick="App.switchTab('recipes')" data-tab="recipes"
-          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-          <span>🎂</span> Recetas
+          class="nav-btn px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span class="nav-icon text-base">🎂</span> <span>Recetas</span>
         </button>
         <button onclick="App.switchTab('ingredients')" data-tab="ingredients"
-          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-          <span>📦</span> Insumos
+          class="nav-btn px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span class="nav-icon text-base">📦</span> <span>Insumos</span>
         </button>
         <button onclick="App.switchTab('market-radar')" data-tab="market-radar"
-          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-          <span>🛒</span> Radar Ofertas
+          class="nav-btn px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span class="nav-icon text-base">🛒</span> <span>Ofertas</span>
+        </button>
+        <button onclick="App.switchTab('customers')" data-tab="customers"
+          class="nav-btn px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span class="nav-icon text-base">👥</span> <span>Clientes</span>
         </button>
         <button onclick="App.switchTab('finance')" data-tab="finance"
-          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
-          <span>📊</span> Finanzas
+          class="nav-btn px-2.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+          <span class="nav-icon text-base">📊</span> <span>Finanzas</span>
         </button>
       </nav>
 
@@ -160,6 +164,7 @@
     <section id="customers-view" class="hidden"></section>
     <section id="recipes-view" class="hidden"></section>
     <section id="ingredients-view" class="hidden"></section>
+    <section id="simulator-view" class="hidden"></section>
     <section id="market-radar-view" class="hidden"></section>
     <section id="finance-view" class="hidden"></section>
     <section id="settings-view" class="hidden"></section>
@@ -170,42 +175,56 @@
 
   <!-- Mobile Bottom Navigation Bar -->
   <nav
-    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-0.5 py-1 sm:px-1 sm:py-1.5 flex items-center justify-around shadow-lg transition-colors duration-200"
-    style="padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));">
+    id="mobile-bottom-nav"
+    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-1 py-1.5 flex items-center justify-around shadow-lg transition-all duration-300 transform"
+    style="padding-bottom: calc(0.45rem + env(safe-area-inset-bottom, 0px));">
+    <!-- 1. Inicio -->
     <button onclick="App.switchTab('dashboard')" data-tab="dashboard"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
-      <span class="text-lg leading-none pointer-events-none">🏠</span>
-      <span class="text-[9px] font-semibold pointer-events-none">Inicio</span>
+      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
+      <span class="nav-icon text-xl leading-none pointer-events-none">🏠</span>
+      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Inicio</span>
     </button>
+    <!-- 2. Simular -->
+    <button onclick="App.switchTab('simulator')" data-tab="simulator"
+      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
+      <span class="nav-icon text-xl leading-none pointer-events-none">🧮</span>
+      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Simular</span>
+    </button>
+    <!-- 3. Cotizar -->
     <button onclick="App.switchTab('quotes')" data-tab="quotes"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
-      <span class="text-lg leading-none pointer-events-none">📋</span>
-      <span class="text-[9px] font-semibold pointer-events-none">Cotizar</span>
+      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
+      <span class="nav-icon text-xl leading-none pointer-events-none">📋</span>
+      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Cotizar</span>
     </button>
-    <button onclick="App.switchTab('customers')" data-tab="customers"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
-      <span class="text-lg leading-none pointer-events-none">👥</span>
-      <span class="text-[9px] font-semibold pointer-events-none">Clientes</span>
-    </button>
+    <!-- 4. Recetas -->
     <button onclick="App.switchTab('recipes')" data-tab="recipes"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
-      <span class="text-lg leading-none pointer-events-none">🎂</span>
-      <span class="text-[9px] font-semibold pointer-events-none">Recetas</span>
+      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
+      <span class="nav-icon text-xl leading-none pointer-events-none">🎂</span>
+      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Recetas</span>
     </button>
+    <!-- 5. Insumos -->
     <button onclick="App.switchTab('ingredients')" data-tab="ingredients"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
-      <span class="text-lg leading-none pointer-events-none">📦</span>
-      <span class="text-[9px] font-semibold pointer-events-none">Insumos</span>
+      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
+      <span class="nav-icon text-xl leading-none pointer-events-none">📦</span>
+      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Insumos</span>
     </button>
+    <!-- 6. Ofertas -->
     <button onclick="App.switchTab('market-radar')" data-tab="market-radar"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
-      <span class="text-lg leading-none pointer-events-none">🛒</span>
-      <span class="text-[9px] font-semibold pointer-events-none">Ofertas</span>
+      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
+      <span class="nav-icon text-xl leading-none pointer-events-none">🛒</span>
+      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Ofertas</span>
     </button>
+    <!-- 7. Clientes -->
+    <button onclick="App.switchTab('customers')" data-tab="customers"
+      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
+      <span class="nav-icon text-xl leading-none pointer-events-none">👥</span>
+      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Clientes</span>
+    </button>
+    <!-- 8. Finanzas -->
     <button onclick="App.switchTab('finance')" data-tab="finance"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-0.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
-      <span class="text-lg leading-none pointer-events-none">📊</span>
-      <span class="text-[9px] font-semibold pointer-events-none">Finanzas</span>
+      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
+      <span class="nav-icon text-xl leading-none pointer-events-none">📊</span>
+      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Finanzas</span>
     </button>
   </nav>
 

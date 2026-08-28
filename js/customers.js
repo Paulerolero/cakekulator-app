@@ -37,45 +37,31 @@ const CustomersModule = {
     const filteredCustomers = this.getFilteredCustomers(customers, upcomingEvents);
 
     container.innerHTML = `
-      <!-- Encabezado de Sección con Botones de Acción -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-2xl sm:text-3xl">👥</span>
-            <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
-              Clientes & Fechas Especiales
-            </h2>
-          </div>
-          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            Fideliza a tus clientes, anticipa sus cumpleaños y envía mensajes por WhatsApp en el momento justo.
-          </p>
-        </div>
+      <!-- Barra Superior de Acciones -->
+      <div class="flex items-center justify-end gap-2 mb-3 sm:mb-4">
+        <button 
+          type="button" 
+          onclick="CustomersModule.toggleNotificationsPrompt()"
+          id="btn-customer-notif"
+          class="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          title="Activar o configurar notificaciones de recordatorio"
+        >
+          <span>🔔</span> <span>Alertas</span>
+        </button>
 
-        <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <button 
-            type="button" 
-            onclick="CustomersModule.toggleNotificationsPrompt()"
-            id="btn-customer-notif"
-            class="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer"
-            title="Activar o configurar notificaciones de recordatorio"
-          >
-            <span>🔔</span> <span class="hidden sm:inline">Alertas</span>
-          </button>
-
-          <button 
-            type="button" 
-            onclick="CustomersModule.openCustomerEditor()"
-            class="flex-1 sm:flex-none px-4 py-2 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-bold rounded-xl text-xs sm:text-sm shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <span>+</span> Nuevo Cliente
-          </button>
-        </div>
+        <button 
+          type="button" 
+          onclick="CustomersModule.openCustomerEditor()"
+          class="px-4 py-2 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-bold rounded-xl text-xs sm:text-sm shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <span>+</span> Nuevo Cliente
+        </button>
       </div>
 
       <!-- Tarjetas de Métricas Rápidas (KPIs) -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3.5 mb-4 sm:mb-6">
+      <div class="grid grid-cols-3 gap-2.5 sm:gap-3.5 mb-4 sm:mb-6">
         <!-- Total Clientes -->
-        <div onclick="CustomersModule.setFilter('all')" role="button" class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-pink-100 dark:border-slate-700 shadow-2xs hover:border-pink-300 transition cursor-pointer">
+        <div onclick="CustomersModule.setFilter('all')" role="button" class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-pink-100 dark:border-slate-700 shadow-2xs hover:border-pink-300 transition cursor-pointer">
           <div class="flex items-center justify-between">
             <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold">Total Clientes</span>
             <div class="w-7 h-7 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 flex items-center justify-center text-sm">👥</div>
@@ -84,7 +70,7 @@ const CustomersModule = {
         </div>
 
         <!-- Clientes VIP / Favoritos -->
-        <div onclick="CustomersModule.setFilter('favorites')" role="button" class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-pink-100 dark:border-slate-700 shadow-2xs hover:border-amber-300 transition cursor-pointer">
+        <div onclick="CustomersModule.setFilter('favorites')" role="button" class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-pink-100 dark:border-slate-700 shadow-2xs hover:border-amber-300 transition cursor-pointer">
           <div class="flex items-center justify-between">
             <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold">Favoritos / VIP</span>
             <div class="w-7 h-7 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 flex items-center justify-center text-sm">⭐</div>
@@ -93,23 +79,12 @@ const CustomersModule = {
         </div>
 
         <!-- Próximas Fechas (30 días) -->
-        <div onclick="CustomersModule.setFilter('upcoming')" role="button" class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-pink-100 dark:border-slate-700 shadow-2xs hover:border-rose-300 transition cursor-pointer ${upcomingCount > 0 ? 'ring-1 ring-rose-400/40' : ''}">
+        <div onclick="CustomersModule.setFilter('upcoming')" role="button" class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-pink-100 dark:border-slate-700 shadow-2xs hover:border-rose-300 transition cursor-pointer ${upcomingCount > 0 ? 'ring-1 ring-rose-400/40' : ''}">
           <div class="flex items-center justify-between">
             <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold">Próximos Eventos</span>
             <div class="w-7 h-7 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500 flex items-center justify-center text-sm">🎂</div>
           </div>
           <div class="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">${upcomingCount}</div>
-        </div>
-
-        <!-- Ventas Acumuladas en Clientes -->
-        <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl border border-pink-100 dark:border-slate-700 shadow-2xs">
-          <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-500 dark:text-gray-400 font-semibold">Ventas Totales</span>
-            <div class="w-7 h-7 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center text-sm">💰</div>
-          </div>
-          <div class="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 truncate">
-            ${Calculator.formatCurrency(totalLtvSum)}
-          </div>
         </div>
       </div>
 
@@ -130,7 +105,11 @@ const CustomersModule = {
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
             ${upcomingEvents.map(evt => `
-              <div class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-pink-100 dark:border-slate-700 flex items-center justify-between gap-2 shadow-2xs hover:border-pink-300 transition">
+              <div 
+                onclick="CustomersModule.openCustomerDetail('${evt.customerId}')"
+                class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-pink-100 dark:border-slate-700 flex items-center justify-between gap-2 shadow-2xs hover:border-pink-300 hover:scale-[1.01] transition cursor-pointer"
+                title="Click para ver perfil del cliente"
+              >
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5">
                     <span class="text-base">${this.getDateTypeIcon(evt.type)}</span>
@@ -145,21 +124,14 @@ const CustomersModule = {
                   </div>
                 </div>
 
-                <div class="flex flex-col gap-1 shrink-0">
+                <div class="flex items-center shrink-0">
                   <button 
                     type="button"
-                    onclick="CustomersModule.openWhatsAppModal('${evt.customerId}', '${evt.id}')"
+                    onclick="event.stopPropagation(); CustomersModule.openWhatsAppModal('${evt.customerId}', '${evt.id}')"
                     class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer"
                     title="Enviar mensaje por WhatsApp anticipando esta fecha"
                   >
                     <span>💬</span> <span class="hidden sm:inline">WhatsApp</span>
-                  </button>
-                  <button 
-                    type="button"
-                    onclick="CustomersModule.openCustomerDetail('${evt.customerId}')"
-                    class="px-2 py-1 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg text-[10px] font-semibold transition text-center"
-                  >
-                    Ver Perfil
                   </button>
                 </div>
               </div>
@@ -272,7 +244,11 @@ const CustomersModule = {
     const nextEvent = upcomingEvents.find(evt => evt.customerId === customer.id);
 
     return `
-      <div class="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-700 shadow-2xs hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500/50 transition-all flex flex-col justify-between group">
+      <div 
+        onclick="CustomersModule.openCustomerDetail('${customer.id}')"
+        class="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-700 shadow-2xs hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500/50 hover:scale-[1.01] transition-all flex flex-col justify-between group cursor-pointer active:scale-[0.99]"
+        title="Click para ver perfil completo"
+      >
         <!-- Parte Superior: Avatar, Nombre, Favorito -->
         <div>
           <div class="flex items-start justify-between gap-2.5 mb-3">
@@ -282,16 +258,14 @@ const CustomersModule = {
               </div>
               <div class="min-w-0">
                 <div class="flex items-center gap-1.5">
-                  <h3 
-                    onclick="CustomersModule.openCustomerDetail('${customer.id}')"
-                    class="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base leading-tight truncate hover:text-pink-600 dark:hover:text-pink-400 cursor-pointer transition"
-                  >
+                  <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base leading-tight truncate group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">
                     ${customer.name}
                   </h3>
                 </div>
                 ${customer.phone ? `
                   <a 
                     href="tel:${customer.phone}" 
+                    onclick="event.stopPropagation()"
                     class="text-xs text-gray-500 dark:text-gray-400 hover:text-pink-600 flex items-center gap-1 mt-0.5 truncate"
                   >
                     📞 ${customer.phone}
@@ -305,7 +279,7 @@ const CustomersModule = {
             <!-- Botón Favorito ⭐ -->
             <button 
               type="button" 
-              onclick="CustomersModule.toggleFavorite('${customer.id}')"
+              onclick="event.stopPropagation(); CustomersModule.toggleFavorite('${customer.id}')"
               class="w-8 h-8 rounded-xl flex items-center justify-center transition shrink-0 ${customer.isFavorite ? 'bg-amber-50 text-amber-500 dark:bg-amber-950/40 hover:scale-110' : 'text-gray-300 dark:text-slate-600 hover:text-amber-400'}"
               title="${customer.isFavorite ? 'Quitar de Favoritos' : 'Marcar como Favorito / VIP'}"
             >
@@ -373,13 +347,13 @@ const CustomersModule = {
             </span>
           </div>
 
-          <!-- Barra de Botones de Acción -->
-          <div class="grid grid-cols-3 gap-1.5">
+          <!-- Barra de Botones de Acción (WhatsApp y Cotizar) -->
+          <div class="grid grid-cols-2 gap-2">
             <!-- Botón WhatsApp -->
             <button 
               type="button" 
-              onclick="CustomersModule.openWhatsAppModal('${customer.id}')"
-              class="py-2 px-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 shadow-2xs active:scale-95 cursor-pointer"
+              onclick="event.stopPropagation(); CustomersModule.openWhatsAppModal('${customer.id}')"
+              class="py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
               title="Generar mensaje personalizado de WhatsApp"
             >
               <span>💬</span> <span class="truncate">WhatsApp</span>
@@ -388,21 +362,11 @@ const CustomersModule = {
             <!-- Botón Cotizar -->
             <button 
               type="button" 
-              onclick="CustomersModule.createQuoteForCustomer('${customer.id}')"
-              class="py-2 px-2 bg-pink-50 dark:bg-slate-700 hover:bg-pink-100 dark:hover:bg-slate-600 text-pink-700 dark:text-pink-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+              onclick="event.stopPropagation(); CustomersModule.createQuoteForCustomer('${customer.id}')"
+              class="py-2 px-2.5 bg-pink-50 dark:bg-slate-700 hover:bg-pink-100 dark:hover:bg-slate-600 text-pink-700 dark:text-pink-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
               title="Crear nueva cotización para este cliente"
             >
               <span>📋</span> <span class="truncate">Cotizar</span>
-            </button>
-
-            <!-- Botón Ver Perfil Completo -->
-            <button 
-              type="button" 
-              onclick="CustomersModule.openCustomerDetail('${customer.id}')"
-              class="py-2 px-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
-              title="Ver perfil completo, compras y fechas especiales"
-            >
-              <span>👁️</span> <span class="truncate">Perfil</span>
             </button>
           </div>
         </div>
@@ -515,14 +479,57 @@ const CustomersModule = {
                 </div>
               </div>
 
-              <!-- PREFERENCIAS, GUSTOS Y ALERGIAS -->
+              <!-- PREFERENCIAS, GUSTOS Y ALERGIAS (EDITABLE) -->
               <div class="bg-pink-50/60 dark:bg-slate-800/50 p-3.5 rounded-2xl border border-pink-100 dark:border-slate-700/80">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-pink-700 dark:text-pink-300 block mb-1">
-                  📝 Preferencias, Sabores Favoritos y Alergias
-                </span>
-                <p class="text-xs text-gray-700 dark:text-gray-200 whitespace-pre-line">
-                  ${customer.notes || 'Sin observaciones registradas todavía.'}
-                </p>
+                <div class="flex items-center justify-between gap-2 mb-1.5">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-pink-700 dark:text-pink-300 flex items-center gap-1">
+                    <span>📝</span> Preferencias, Sabores Favoritos y Alergias
+                  </span>
+                  <button 
+                    type="button" 
+                    id="btn-edit-notes-${customer.id}"
+                    onclick="CustomersModule.toggleEditNotes('${customer.id}', true)" 
+                    class="text-[11px] text-pink-600 dark:text-pink-400 hover:text-pink-700 font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                  >
+                    ✏️ Editar
+                  </button>
+                </div>
+
+                <!-- Modo Visualización -->
+                <div 
+                  id="notes-display-${customer.id}" 
+                  onclick="CustomersModule.toggleEditNotes('${customer.id}', true)" 
+                  class="text-xs text-gray-700 dark:text-gray-200 whitespace-pre-line cursor-pointer hover:bg-pink-100/50 dark:hover:bg-slate-700/50 p-2 rounded-xl border border-transparent hover:border-pink-200 dark:hover:border-slate-600 transition"
+                  title="Haz clic para editar directamente"
+                >
+                  ${customer.notes ? customer.notes : '<span class="italic text-gray-400">Sin observaciones registradas. Haz clic aquí para añadir preferencias o alergias...</span>'}
+                </div>
+
+                <!-- Modo Edición Inline -->
+                <div id="notes-editor-${customer.id}" class="hidden space-y-2 pt-1">
+                  <textarea 
+                    id="notes-input-${customer.id}" 
+                    rows="3" 
+                    placeholder="Ej. Prefiere tortas húmedas de chocolate y temáticas infantiles. Hija alérgica al maní..."
+                    class="w-full px-3 py-2 rounded-xl border border-pink-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-xs focus:ring-2 focus:ring-pink-400 outline-none resize-none leading-relaxed"
+                  >${customer.notes || ''}</textarea>
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button 
+                      type="button" 
+                      onclick="CustomersModule.toggleEditNotes('${customer.id}', false)" 
+                      class="px-2.5 py-1 text-[11px] font-semibold text-gray-500 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg transition"
+                    >
+                      Cancelar
+                    </button>
+                    <button 
+                      type="button" 
+                      onclick="CustomersModule.saveCustomerNotes('${customer.id}')" 
+                      class="px-3 py-1 text-[11px] font-bold bg-pink-600 hover:bg-pink-700 text-white rounded-lg transition shadow-2xs cursor-pointer flex items-center gap-1"
+                    >
+                      <span>💾</span> Guardar
+                    </button>
+                  </div>
+                </div>
               </div>
 
               <!-- FECHAS ESPECIALES & ANIVERSARIOS -->
@@ -687,15 +694,61 @@ const CustomersModule = {
     }
   },
 
+  toggleEditNotes(customerId, showEditor = true) {
+    const displayEl = document.getElementById(`notes-display-${customerId}`);
+    const editorEl = document.getElementById(`notes-editor-${customerId}`);
+    const btnEl = document.getElementById(`btn-edit-notes-${customerId}`);
+
+    if (displayEl && editorEl) {
+      if (showEditor) {
+        displayEl.classList.add('hidden');
+        editorEl.classList.remove('hidden');
+        if (btnEl) btnEl.classList.add('hidden');
+        const input = document.getElementById(`notes-input-${customerId}`);
+        if (input) {
+          input.focus();
+          input.setSelectionRange(input.value.length, input.value.length);
+        }
+      } else {
+        displayEl.classList.remove('hidden');
+        editorEl.classList.add('hidden');
+        if (btnEl) btnEl.classList.remove('hidden');
+      }
+    }
+  },
+
+  saveCustomerNotes(customerId) {
+    const input = document.getElementById(`notes-input-${customerId}`);
+    if (!input) return;
+    const newNotes = input.value.trim();
+
+    DB.updateCustomer(customerId, { notes: newNotes });
+    if (typeof App !== 'undefined' && App.showToast) {
+      App.showToast('✅ Preferencias actualizadas');
+    }
+
+    this.openCustomerDetail(customerId, 'overview');
+    this.render();
+  },
+
   // ==========================================
   // Modal de Creación / Edición de Cliente
   // ==========================================
-  openCustomerEditor(customerId = null) {
+  openCustomerEditor(customerId = null, prefillData = null) {
     const customer = customerId ? DB.getCustomerById(customerId) : null;
     const isEdit = !!customer;
 
+    this.pendingQuoteToLink = prefillData?.quoteToLink || null;
+    this.pendingSpecialDateToLink = prefillData?.specialDate || null;
+
     const modalsRoot = document.getElementById('modals-root');
     if (!modalsRoot) return;
+
+    const initialName = customer ? (customer.name || '') : (prefillData ? (prefillData.name || '') : '');
+    const initialPhone = customer ? (customer.phone || '') : (prefillData ? (prefillData.phone || '') : '');
+    const initialEmail = customer ? (customer.email || '') : (prefillData ? (prefillData.email || '') : '');
+    const initialAddress = customer ? (customer.address || '') : (prefillData ? (prefillData.address || '') : '');
+    const initialNotes = customer ? (customer.notes || '') : (prefillData ? (prefillData.notes || '') : '');
 
     modalsRoot.innerHTML = `
       <div id="customer-editor-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
@@ -703,7 +756,7 @@ const CustomersModule = {
           
           <div class="bg-pink-600 dark:bg-pink-700 p-4 text-white flex items-center justify-between shrink-0">
             <h3 class="font-bold text-base flex items-center gap-2">
-              <span>👥</span> ${isEdit ? 'Editar Perfil de Cliente' : 'Nuevo Cliente'}
+              <span>👥</span> ${isEdit ? 'Editar Perfil de Cliente' : (prefillData ? 'Guardar Nuevo Cliente (Datos Precargados)' : 'Nuevo Cliente')}
             </h3>
             <button 
               type="button" 
@@ -724,7 +777,7 @@ const CustomersModule = {
                 type="text" 
                 id="cust-name" 
                 required 
-                value="${customer ? (customer.name || '') : ''}" 
+                value="${initialName}" 
                 placeholder="Ej. Camila González" 
                 class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none"
               >
@@ -738,7 +791,7 @@ const CustomersModule = {
                   type="tel" 
                   id="cust-phone" 
                   required
-                  value="${customer ? (customer.phone || '') : ''}" 
+                  value="${initialPhone}" 
                   placeholder="Ej. +56 9 8765 4321" 
                   class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none"
                 >
@@ -749,7 +802,7 @@ const CustomersModule = {
                 <input 
                   type="email" 
                   id="cust-email" 
-                  value="${customer ? (customer.email || '') : ''}" 
+                  value="${initialEmail}" 
                   placeholder="cliente@ejemplo.com" 
                   class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none"
                 >
@@ -762,7 +815,7 @@ const CustomersModule = {
               <input 
                 type="text" 
                 id="cust-address" 
-                value="${customer ? (customer.address || '') : ''}" 
+                value="${initialAddress}" 
                 placeholder="Ej. Av. Providencia 1200, Depto 5B" 
                 class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none"
               >
@@ -796,7 +849,7 @@ const CustomersModule = {
                 rows="3" 
                 placeholder="Ej. Le gustan las tortas de milhojas con manjar. Hija alérgica a los frutos secos." 
                 class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none resize-none"
-              >${customer ? (customer.notes || '') : ''}</textarea>
+              >${initialNotes}</textarea>
             </div>
 
             <div class="pt-2 flex items-center justify-end gap-2">
@@ -844,6 +897,26 @@ const CustomersModule = {
         App.showToast('✅ Perfil de cliente actualizado');
       }
     } else {
+      const specialDates = this.pendingSpecialDateToLink ? [{
+        id: 'sd_' + Date.now(),
+        day: this.pendingSpecialDateToLink.day,
+        month: this.pendingSpecialDateToLink.month,
+        title: this.pendingSpecialDateToLink.title || 'Fecha Especial',
+        type: this.pendingSpecialDateToLink.type || 'birthday',
+        advanceDays: this.pendingSpecialDateToLink.advanceDays || 7
+      }] : [];
+
+      const purchases = this.pendingQuoteToLink ? [{
+        id: 'pur_' + Date.now(),
+        quoteId: this.pendingQuoteToLink.id || '',
+        date: this.pendingQuoteToLink.eventDate || new Date().toISOString().split('T')[0],
+        occasion: this.pendingQuoteToLink.eventName || 'Cotización inicial',
+        items: (this.pendingQuoteToLink.items || []).map(it => `${it.quantity}x ${it.recipeName}`).join(', '),
+        total: Number(this.pendingQuoteToLink.total) || 0,
+        status: this.pendingQuoteToLink.status === 'approved' ? 'completed' : 'pending',
+        notes: this.pendingQuoteToLink.notes || ''
+      }] : [];
+
       DB.addCustomer({
         name,
         phone,
@@ -851,11 +924,15 @@ const CustomersModule = {
         address,
         isFavorite,
         notes,
-        specialDates: [],
-        purchases: []
+        specialDates,
+        purchases
       });
+
+      this.pendingQuoteToLink = null;
+      this.pendingSpecialDateToLink = null;
+
       if (typeof App !== 'undefined' && App.showToast) {
-        App.showToast('🎉 ¡Nuevo cliente registrado!');
+        App.showToast('🎉 ¡Nuevo cliente guardado con éxito!');
       }
     }
 
