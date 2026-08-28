@@ -66,6 +66,8 @@
   <!-- HTML2Canvas & PDF Generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Chart.js for Finance Panel -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 
 <body
@@ -115,6 +117,10 @@
           class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>🛒</span> Radar Ofertas
         </button>
+        <button onclick="App.switchTab('finance')" data-tab="finance"
+          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+          <span>📊</span> Finanzas
+        </button>
       </nav>
 
       <!-- Right Header Actions (Google Auth, Install PWA, Settings) -->
@@ -150,6 +156,7 @@
     <section id="recipes-view" class="hidden"></section>
     <section id="ingredients-view" class="hidden"></section>
     <section id="market-radar-view" class="hidden"></section>
+    <section id="finance-view" class="hidden"></section>
     <section id="settings-view" class="hidden"></section>
   </main>
 
@@ -181,28 +188,34 @@
       <span class="text-[10px] font-semibold pointer-events-none">Insumos</span>
     </button>
     <button onclick="App.switchTab('market-radar')" data-tab="market-radar"
-      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-pink-600 dark:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">🛒</span>
       <span class="text-[10px] font-semibold pointer-events-none">Ofertas</span>
+    </button>
+    <button onclick="App.switchTab('finance')" data-tab="finance"
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+      <span class="text-lg leading-none pointer-events-none">📊</span>
+      <span class="text-[10px] font-semibold pointer-events-none">Finanzas</span>
     </button>
   </nav>
 
   <!-- Scripts -->
-  <script src="js/firebase-config.js?v=2.9"></script>
-  <script src="js/config.local.js?v=2.9"></script>
-  <script src="js/auth.js?v=2.9"></script>
-  <script src="js/templates.js?v=2.9"></script>
-  <script src="js/db.js?v=2.9"></script>
-  <script src="js/gemini-service.js?v=2.9"></script>
-  <script src="js/ingredients.js?v=2.9"></script>
-  <script src="js/receipt-scanner.js?v=2.9"></script>
-  <script src="js/recipe-scanner.js?v=2.9"></script>
-  <script src="js/market-radar.js?v=2.9"></script>
-  <script src="js/recipes.js?v=2.9"></script>
-  <script src="js/simulator.js?v=2.9"></script>
-  <script src="js/quotes.js?v=2.9"></script>
-  <script src="js/receipts.js?v=2.9"></script>
-  <script src="js/app.js?v=2.9"></script>
+  <script src="js/firebase-config.js?v=3.0"></script>
+  <script src="js/config.local.js?v=3.0"></script>
+  <script src="js/auth.js?v=3.0"></script>
+  <script src="js/templates.js?v=3.0"></script>
+  <script src="js/db.js?v=3.0"></script>
+  <script src="js/gemini-service.js?v=3.0"></script>
+  <script src="js/ingredients.js?v=3.0"></script>
+  <script src="js/receipt-scanner.js?v=3.0"></script>
+  <script src="js/recipe-scanner.js?v=3.0"></script>
+  <script src="js/market-radar.js?v=3.0"></script>
+  <script src="js/finance.js?v=3.0"></script>
+  <script src="js/recipes.js?v=3.0"></script>
+  <script src="js/simulator.js?v=3.0"></script>
+  <script src="js/quotes.js?v=3.0"></script>
+  <script src="js/receipts.js?v=3.0"></script>
+  <script src="js/app.js?v=3.0"></script>
 </body>
 
 </html>

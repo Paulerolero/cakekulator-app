@@ -45,7 +45,7 @@ const App = {
     let startTime = 0;
     let isTracking = false;
 
-    const tabsOrder = ['dashboard', 'quotes', 'recipes', 'ingredients', 'market-radar'];
+    const tabsOrder = ['dashboard', 'quotes', 'recipes', 'ingredients', 'market-radar', 'finance'];
 
     const isInteractiveElement = (target) => {
       if (!target || !(target instanceof Element)) return false;
@@ -152,7 +152,7 @@ const App = {
 
     this.currentTab = tabName;
 
-    const views = ['dashboard-view', 'quotes-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
+    const views = ['dashboard-view', 'finance-view', 'quotes-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
     views.forEach(v => {
       const el = document.getElementById(v);
       if (el) el.classList.add('hidden');
@@ -187,6 +187,11 @@ const App = {
     switch (tabName) {
       case 'dashboard':
         this.renderDashboard();
+        break;
+      case 'finance':
+        if (typeof FinanceModule !== 'undefined') {
+          FinanceModule.render();
+        }
         break;
       case 'quotes':
         QuotesModule.render();
@@ -361,12 +366,6 @@ const App = {
 
     container.innerHTML = `
       <div class="max-w-2xl mx-auto space-y-4 sm:space-y-6">
-        <div>
-          <h2 class="text-lg sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <span>⚙️</span> Configuración de la Pastelería
-          </h2>
-          <p class="text-xs sm:text-sm text-gray-500">Personaliza moneda, tarifas de mano de obra y datos de contacto para tus cotizaciones.</p>
-        </div>
 
         <form id="settings-form" onsubmit="App.saveSettingsForm(event)" class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 shadow-sm space-y-4 sm:space-y-5 text-xs sm:text-sm">
           <!-- Parámetros de Costeo -->
@@ -482,20 +481,8 @@ const App = {
         </form>
 
         <!-- Apariencia y Modo Oscuro / Claro -->
-        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4 text-sm transition-colors">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2.5">
-              <div class="w-10 h-10 rounded-2xl bg-pink-50 dark:bg-slate-800 text-pink-600 dark:text-pink-400 flex items-center justify-center text-xl shadow-2xs">
-                <span>🎨</span>
-              </div>
-              <div>
-                <h3 class="font-bold text-gray-800 dark:text-gray-100 text-sm">Tema Visual y Modo Oscuro</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Personaliza la interfaz según tu preferencia o iluminación ambiental.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-pink-100 dark:border-slate-800 shadow-sm text-sm transition-colors">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <button 
               type="button" 
               onclick="App.setTheme('light')" 
@@ -596,28 +583,6 @@ const App = {
           </div>
         </div>
 
-        <!-- Respaldos y Restauración -->
-        <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm space-y-4 text-sm">
-          <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
-            <span>💾</span> Copias de Seguridad y Datos
-          </h3>
-          <p class="text-xs text-gray-500">Exporta tus insumos y recetas para no perderlos nunca o para transferirlos a otro teléfono Android.</p>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button onclick="App.exportBackup()" class="py-2.5 px-4 rounded-xl border border-pink-200 hover:bg-pink-50 text-pink-700 font-bold text-xs flex items-center justify-center gap-2 transition">
-              <span>📥</span> Descargar Copia (.JSON)
-            </button>
-            <label class="py-2.5 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer text-center">
-              <span>📤</span> Restaurar Copia (.JSON)
-              <input type="file" accept=".json" onchange="App.importBackup(event)" class="hidden">
-            </label>
-          </div>
-
-          <div class="pt-3 border-t border-gray-100">
-            <button onclick="App.resetDataConfirm()" class="text-xs text-red-500 hover:text-red-700 font-semibold hover:underline">
-              ⚠️ Restaurar recetas e insumos de ejemplo originales
-            </button>
-          </div>
         </div>
       </div>
     `;

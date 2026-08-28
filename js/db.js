@@ -7,7 +7,8 @@ const DB_KEYS = {
   INGREDIENTS: 'cakekulator_ingredients',
   RECIPES: 'cakekulator_recipes',
   QUOTES: 'cakekulator_quotes',
-  MARKET_STORES: 'cakekulator_market_stores'
+  MARKET_STORES: 'cakekulator_market_stores',
+  PRICE_HISTORY: 'cakekulator_price_history'
 };
 
 const LEGACY_DB_KEYS = {
@@ -180,7 +181,8 @@ const DB = {
       { name: 'ingredients', key: DB_KEYS.INGREDIENTS },
       { name: 'recipes', key: DB_KEYS.RECIPES },
       { name: 'quotes', key: DB_KEYS.QUOTES },
-      { name: 'market_stores', key: DB_KEYS.MARKET_STORES }
+      { name: 'market_stores', key: DB_KEYS.MARKET_STORES },
+      { name: 'price_history', key: DB_KEYS.PRICE_HISTORY }
     ];
 
     const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
@@ -276,6 +278,7 @@ const DB = {
     const recipes = this.getRecipes();
     const quotes = this.getQuotes();
     const marketStores = this.getMarketStores();
+    const priceHistory = this.getPriceHistory();
     const now = Date.now();
 
     await Promise.all([
@@ -283,7 +286,8 @@ const DB = {
       userDocRef.doc('ingredients').set({ data: ingredients, updatedAt: now }),
       userDocRef.doc('recipes').set({ data: recipes, updatedAt: now }),
       userDocRef.doc('quotes').set({ data: quotes, updatedAt: now }),
-      userDocRef.doc('market_stores').set({ data: marketStores, updatedAt: now })
+      userDocRef.doc('market_stores').set({ data: marketStores, updatedAt: now }),
+      userDocRef.doc('price_history').set({ data: priceHistory, updatedAt: now })
     ]);
     this.lastSyncTimestamp = now;
     console.log('✅ Todos los datos locales respaldados en Firestore.');
@@ -409,7 +413,12 @@ const DB = {
     const list = this.getIngredients();
     const index = list.findIndex(item => item.id === id);
     if (index !== -1) {
-      list[index] = { ...list[index], ...updatedData };
+      const oldItem = list[index];
+      // Registrar cambio de precio automáticamente para el evolutivo de finanzas
+      if (updatedData.packagePrice !== undefined && Number(updatedData.packagePrice) !== Number(oldItem.packagePrice)) {
+        this.recordPriceChange(id, oldItem.name, Number(oldItem.packagePrice), Number(updatedData.packagePrice), oldItem.packageQty, oldItem.packageUnit);
+      }
+      list[index] = { ...oldItem, ...updatedData };
       this.saveIngredients(list);
       return list[index];
     }
@@ -420,6 +429,39 @@ const DB = {
     let list = this.getIngredients();
     list = list.filter(item => item.id !== id);
     this.saveIngredients(list);
+  },
+
+  // Historial de Precios de Insumos (para el Panel de Finanzas)
+  getPriceHistory() {
+    try {
+      const data = localStorage.getItem(DB_KEYS.PRICE_HISTORY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error('Error al cargar historial de precios:', e);
+      return [];
+    }
+  },
+
+  savePriceHistory(history) {
+    localStorage.setItem(DB_KEYS.PRICE_HISTORY, JSON.stringify(history));
+    this.syncDocumentToCloud('price_history', history);
+  },
+
+  recordPriceChange(ingredientId, ingredientName, oldPrice, newPrice, packageQty, packageUnit) {
+    const history = this.getPriceHistory();
+    history.push({
+      ingredientId,
+      ingredientName: ingredientName || 'Insumo',
+      oldPrice,
+      newPrice,
+      packageQty: packageQty || 0,
+      packageUnit: packageUnit || 'g',
+      timestamp: Date.now(),
+      date: new Date().toISOString().split('T')[0]
+    });
+    // Limitar a los últimos 2000 registros
+    if (history.length > 2000) history.splice(0, history.length - 2000);
+    this.savePriceHistory(history);
   },
 
   // Recetas / Fichas Técnicas
