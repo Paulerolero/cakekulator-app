@@ -152,7 +152,7 @@ const App = {
 
     this.currentTab = tabName;
 
-    const views = ['dashboard-view', 'quotes-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
+    const views = ['dashboard-view', 'quotes-view', 'whatsapp-bot-view', 'recipes-view', 'ingredients-view', 'market-radar-view', 'settings-view'];
     views.forEach(v => {
       const el = document.getElementById(v);
       if (el) el.classList.add('hidden');
@@ -190,6 +190,11 @@ const App = {
         break;
       case 'quotes':
         QuotesModule.render();
+        break;
+      case 'whatsapp-bot':
+        if (typeof WhatsAppBotModule !== 'undefined') {
+          WhatsAppBotModule.init();
+        }
         break;
       case 'recipes':
         RecipesModule.render();
@@ -541,9 +546,9 @@ const App = {
         </div>
 
         <!-- Conexión Nube & Cuenta Google -->
-        <div class="bg-white rounded-3xl p-6 border border-pink-100 shadow-sm space-y-4 text-sm">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4 text-sm">
           <div class="flex items-center justify-between">
-            <h3 class="font-bold text-gray-800 text-sm flex items-center gap-2">
+            <h3 class="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-2">
               <span>🔥</span> Base de Datos y Sesión en la Nube
             </h3>
             <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}">
@@ -551,9 +556,9 @@ const App = {
             </span>
           </div>
 
-          <p class="text-xs text-gray-500">Conecta tu cuenta de Google y Firebase Cloud Firestore para que tus recetas, costos y presupuestos se sincronicen automáticamente en todos tus dispositivos.</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Conecta tu cuenta de Google y Firebase Cloud Firestore para que tus recetas, costos y presupuestos se sincronicen automáticamente en todos tus dispositivos.</p>
 
-          <div class="bg-gradient-to-br from-pink-50/60 to-rose-50/40 p-4 rounded-2xl border border-pink-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="bg-gradient-to-br from-pink-50/60 to-rose-50/40 dark:from-slate-800/80 dark:to-slate-800/60 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
                 <div class="flex items-center gap-3">
@@ -565,31 +570,31 @@ const App = {
                     </div>
                   `}
                   <div>
-                    <h4 class="font-bold text-gray-900 text-xs">${AuthModule.currentUser.displayName || 'Usuario'}</h4>
-                    <p class="text-[11px] text-gray-500">${AuthModule.currentUser.email}</p>
-                    <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 mt-0.5">
+                    <h4 class="font-bold text-gray-900 dark:text-gray-100 text-xs">${AuthModule.currentUser.displayName || 'Usuario'}</h4>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400">${AuthModule.currentUser.email}</p>
+                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
                       <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sincronización en vivo activa
                     </span>
                   </div>
                 </div>
               ` : `
                 <div>
-                  <h4 class="font-bold text-gray-800 text-xs">Sin sesión iniciada</h4>
-                  <p class="text-[11px] text-gray-500">Inicia sesión con Google para respaldar tus datos en la nube.</p>
+                  <h4 class="font-bold text-gray-800 dark:text-gray-200 text-xs">Sin sesión iniciada</h4>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400">Inicia sesión con Google para respaldar tus datos en la nube.</p>
                 </div>
               `}
             </div>
 
             <div class="flex items-center gap-2 w-full sm:w-auto">
               ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
-                <button onclick="AuthModule.forceSyncNow()" class="flex-1 sm:flex-none px-3 py-2 bg-pink-100 hover:bg-pink-200 text-pink-700 text-xs font-bold rounded-xl transition">
+                <button onclick="AuthModule.forceSyncNow()" class="flex-1 sm:flex-none px-3 py-2 bg-pink-100 dark:bg-slate-700 hover:bg-pink-200 dark:hover:bg-slate-600 text-pink-700 dark:text-pink-300 text-xs font-bold rounded-xl transition">
                   🔄 Sincronizar
                 </button>
-                <button onclick="AuthModule.logout()" class="flex-1 sm:flex-none px-3 py-2 bg-gray-100 hover:bg-red-50 text-gray-700 hover:text-red-600 text-xs font-bold rounded-xl transition">
+                <button onclick="AuthModule.logout()" class="flex-1 sm:flex-none px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-950/40 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold rounded-xl transition">
                   Cerrar Sesión
                 </button>
               ` : `
-                <button onclick="AuthModule.loginWithGoogle()" class="w-full sm:w-auto px-4 py-2 bg-white hover:bg-pink-50 border border-pink-300 text-pink-700 text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2">
+                <button onclick="AuthModule.loginWithGoogle()" class="w-full sm:w-auto px-4 py-2 bg-white dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-slate-700 border border-pink-300 dark:border-pink-800 text-pink-700 dark:text-pink-300 text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2">
                   <svg class="w-4 h-4" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -599,10 +604,43 @@ const App = {
                   Iniciar con Google
                 </button>
               `}
-              <button onclick="AuthModule.showConfigModal()" title="Configurar credenciales de Firebase" class="p-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-gray-500 hover:text-gray-700">
+              <button onclick="AuthModule.showConfigModal()" title="Configurar credenciales de Firebase" class="p-2 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700">
                 ⚙️
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Conexión a WhatsApp Bot de Respuestas Automáticas -->
+        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4 text-sm">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-2">
+              <span>💬</span> WhatsApp Bot de Cotizaciones
+            </h3>
+            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+              Inteligencia Artificial
+            </span>
+          </div>
+
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            Conecta tu número de WhatsApp para que el bot responda cotizaciones automáticamente a tus clientes utilizando los precios de tus recetas y solicitud de abono.
+          </p>
+
+          <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-2xl p-4 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-xl shrink-0">
+                📲
+              </div>
+              <div>
+                <h4 class="font-bold text-xs leading-tight">Vincular y Gestionar WhatsApp Bot</h4>
+                <p class="text-[11px] text-emerald-100 mt-0.5">Escanear código QR, historial en vivo y conmutar auto-respuesta.</p>
+              </div>
+            </div>
+
+            <button type="button" onclick="App.switchTab('whatsapp-bot')" class="w-full sm:w-auto px-4 py-2 bg-white text-emerald-800 font-bold text-xs rounded-xl shadow-xs hover:bg-emerald-50 transition shrink-0 cursor-pointer flex items-center justify-center gap-1.5">
+              <span>Configurar Bot</span>
+              <span>→</span>
+            </button>
           </div>
         </div>
 

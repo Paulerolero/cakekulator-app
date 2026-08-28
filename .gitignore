@@ -1,7 +1,13 @@
 # Archivo de configuración local con llaves secretas
 js/config.local.js
+.env
+*.env
+whatsapp-server/.env
+whatsapp-server/sessions/
+whatsapp-server/node_modules/
 
 # Node / dependencias si existieran
 node_modules/
 .DS_Store
 Thumbs.db
+

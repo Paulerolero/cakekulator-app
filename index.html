@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Cakekulator - Costos, Porciones y Precios para Pastelería</title>
-  
+
   <!-- PWA & Mobile Meta Tags -->
   <meta name="theme-color" content="#ec4899">
   <meta name="mobile-web-app-capable" content="yes">
@@ -65,40 +67,58 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body class="text-gray-800 dark:text-gray-100 bg-[#faf5f8] dark:bg-[#0f172a] antialiased min-h-screen flex flex-col pb-24 md:pb-6 transition-colors duration-200 select-none sm:select-auto">
+
+<body
+  class="text-gray-800 dark:text-gray-100 bg-[#faf5f8] dark:bg-[#0f172a] antialiased min-h-screen flex flex-col pb-24 md:pb-6 transition-colors duration-200 select-none sm:select-auto">
 
   <!-- Top Navigation Header -->
-  <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 transition-colors duration-200">
+  <header
+    class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 transition-colors duration-200">
     <div class="max-w-6xl mx-auto flex items-center justify-between gap-1.5 sm:gap-2">
-      
+
       <!-- Brand Logo -->
-      <div class="flex items-center gap-2 sm:gap-2.5 cursor-pointer select-none group shrink-0" onclick="App.switchTab('dashboard')">
-        <img id="header-brand-logo" src="assets/icons/logo.png" alt="Cakekulator Logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700 group-hover:scale-105 transition-transform duration-200">
+      <div class="flex items-center gap-2 sm:gap-2.5 cursor-pointer select-none group shrink-0"
+        onclick="App.switchTab('dashboard')">
+        <img id="header-brand-logo" src="assets/icons/logo.png" alt="Cakekulator Logo"
+          class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700 group-hover:scale-105 transition-transform duration-200">
         <div>
-          <span class="font-extrabold text-base sm:text-lg text-gray-900 dark:text-white tracking-tight block leading-none">
+          <span
+            class="font-extrabold text-base sm:text-lg text-gray-900 dark:text-white tracking-tight block leading-none">
             Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
           </span>
-          <span id="header-brand-name" class="text-[9px] sm:text-[10px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[100px] sm:max-w-[130px] block">Gestión Pastelera</span>
+          <span id="header-brand-name"
+            class="text-[9px] sm:text-[10px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[100px] sm:max-w-[130px] block">Gestión
+            Pastelera</span>
         </div>
       </div>
 
       <!-- Desktop Nav Links -->
-      <nav class="hidden md:flex items-center gap-1 bg-pink-50/50 dark:bg-slate-800/60 p-1.5 rounded-2xl border border-pink-100/60 dark:border-slate-700/60">
-        <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+      <nav
+        class="hidden md:flex items-center gap-1 bg-pink-50/50 dark:bg-slate-800/60 p-1.5 rounded-2xl border border-pink-100/60 dark:border-slate-700/60">
+        <button onclick="App.switchTab('dashboard')" data-tab="dashboard"
+          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>🏠</span> Inicio
         </button>
-        <button onclick="App.switchTab('quotes')" data-tab="quotes" class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+        <button onclick="App.switchTab('quotes')" data-tab="quotes"
+          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>📋</span> Presupuesto
         </button>
-        <button onclick="App.switchTab('recipes')" data-tab="recipes" class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+        <button onclick="App.switchTab('recipes')" data-tab="recipes"
+          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>🎂</span> Recetas
         </button>
-        <button onclick="App.switchTab('ingredients')" data-tab="ingredients" class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+        <button onclick="App.switchTab('ingredients')" data-tab="ingredients"
+          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>📦</span> Insumos
         </button>
-        <button onclick="App.switchTab('market-radar')" data-tab="market-radar" class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
+        <button onclick="App.switchTab('market-radar')" data-tab="market-radar"
+          class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5">
           <span>🛒</span> Radar Ofertas
         </button>
+        <!-- Botón WhatsApp Bot oculto -->
+        <!-- <button onclick="App.switchTab('whatsapp-bot')" data-tab="whatsapp-bot" class="nav-btn px-3 py-1.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
+          <span>💬</span> WhatsApp Bot
+        </button> -->
       </nav>
 
       <!-- Right Header Actions (Google Auth, Install PWA, Settings) -->
@@ -107,12 +127,19 @@
         <div id="auth-header-container"></div>
 
         <!-- Botón Instalar PWA (Se muestra en Android / navegadores compatibles) -->
-        <button id="pwa-install-btn" onclick="App.installPWA()" class="hidden bg-pink-100 dark:bg-slate-800 hover:bg-pink-200 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
+        <button id="pwa-install-btn" onclick="App.installPWA()"
+          class="hidden bg-pink-100 dark:bg-slate-800 hover:bg-pink-200 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
           <span>📲</span> <span class="hidden sm:inline">Instalar App</span>
         </button>
 
-        <button onclick="App.switchTab('settings')" data-tab="settings" title="Configuración" class="nav-btn p-1.5 sm:p-2 text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 rounded-xl transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <button onclick="App.switchTab('settings')" data-tab="settings" title="Configuración"
+          class="nav-btn p-1.5 sm:p-2 text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 rounded-xl transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
         </button>
       </div>
 
@@ -127,6 +154,7 @@
     <section id="recipes-view" class="hidden"></section>
     <section id="ingredients-view" class="hidden"></section>
     <section id="market-radar-view" class="hidden"></section>
+    <section id="whatsapp-bot-view" class="hidden"></section>
     <section id="settings-view" class="hidden"></section>
   </main>
 
@@ -134,26 +162,33 @@
   <div id="modals-root"></div>
 
   <!-- Mobile Bottom Navigation Bar -->
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-1 py-1 sm:px-2 sm:py-1.5 flex items-center justify-around shadow-lg transition-colors duration-200" style="padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));">
-    <button onclick="App.switchTab('dashboard')" data-tab="dashboard" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+  <nav
+    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-1 py-1 sm:px-2 sm:py-1.5 flex items-center justify-around shadow-lg transition-colors duration-200"
+    style="padding-bottom: calc(0.35rem + env(safe-area-inset-bottom, 0px));">
+    <button onclick="App.switchTab('dashboard')" data-tab="dashboard"
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">🏠</span>
       <span class="text-[10px] font-semibold pointer-events-none">Inicio</span>
     </button>
-    <button onclick="App.switchTab('quotes')" data-tab="quotes" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+    <button onclick="App.switchTab('quotes')" data-tab="quotes"
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">📋</span>
       <span class="text-[10px] font-semibold pointer-events-none">Cotizar</span>
     </button>
-    <button onclick="App.switchTab('recipes')" data-tab="recipes" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+    <button onclick="App.switchTab('recipes')" data-tab="recipes"
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">🎂</span>
       <span class="text-[10px] font-semibold pointer-events-none">Recetas</span>
     </button>
-    <button onclick="App.switchTab('ingredients')" data-tab="ingredients" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
+    <button onclick="App.switchTab('ingredients')" data-tab="ingredients"
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-gray-500 dark:text-gray-400 hover:text-pink-600 dark:hover:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">📦</span>
       <span class="text-[10px] font-semibold pointer-events-none">Insumos</span>
     </button>
-    <button onclick="App.switchTab('market-radar')" data-tab="market-radar" class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-emerald-600 dark:text-emerald-400 font-bold active:scale-95 transition-transform touch-manipulation cursor-pointer">
+    <button onclick="App.switchTab('market-radar')" data-tab="market-radar"
+      class="nav-btn flex-1 flex flex-col items-center gap-0.5 py-1.5 px-1 rounded-xl text-pink-600 dark:text-pink-400 active:scale-95 transition-transform touch-manipulation cursor-pointer">
       <span class="text-lg leading-none pointer-events-none">🛒</span>
-      <span class="text-[10px] font-bold pointer-events-none">Ofertas</span>
+      <span class="text-[10px] font-semibold pointer-events-none">Ofertas</span>
     </button>
   </nav>
 
@@ -168,10 +203,12 @@
   <script src="js/receipt-scanner.js?v=2.6"></script>
   <script src="js/recipe-scanner.js?v=2.6"></script>
   <script src="js/market-radar.js?v=2.6"></script>
+  <script src="js/whatsapp-bot-client.js?v=2.6"></script>
   <script src="js/recipes.js?v=2.6"></script>
   <script src="js/simulator.js?v=2.6"></script>
   <script src="js/quotes.js?v=2.6"></script>
   <script src="js/receipts.js?v=2.6"></script>
   <script src="js/app.js?v=2.6"></script>
 </body>
+
 </html>
