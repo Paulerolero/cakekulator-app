@@ -515,16 +515,28 @@ Devuelve estrictamente un objeto JSON (sin delimitadores de bloque markdown ni t
   }
 }`;
 
+    if (!GeminiService.hasApiKey()) {
+      return new Promise((resolve, reject) => {
+        GeminiService.promptApiKeyModal(() => {
+          this.simulateDirectlyWithGemini(msgText).then(resolve).catch(reject);
+        });
+      });
+    }
+
     const rawResponse = await GeminiService.callGeminiText(prompt);
     
-    // Limpiar respuesta JSON
-    let cleanJson = rawResponse.trim();
-    if (cleanJson.startsWith('```json')) cleanJson = cleanJson.replace(/^```json/, '');
-    if (cleanJson.startsWith('```')) cleanJson = cleanJson.replace(/^```/, '');
-    if (cleanJson.endsWith('```')) cleanJson = cleanJson.replace(/```$/, '');
-    cleanJson = cleanJson.trim();
-
-    const parsed = JSON.parse(cleanJson);
+    let parsed;
+    if (typeof rawResponse === 'object' && rawResponse !== null) {
+      parsed = rawResponse;
+    } else {
+      // Limpiar respuesta JSON
+      let cleanJson = (rawResponse || '').trim();
+      if (cleanJson.startsWith('```json')) cleanJson = cleanJson.replace(/^```json/, '');
+      if (cleanJson.startsWith('```')) cleanJson = cleanJson.replace(/^```/, '');
+      if (cleanJson.endsWith('```')) cleanJson = cleanJson.replace(/```$/, '');
+      cleanJson = cleanJson.trim();
+      parsed = JSON.parse(cleanJson);
+    }
 
     // Si debe crear la cotización, registrarla en la base de datos
     if (parsed.shouldCreateQuote && parsed.newQuoteData && Array.isArray(parsed.newQuoteData.items) && parsed.newQuoteData.items.length > 0) {

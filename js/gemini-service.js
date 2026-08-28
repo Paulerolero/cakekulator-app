@@ -221,6 +221,15 @@ const GeminiService = {
     }
   },
 
+  // Llamada a Gemini con prompt de texto libre
+  async callGeminiText(prompt) {
+    const result = await this.generateContent({ prompt });
+    if (typeof result === 'object') {
+      return JSON.stringify(result);
+    }
+    return result;
+  },
+
   // Escanear Boleta con Gemini
   async analyzeReceipt(imageOrText) {
     const isImage = typeof imageOrText !== 'string' || imageOrText.startsWith('data:');
