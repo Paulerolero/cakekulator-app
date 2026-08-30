@@ -44,8 +44,8 @@ const DB = {
     } else {
       // Si ya existen ingredientes pero faltan los de servicios, incorporarlos
       if (typeof DEFAULT_SERVICE_INGREDIENTS !== 'undefined') {
-        const currentIngs = this.getIngredients();
-        const hasServices = currentIngs.some(i => i.itemType === 'service');
+        const currentIngs = this.getIngredients('all');
+        const hasServices = currentIngs.some(i => i.itemType === 'service' || i.mode === 'services');
         if (!hasServices) {
           this.saveIngredients([...currentIngs, ...DEFAULT_SERVICE_INGREDIENTS]);
         }
@@ -59,20 +59,42 @@ const DB = {
     } else {
       // Si ya existen recetas pero faltan servicios, incorporarlos
       if (typeof DEFAULT_SERVICE_RECIPES !== 'undefined') {
-        const currentRecs = this.getRecipes();
-        const hasServices = currentRecs.some(r => r.itemType === 'service' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type));
+        const currentRecs = this.getRecipes('all');
+        const hasServices = currentRecs.some(r => r.itemType === 'service' || r.mode === 'services' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type));
         if (!hasServices) {
           this.saveRecipes([...currentRecs, ...DEFAULT_SERVICE_RECIPES]);
         }
       }
     }
 
+    // Cargar o enriquecer cotizaciones con cotizaciones de servicios
     if (!localStorage.getItem(DB_KEYS.QUOTES)) {
-      this.saveQuotes(DEFAULT_QUOTES);
+      const allInitialQuotes = [...DEFAULT_QUOTES, ...(typeof DEFAULT_SERVICE_QUOTES !== 'undefined' ? DEFAULT_SERVICE_QUOTES : [])];
+      this.saveQuotes(allInitialQuotes);
+    } else {
+      if (typeof DEFAULT_SERVICE_QUOTES !== 'undefined') {
+        const currentQuotes = this.getQuotes('all');
+        const hasServices = currentQuotes.some(q => q.mode === 'services' || (q.code && q.code.includes('-S')));
+        if (!hasServices) {
+          this.saveQuotes([...currentQuotes, ...DEFAULT_SERVICE_QUOTES]);
+        }
+      }
     }
-    if (!localStorage.getItem(DB_KEYS.CUSTOMERS) && typeof DEFAULT_CUSTOMERS !== 'undefined') {
-      this.saveCustomers(DEFAULT_CUSTOMERS);
+
+    // Cargar o enriquecer clientes con clientes de servicios
+    if (!localStorage.getItem(DB_KEYS.CUSTOMERS)) {
+      const allInitialCusts = [...(typeof DEFAULT_CUSTOMERS !== 'undefined' ? DEFAULT_CUSTOMERS : []), ...(typeof DEFAULT_SERVICE_CUSTOMERS !== 'undefined' ? DEFAULT_SERVICE_CUSTOMERS : [])];
+      this.saveCustomers(allInitialCusts);
+    } else {
+      if (typeof DEFAULT_SERVICE_CUSTOMERS !== 'undefined') {
+        const currentCusts = this.getCustomers('all');
+        const hasServices = currentCusts.some(c => c.mode === 'services' || (c.id && c.id.startsWith('serv_')));
+        if (!hasServices) {
+          this.saveCustomers([...currentCusts, ...DEFAULT_SERVICE_CUSTOMERS]);
+        }
+      }
     }
+
     if (!localStorage.getItem(DB_KEYS.MARKET_STORES) && typeof DEFAULT_MARKET_STORES !== 'undefined') {
       this.saveMarketStores(DEFAULT_MARKET_STORES);
     }
@@ -350,10 +372,19 @@ const DB = {
   },
 
   // Settings
-  getSettings() {
+  getSettings(mode) {
     try {
+      const activeMode = mode || (typeof App !== 'undefined' && App.currentMode ? App.currentMode : 'products');
       const data = localStorage.getItem(DB_KEYS.SETTINGS);
-      return data ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) } : DEFAULT_SETTINGS;
+      const parsed = data ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) } : { ...DEFAULT_SETTINGS };
+      if (activeMode === 'services') {
+        parsed.businessName = parsed.businessNameServices || parsed.serviceBusinessName || 'Centro de Estética, Spa & Masajes';
+        parsed.businessType = 'services';
+      } else {
+        parsed.businessName = parsed.businessNameProducts || parsed.businessName || 'Mi Pastelería Artesanal';
+        parsed.businessType = 'products';
+      }
+      return parsed;
     } catch (e) {
       console.error('Error al cargar settings:', e);
       return DEFAULT_SETTINGS;
@@ -418,10 +449,16 @@ const DB = {
   },
 
   // Insumos / Ingredientes
-  getIngredients() {
+  getIngredients(mode) {
     try {
+      const activeMode = mode !== undefined ? mode : (typeof App !== 'undefined' && App.currentMode ? App.currentMode : 'products');
       const data = localStorage.getItem(DB_KEYS.INGREDIENTS);
-      return data ? JSON.parse(data) : DEFAULT_INGREDIENTS;
+      let list = data ? JSON.parse(data) : [...DEFAULT_INGREDIENTS, ...(typeof DEFAULT_SERVICE_INGREDIENTS !== 'undefined' ? DEFAULT_SERVICE_INGREDIENTS : [])];
+      if (activeMode === 'all') return list;
+      return list.filter(i => {
+        const itemMode = i.mode || (i.itemType === 'service' || (i.yieldApplications && i.yieldApplications > 0) ? 'services' : 'products');
+        return itemMode === activeMode;
+      });
     } catch (e) {
       console.error('Error al cargar ingredientes:', e);
       return [];
@@ -429,7 +466,7 @@ const DB = {
   },
 
   getIngredientById(id) {
-    const list = this.getIngredients();
+    const list = this.getIngredients('all');
     return list.find(item => item.id === id) || null;
   },
 
@@ -439,9 +476,15 @@ const DB = {
   },
 
   addIngredient(ingredient) {
-    const list = this.getIngredients();
+    const list = this.getIngredients('all');
     if (!ingredient.id) {
       ingredient.id = 'ing_' + Date.now();
+    }
+    if (!ingredient.mode) {
+      ingredient.mode = (typeof App !== 'undefined' && App.currentMode) ? App.currentMode : 'products';
+    }
+    if (ingredient.mode === 'services' && !ingredient.itemType) {
+      ingredient.itemType = 'service';
     }
     list.unshift(ingredient);
     this.saveIngredients(list);
@@ -449,7 +492,7 @@ const DB = {
   },
 
   updateIngredient(id, updatedData) {
-    const list = this.getIngredients();
+    const list = this.getIngredients('all');
     const index = list.findIndex(item => item.id === id);
     if (index !== -1) {
       const oldItem = list[index];
@@ -465,7 +508,7 @@ const DB = {
   },
 
   deleteIngredient(id) {
-    let list = this.getIngredients();
+    let list = this.getIngredients('all');
     list = list.filter(item => item.id !== id);
     this.saveIngredients(list);
   },
@@ -504,10 +547,16 @@ const DB = {
   },
 
   // Recetas / Fichas Técnicas
-  getRecipes() {
+  getRecipes(mode) {
     try {
+      const activeMode = mode !== undefined ? mode : (typeof App !== 'undefined' && App.currentMode ? App.currentMode : 'products');
       const data = localStorage.getItem(DB_KEYS.RECIPES);
-      return data ? JSON.parse(data) : DEFAULT_RECIPES;
+      let list = data ? JSON.parse(data) : [...DEFAULT_RECIPES, ...(typeof DEFAULT_SERVICE_RECIPES !== 'undefined' ? DEFAULT_SERVICE_RECIPES : [])];
+      if (activeMode === 'all') return list;
+      return list.filter(r => {
+        const itemMode = r.mode || (r.itemType === 'service' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type) ? 'services' : 'products');
+        return itemMode === activeMode;
+      });
     } catch (e) {
       console.error('Error al cargar recetas:', e);
       return [];
@@ -515,7 +564,7 @@ const DB = {
   },
 
   getRecipeById(id) {
-    const list = this.getRecipes();
+    const list = this.getRecipes('all');
     return list.find(item => item.id === id) || null;
   },
 
@@ -525,9 +574,15 @@ const DB = {
   },
 
   addRecipe(recipe) {
-    const list = this.getRecipes();
+    const list = this.getRecipes('all');
     if (!recipe.id) {
       recipe.id = 'rec_' + Date.now();
+    }
+    if (!recipe.mode) {
+      recipe.mode = (typeof App !== 'undefined' && App.currentMode) ? App.currentMode : 'products';
+    }
+    if (recipe.mode === 'services' && !recipe.itemType) {
+      recipe.itemType = 'service';
     }
     list.unshift(recipe);
     this.saveRecipes(list);
@@ -535,7 +590,7 @@ const DB = {
   },
 
   updateRecipe(id, updatedData) {
-    const list = this.getRecipes();
+    const list = this.getRecipes('all');
     const index = list.findIndex(item => item.id === id);
     if (index !== -1) {
       list[index] = { ...list[index], ...updatedData };
@@ -546,7 +601,7 @@ const DB = {
   },
 
   deleteRecipe(id) {
-    let list = this.getRecipes();
+    let list = this.getRecipes('all');
     list = list.filter(item => item.id !== id);
     this.saveRecipes(list);
   },
@@ -561,10 +616,21 @@ const DB = {
   },
 
   // Cotizaciones / Presupuestos
-  getQuotes() {
+  getQuotes(mode) {
     try {
+      const activeMode = mode !== undefined ? mode : (typeof App !== 'undefined' && App.currentMode ? App.currentMode : 'products');
       const data = localStorage.getItem(DB_KEYS.QUOTES);
-      return data ? JSON.parse(data) : DEFAULT_QUOTES;
+      let list = data ? JSON.parse(data) : [...DEFAULT_QUOTES, ...(typeof DEFAULT_SERVICE_QUOTES !== 'undefined' ? DEFAULT_SERVICE_QUOTES : [])];
+      if (activeMode === 'all') return list;
+      return list.filter(q => {
+        const itemMode = q.mode || (
+          (q.code && q.code.includes('-S')) ||
+          (q.items && q.items.some(it => it.itemType === 'service' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(it.type)))
+            ? 'services'
+            : 'products'
+        );
+        return itemMode === activeMode;
+      });
     } catch (e) {
       console.error('Error al cargar cotizaciones:', e);
       return [];
@@ -572,7 +638,7 @@ const DB = {
   },
 
   getQuoteById(id) {
-    const list = this.getQuotes();
+    const list = this.getQuotes('all');
     return list.find(item => item.id === id) || null;
   },
 
@@ -582,12 +648,17 @@ const DB = {
   },
 
   addQuote(quote) {
-    const list = this.getQuotes();
+    const list = this.getQuotes('all');
     if (!quote.id) {
       quote.id = 'quote_' + Date.now();
     }
+    if (!quote.mode) {
+      quote.mode = (typeof App !== 'undefined' && App.currentMode) ? App.currentMode : 'products';
+    }
     if (!quote.code) {
-      quote.code = 'COT-' + String(list.length + 1).padStart(3, '0');
+      const isServices = quote.mode === 'services';
+      const scopedCount = list.filter(q => (q.mode || (q.code && q.code.includes('-S') ? 'services' : 'products')) === quote.mode).length + 1;
+      quote.code = isServices ? ('COT-S' + String(scopedCount).padStart(2, '0')) : ('COT-' + String(scopedCount).padStart(3, '0'));
     }
     if (!quote.createdAt) {
       quote.createdAt = new Date().toISOString();
@@ -598,7 +669,7 @@ const DB = {
   },
 
   updateQuote(id, updatedData) {
-    const list = this.getQuotes();
+    const list = this.getQuotes('all');
     const index = list.findIndex(item => item.id === id);
     if (index !== -1) {
       list[index] = { ...list[index], ...updatedData };
@@ -609,30 +680,32 @@ const DB = {
   },
 
   deleteQuote(id) {
-    let list = this.getQuotes();
+    let list = this.getQuotes('all');
     list = list.filter(item => item.id !== id);
     this.saveQuotes(list);
   },
 
   // ==========================================
-  // Clientes & Fechas Especiales (CRM Pastelero)
+  // Clientes & Fechas Especiales (CRM Pastelero & Spa)
   // ==========================================
-  getCustomers() {
+  getCustomers(mode) {
     try {
+      const activeMode = mode !== undefined ? mode : (typeof App !== 'undefined' && App.currentMode ? App.currentMode : 'products');
       const data = localStorage.getItem(DB_KEYS.CUSTOMERS);
-      if (data) {
-        const parsed = JSON.parse(data);
-        if (Array.isArray(parsed)) return parsed;
-      }
-      return typeof DEFAULT_CUSTOMERS !== 'undefined' ? DEFAULT_CUSTOMERS : [];
+      let list = data ? JSON.parse(data) : [...(typeof DEFAULT_CUSTOMERS !== 'undefined' ? DEFAULT_CUSTOMERS : []), ...(typeof DEFAULT_SERVICE_CUSTOMERS !== 'undefined' ? DEFAULT_SERVICE_CUSTOMERS : [])];
+      if (activeMode === 'all') return list;
+      return list.filter(c => {
+        const itemMode = c.mode || (c.id && c.id.startsWith('serv_') ? 'services' : 'products');
+        return itemMode === activeMode;
+      });
     } catch (e) {
       console.error('Error al cargar clientes:', e);
-      return typeof DEFAULT_CUSTOMERS !== 'undefined' ? DEFAULT_CUSTOMERS : [];
+      return [];
     }
   },
 
   getCustomerById(id) {
-    const list = this.getCustomers();
+    const list = this.getCustomers('all');
     return list.find(item => item.id === id) || null;
   },
 
@@ -642,9 +715,12 @@ const DB = {
   },
 
   addCustomer(customer) {
-    const list = this.getCustomers();
+    const list = this.getCustomers('all');
+    if (!customer.mode) {
+      customer.mode = (typeof App !== 'undefined' && App.currentMode) ? App.currentMode : 'products';
+    }
     if (!customer.id) {
-      customer.id = 'cust_' + Date.now();
+      customer.id = (customer.mode === 'services' ? 'serv_cust_' : 'cust_') + Date.now();
     }
     if (!customer.createdAt) {
       customer.createdAt = new Date().toISOString();
@@ -664,7 +740,7 @@ const DB = {
   },
 
   updateCustomer(id, updatedData) {
-    const list = this.getCustomers();
+    const list = this.getCustomers('all');
     const index = list.findIndex(item => item.id === id);
     if (index !== -1) {
       list[index] = { ...list[index], ...updatedData };
@@ -675,14 +751,14 @@ const DB = {
   },
 
   deleteCustomer(id) {
-    let list = this.getCustomers();
+    let list = this.getCustomers('all');
     list = list.filter(item => item.id !== id);
     this.saveCustomers(list);
     return true;
   },
 
   toggleCustomerFavorite(id) {
-    const list = this.getCustomers();
+    const list = this.getCustomers('all');
     const index = list.findIndex(item => item.id === id);
     if (index !== -1) {
       list[index].isFavorite = !list[index].isFavorite;
@@ -693,7 +769,7 @@ const DB = {
   },
 
   addCustomerSpecialDate(customerId, specialDate) {
-    const list = this.getCustomers();
+    const list = this.getCustomers('all');
     const customer = list.find(item => item.id === customerId);
     if (customer) {
       if (!customer.specialDates) customer.specialDates = [];
@@ -706,7 +782,7 @@ const DB = {
   },
 
   deleteCustomerSpecialDate(customerId, specialDateId) {
-    const list = this.getCustomers();
+    const list = this.getCustomers('all');
     const customer = list.find(item => item.id === customerId);
     if (customer && customer.specialDates) {
       customer.specialDates = customer.specialDates.filter(sd => sd.id !== specialDateId);
@@ -717,7 +793,7 @@ const DB = {
   },
 
   addCustomerPurchase(customerId, purchase) {
-    const list = this.getCustomers();
+    const list = this.getCustomers('all');
     const customer = list.find(item => item.id === customerId);
     if (customer) {
       if (!customer.purchases) customer.purchases = [];
@@ -731,7 +807,7 @@ const DB = {
   },
 
   deleteCustomerPurchase(customerId, purchaseId) {
-    const list = this.getCustomers();
+    const list = this.getCustomers('all');
     const customer = list.find(item => item.id === customerId);
     if (customer && customer.purchases) {
       customer.purchases = customer.purchases.filter(p => p.id !== purchaseId);
@@ -741,8 +817,8 @@ const DB = {
     return false;
   },
 
-  findCustomerByPhoneOrName(phone, name) {
-    const list = this.getCustomers();
+  findCustomerByPhoneOrName(phone, name, mode) {
+    const list = this.getCustomers(mode);
     const cleanPhone = phone ? String(phone).replace(/\D/g, '') : '';
     const cleanName = name ? String(name).trim().toLowerCase() : '';
 

@@ -696,3 +696,203 @@ const DEFAULT_CUSTOMERS = [
   }
 ];
 
+// ==========================================
+// Clientes Iniciales de Servicios & Spa (Ambiente: Services)
+// ==========================================
+const DEFAULT_SERVICE_CUSTOMERS = [
+  {
+    id: 'serv_cust_1',
+    name: 'Francisca Ovalle',
+    phone: '+56 9 8456 1122',
+    email: 'francisca.ovalle.spa@gmail.com',
+    address: 'Av. Las Condes 10240, Dpto 502',
+    isFavorite: true,
+    mode: 'services',
+    notes: 'Piel mixta con tendencia a rosácea. Prefiere masajes de presión media-firme con aromaterapia de lavanda y eucalipto.',
+    createdAt: new Date().toISOString(),
+    specialDates: [
+      {
+        id: 'sd_serv_1',
+        type: 'birthday',
+        title: 'Cumpleaños de Francisca',
+        day: 12,
+        month: 9,
+        year: 1988,
+        advanceNoticeDays: 7,
+        notes: 'Regalar sesión de exfoliación corporal o descuento por cumpleaños.'
+      },
+      {
+        id: 'sd_serv_2',
+        type: 'control',
+        title: 'Control Mensual de Hidratación Facial',
+        day: 25,
+        month: 9,
+        year: 2026,
+        advanceNoticeDays: 5,
+        notes: 'Seguimiento de protocolo con sérum regenerador.'
+      }
+    ],
+    purchases: [
+      {
+        id: 'pur_serv_1',
+        quoteId: 'quote_serv_1',
+        date: '2026-08-10',
+        occasion: 'Pack Bienestar Relajante',
+        items: 'Pack 4 Sesiones Masaje Descontracturante & Spa',
+        total: 112000,
+        status: 'completed',
+        notes: 'Excelente adherencia al tratamiento, muy agradecida.'
+      }
+    ]
+  },
+  {
+    id: 'serv_cust_2',
+    name: 'Ignacio Beltrán',
+    phone: '+56 9 7321 9880',
+    email: 'ignacio.beltran.running@gmail.com',
+    address: 'Los Conquistadores 2150, Providencia',
+    isFavorite: true,
+    mode: 'services',
+    notes: 'Deportista (trail running). Fuerte tensión en gemelos, lumbares y cuello. Solicita siempre toallas tibias adicionales.',
+    createdAt: new Date().toISOString(),
+    specialDates: [
+      {
+        id: 'sd_serv_3',
+        type: 'birthday',
+        title: 'Cumpleaños de Ignacio',
+        day: 18,
+        month: 9,
+        year: 1991,
+        advanceNoticeDays: 7,
+        notes: 'Ofrecer sesión deportiva pre-carrera.'
+      }
+    ],
+    purchases: [
+      {
+        id: 'pur_serv_2',
+        quoteId: null,
+        date: '2026-07-28',
+        occasion: 'Descarga Muscular Post-Maratón',
+        items: 'Masaje Descontracturante Profundo (75 min)',
+        total: 35000,
+        status: 'completed',
+        notes: 'Pagó al término de la sesión.'
+      }
+    ]
+  },
+  {
+    id: 'serv_cust_3',
+    name: 'Catalina Valenzuela',
+    phone: '+56 9 6554 4332',
+    email: 'catita.valenzuela.estetica@hotmail.com',
+    address: 'Camino El Alba 8900, Las Condes',
+    isFavorite: false,
+    mode: 'services',
+    notes: 'Tratamiento reductivo y drenaje linfático. Piel sensible a cremas térmicas fuertes.',
+    createdAt: new Date().toISOString(),
+    specialDates: [
+      {
+        id: 'sd_serv_4',
+        type: 'birthday',
+        title: 'Cumpleaños de Catalina',
+        day: 22,
+        month: 10,
+        year: 1995,
+        advanceNoticeDays: 7,
+        notes: 'Ofrecer gift card de tratamiento facial glow.'
+      }
+    ],
+    purchases: [
+      {
+        id: 'pur_serv_3',
+        quoteId: null,
+        date: '2026-08-15',
+        occasion: 'Inicio Plan Reductivo',
+        items: 'Pack 6 Sesiones Drenaje Linfático y Modelado',
+        total: 168000,
+        status: 'completed',
+        notes: 'Plan en curso (sesión 2 de 6).'
+      }
+    ]
+  }
+];
+
+// ==========================================
+// Cotizaciones Iniciales de Servicios & Spa (Ambiente: Services)
+// ==========================================
+const DEFAULT_SERVICE_QUOTES = [
+  {
+    id: 'quote_serv_1',
+    code: 'COT-S01',
+    mode: 'services',
+    customerName: 'Francisca Ovalle',
+    customerPhone: '+56 9 8456 1122',
+    customerId: 'serv_cust_1',
+    eventName: 'Pack 4 Sesiones Masaje Descontracturante & Spa',
+    eventDate: '2026-09-12',
+    status: 'approved',
+    subtotal: 112000,
+    discountPercent: 0,
+    depositPercent: 50,
+    depositAmount: 56000,
+    remainingBalance: 56000,
+    total: 112000,
+    notes: 'Incluye aromaterapia y toallas calientes en cada sesión.',
+    createdAt: new Date().toISOString(),
+    items: [
+      {
+        recipeId: 'rec_s1',
+        name: 'Masaje Descontracturante & Relajación (60 min)',
+        qty: 4,
+        unitCost: 6500,
+        unitPrice: 28000,
+        subtotal: 112000,
+        type: 'service_session',
+        itemType: 'service'
+      }
+    ]
+  },
+  {
+    id: 'quote_serv_2',
+    code: 'COT-S02',
+    mode: 'services',
+    customerName: 'Ignacio Beltrán',
+    customerPhone: '+56 9 7321 9880',
+    customerId: 'serv_cust_2',
+    eventName: 'Tratamiento Facial Profundo + Masaje Craneal',
+    eventDate: '2026-09-18',
+    status: 'sent',
+    subtotal: 42000,
+    discountPercent: 0,
+    depositPercent: 50,
+    depositAmount: 21000,
+    remainingBalance: 21000,
+    total: 42000,
+    notes: 'Presupuesto enviado por WhatsApp. Esperando confirmación de horario.',
+    createdAt: new Date().toISOString(),
+    items: [
+      {
+        recipeId: 'rec_s2',
+        name: 'Limpieza Facial Profunda + Hidratación (75 min)',
+        qty: 1,
+        unitCost: 8900,
+        unitPrice: 32000,
+        subtotal: 32000,
+        type: 'service_session',
+        itemType: 'service'
+      },
+      {
+        recipeId: 'rec_s3',
+        name: 'Sesión Masaje Craneofacial Antiestrés (20 min)',
+        qty: 1,
+        unitCost: 1800,
+        unitPrice: 10000,
+        subtotal: 10000,
+        type: 'service_session',
+        itemType: 'service'
+      }
+    ]
+  }
+];
+
+

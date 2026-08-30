@@ -842,12 +842,16 @@ const CustomersModule = {
             <!-- Notas, Alergias y Preferencias -->
             <div>
               <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Preferencias, Sabores Favoritos y Alergias
+                ${(typeof App !== 'undefined' && App.currentMode === 'services')
+                  ? 'Tratamientos Preferidos, Tipo de Piel, Zonas de Tensión y Alergias'
+                  : 'Preferencias, Sabores Favoritos y Alergias'}
               </label>
               <textarea 
                 id="cust-notes" 
                 rows="3" 
-                placeholder="Ej. Le gustan las tortas de milhojas con manjar. Hija alérgica a los frutos secos." 
+                placeholder="${(typeof App !== 'undefined' && App.currentMode === 'services')
+                  ? 'Ej. Piel mixta con tendencia a rosácea. Prefiere masajes de presión media-firme con lavanda.'
+                  : 'Ej. Le gustan las tortas de milhojas con manjar. Hija alérgica a los frutos secos.'}" 
                 class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none resize-none"
               >${initialNotes}</textarea>
             </div>

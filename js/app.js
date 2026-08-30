@@ -597,29 +597,18 @@ const App = {
     if (!container) return;
 
     const isServicesMode = this.currentMode === 'services';
-    const allRecipes = DB.getRecipes();
-    const allIngredients = DB.getIngredients();
+    const recipes = DB.getRecipes();
+    const ingredients = DB.getIngredients();
     const quotes = DB.getQuotes();
     const customers = DB.getCustomers();
     const settings = DB.getSettings();
-     // Filtrar según el modo activo
-    const recipes = isServicesMode
-      ? allRecipes.filter(r => r.itemType === 'service' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type))
-      : allRecipes.filter(r => (r.itemType || 'product') === 'product' && !['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type));
-
-    const ingredients = isServicesMode
-      ? allIngredients.filter(i => i.itemType === 'service' || i.yieldApplications > 0)
-      : allIngredients.filter(i => (i.itemType || 'product') === 'product');
-
     const pendingQuotes = quotes.filter(q => q.status === 'draft' || q.status === 'sent');
 
     if (isServicesMode) {
       // ==========================================
       // Dashboard Modo Servicios & Spa (Luxe Emerald & Nordic Aesthetic)
       // ==========================================
-      const businessTitle = (!settings.businessName || settings.businessName === 'Mi Pastelería Artesanal') 
-        ? 'Centro de Estética, Spa & Masajes' 
-        : settings.businessName;
+      const businessTitle = settings.businessName || 'Centro de Estética, Spa & Masajes';
 
       container.innerHTML = `
         <!-- Hero Banner Spa & Servicios -->
