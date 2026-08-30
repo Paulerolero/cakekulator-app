@@ -17,6 +17,12 @@ const QuotesModule = {
     const container = document.getElementById('quotes-view');
     if (!container) return;
 
+    const isLoggedIn = typeof AuthModule !== 'undefined' && AuthModule.currentUser;
+    if (!isLoggedIn) {
+      container.innerHTML = this.renderLoginGate();
+      return;
+    }
+
     const allQuotes = DB.getQuotes();
     const settings = DB.getSettings();
 
@@ -182,34 +188,48 @@ const QuotesModule = {
 
             <!-- 1. Datos del Cliente -->
             <div class="bg-gray-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-gray-100 dark:border-slate-700 space-y-3">
-              <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-1.5">
-                <span class="w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs">1</span>
-                Datos del Cliente y Evento
-              </h4>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-1.5">
+                  <span class="w-5 h-5 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center text-xs">1</span>
+                  Datos del Cliente y Evento
+                </h4>
+                
+                <!-- Selector rápido de clientes existentes -->
+                <div class="flex items-center gap-1.5">
+                  <select 
+                    id="q-customer-select" 
+                    onchange="QuotesModule.onSelectExistingCustomer(this.value)"
+                    class="w-full sm:w-auto text-xs font-semibold px-3 py-1.5 rounded-xl border border-pink-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-pink-700 dark:text-pink-300 focus:ring-2 focus:ring-pink-400 outline-none cursor-pointer"
+                  >
+                    <option value="">👥 Seleccionar cliente existente...</option>
+                  </select>
+                </div>
+              </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre del Cliente *</label>
-                  <input type="text" id="q-customer-name" required placeholder="Ej. Camila González" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="text" id="q-customer-name" required list="customers-list-datalist" oninput="QuotesModule.handleCustomerInput(this.value)" placeholder="Ej. Camila González" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
+                  <datalist id="customers-list-datalist"></datalist>
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Teléfono / WhatsApp</label>
-                  <input type="tel" id="q-customer-phone" placeholder="Ej. +56 9 8765 4321" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="tel" id="q-customer-phone" placeholder="Ej. +56 9 8765 4321" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                 </div>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Motivo / Evento</label>
-                  <input type="text" id="q-event-name" placeholder="Ej. Cumpleaños, Baby Shower" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="text" id="q-event-name" placeholder="Ej. Cumpleaños Hija, Baby Shower" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Fecha del Evento</label>
-                  <input type="date" id="q-event-date" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <input type="date" id="q-event-date" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Estado</label>
-                  <select id="q-status" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                  <select id="q-status" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none">
                     <option value="draft">Borrador</option>
                     <option value="sent">Enviada</option>
                     <option value="approved">Aprobada / Pagada</option>
@@ -510,6 +530,26 @@ const QuotesModule = {
       this.addItemRow();
     }
 
+    // Poblar selector y datalist de clientes
+    const custSelect = document.getElementById('q-customer-select');
+    const datalist = document.getElementById('customers-list-datalist');
+    if (typeof DB.getCustomers === 'function') {
+      const customers = DB.getCustomers();
+      if (custSelect) {
+        custSelect.innerHTML = `
+          <option value="">👥 Seleccionar cliente existente...</option>
+          ${customers.map(c => `
+            <option value="${c.id}">
+              ${c.name} ${c.phone ? `(${c.phone})` : ''} ${c.isFavorite ? '⭐' : ''}
+            </option>
+          `).join('')}
+        `;
+      }
+      if (datalist) {
+        datalist.innerHTML = customers.map(c => `<option value="${c.name}">${c.phone ? `(${c.phone})` : ''}</option>`).join('');
+      }
+    }
+
     this.recalculateTotals();
     App.openModal('quote-editor-modal');
     if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
@@ -527,6 +567,32 @@ const QuotesModule = {
         return { label: 'Rechazada', badgeClass: 'bg-rose-100 dark:bg-rose-950/80 text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800' };
       default:
         return { label: 'Borrador', badgeClass: 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-slate-700' };
+    }
+  },
+
+  onSelectExistingCustomer(customerId) {
+    if (!customerId) return;
+    const customer = DB.getCustomerById(customerId);
+    if (!customer) return;
+
+    const nameInput = document.getElementById('q-customer-name');
+    const phoneInput = document.getElementById('q-customer-phone');
+    if (nameInput) nameInput.value = customer.name || '';
+    if (phoneInput) phoneInput.value = customer.phone || '';
+
+    if (customer.notes && typeof App !== 'undefined' && App.showToast) {
+      App.showToast(`Cliente seleccionado: ${customer.name} ✨`);
+    }
+  },
+
+  handleCustomerInput(nameVal) {
+    if (!nameVal || typeof DB.findCustomerByPhoneOrName !== 'function') return;
+    const match = DB.findCustomerByPhoneOrName(null, nameVal);
+    if (match) {
+      const phoneInput = document.getElementById('q-customer-phone');
+      if (phoneInput && !phoneInput.value) {
+        phoneInput.value = match.phone || '';
+      }
     }
   },
 
@@ -766,15 +832,172 @@ const QuotesModule = {
       notes
     };
 
+    let savedQuote;
     if (id) {
-      DB.updateQuote(id, data);
+      savedQuote = DB.updateQuote(id, data);
     } else {
-      DB.addQuote(data);
+      savedQuote = DB.addQuote(data);
     }
 
-    this.closeEditor();
-    this.render();
-    App.showToast(id ? 'Presupuesto actualizado' : 'Cotización generada con éxito');
+    // Verificar si el cliente ya existe en la agenda CRM
+    const existingCustomer = (customerName || customerPhone) && typeof DB.findCustomerByPhoneOrName === 'function'
+      ? DB.findCustomerByPhoneOrName(customerPhone, customerName)
+      : null;
+
+    if (existingCustomer) {
+      // Cliente EXISTENTE: registrar automáticamente la compra en su historial
+      const itemsSummary = (items || []).map(it => `${it.quantity}x ${it.recipeName}`).join(', ');
+      const existingPur = (existingCustomer.purchases || []).find(p => p.quoteId === (savedQuote?.id || id));
+      if (!existingPur) {
+        DB.addCustomerPurchase(existingCustomer.id, {
+          quoteId: savedQuote?.id || id,
+          date: eventDate || new Date().toISOString().split('T')[0],
+          occasion: eventName || 'Cotización ' + (code || ''),
+          items: itemsSummary,
+          total,
+          status: status === 'approved' ? 'completed' : 'pending',
+          notes: notes || ''
+        });
+      }
+      this.closeEditor();
+      this.render();
+      App.showToast(id ? 'Presupuesto actualizado' : `Cotización vinculada a ${existingCustomer.name} 📋`);
+    } else if (customerName && customerName.length > 1) {
+      // Cliente NUEVO: guardar cotización y preguntar si desea crear el perfil de cliente
+      this.closeEditor();
+      this.render();
+
+      this.promptSaveNewCustomer({
+        id: savedQuote?.id || id,
+        code,
+        customerName,
+        customerPhone,
+        eventName,
+        eventDate,
+        items,
+        total,
+        status,
+        notes
+      });
+    } else {
+      this.closeEditor();
+      this.render();
+      App.showToast(id ? 'Presupuesto actualizado' : 'Cotización generada con éxito');
+    }
+  },
+
+  promptSaveNewCustomer(quoteData) {
+    const modalsRoot = document.getElementById('modals-root') || document.body;
+    let promptModal = document.getElementById('save-new-customer-prompt-modal');
+    if (!promptModal) {
+      promptModal = document.createElement('div');
+      promptModal.id = 'save-new-customer-prompt-modal';
+      modalsRoot.appendChild(promptModal);
+    }
+
+    this.pendingNewCustomerQuote = quoteData;
+
+    promptModal.className = 'fixed inset-0 z-[70] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto';
+    promptModal.innerHTML = `
+      <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 text-center animate-in fade-in zoom-in-95 duration-150 space-y-4">
+        
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 flex items-center justify-center text-3xl shadow-xs">
+          👤
+        </div>
+
+        <div>
+          <h3 class="font-black text-base sm:text-lg text-gray-900 dark:text-gray-100">
+            ¿Deseas guardar a este cliente?
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Has cotizado para <strong class="text-gray-800 dark:text-gray-200">${quoteData.customerName}</strong>. ¿Quieres registrar su perfil para recordar sus fechas, gustos y compras?
+          </p>
+        </div>
+
+        <div class="bg-pink-50/60 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-pink-100/80 dark:border-slate-700/80 text-left text-xs space-y-1.5">
+          <div class="flex justify-between">
+            <span class="text-gray-500 dark:text-gray-400">Cliente:</span>
+            <span class="font-bold text-gray-900 dark:text-gray-100">${quoteData.customerName}</span>
+          </div>
+          ${quoteData.customerPhone ? `
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Teléfono / WhatsApp:</span>
+              <span class="font-semibold text-gray-800 dark:text-gray-200">${quoteData.customerPhone}</span>
+            </div>
+          ` : ''}
+          ${quoteData.eventName ? `
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Motivo / Evento:</span>
+              <span class="font-bold text-pink-600 dark:text-pink-400">${quoteData.eventName}</span>
+            </div>
+          ` : ''}
+          ${quoteData.eventDate ? `
+            <div class="flex justify-between">
+              <span class="text-gray-500 dark:text-gray-400">Fecha del Evento:</span>
+              <span class="font-semibold text-gray-800 dark:text-gray-200">${quoteData.eventDate}</span>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5 pt-2">
+          <button 
+            type="button" 
+            onclick="QuotesModule.dismissNewCustomerPrompt()"
+            class="py-2.5 px-3 rounded-xl border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-100 dark:hover:bg-slate-800 text-xs transition cursor-pointer"
+          >
+            No, salir
+          </button>
+          <button 
+            type="button" 
+            onclick="QuotesModule.confirmCreateCustomerFromQuote()"
+            class="py-2.5 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1"
+          >
+            <span>+</span> Sí, Crear Cliente
+          </button>
+        </div>
+
+      </div>
+    `;
+  },
+
+  dismissNewCustomerPrompt() {
+    const modal = document.getElementById('save-new-customer-prompt-modal');
+    if (modal) modal.remove();
+    this.pendingNewCustomerQuote = null;
+    App.showToast('✅ Cotización guardada');
+  },
+
+  confirmCreateCustomerFromQuote() {
+    const quoteData = this.pendingNewCustomerQuote;
+    const modal = document.getElementById('save-new-customer-prompt-modal');
+    if (modal) modal.remove();
+    this.pendingNewCustomerQuote = null;
+
+    if (!quoteData) return;
+
+    if (typeof CustomersModule !== 'undefined' && CustomersModule.openCustomerEditor) {
+      let specialDateObj = null;
+      if (quoteData.eventDate && quoteData.eventName) {
+        const parts = quoteData.eventDate.split('-');
+        if (parts.length === 3) {
+          specialDateObj = {
+            day: parseInt(parts[2], 10),
+            month: parseInt(parts[1], 10),
+            title: quoteData.eventName,
+            type: (quoteData.eventName.toLowerCase().includes('cumple') || quoteData.eventName.toLowerCase().includes('hija') || quoteData.eventName.toLowerCase().includes('hijo')) ? 'birthday' : 'anniversary',
+            advanceDays: 7
+          };
+        }
+      }
+
+      CustomersModule.openCustomerEditor(null, {
+        name: quoteData.customerName || '',
+        phone: quoteData.customerPhone || '',
+        notes: quoteData.notes || (quoteData.eventName ? `Motivo pedido: ${quoteData.eventName}` : ''),
+        specialDate: specialDateObj,
+        quoteToLink: quoteData
+      });
+    }
   },
 
   deleteQuote(id) {
@@ -789,36 +1012,46 @@ const QuotesModule = {
   // Generador de Mensaje Simplificado y Cercano para WhatsApp
   // ====================================================
   buildWhatsAppMessage(quote) {
-    const settings = DB.getSettings();
     const customerFirstName = (quote.customerName || 'Cliente').trim().split(' ')[0];
-    const businessName = settings.businessName || 'Mi Pastelería';
     const total = quote.total || quote.subtotal || 0;
-    const deposit = quote.depositAmount || (total * 0.5);
-    const balance = quote.remainingBalance || (total - deposit);
+    const depositPercent = quote.depositPercent || 50;
+    const deposit = quote.depositAmount || Math.round(total * (depositPercent / 100));
 
-    let itemsText = '';
+    // Formatear items con espaciado limpio
+    let itemsBlock = '';
     (quote.items || []).forEach(item => {
-      itemsText += `  • *${item.quantity}x* ${item.recipeName}: ${Calculator.formatCurrency(item.subtotal)}\n`;
+      itemsBlock += `\n${item.quantity} ${item.recipeName}: ${Calculator.formatCurrency(item.subtotal)}\n`;
+      if (item.notes) {
+        itemsBlock += `(${item.notes})\n`;
+      }
     });
 
-    let msg = `🎂 *COTIZACIÓN - ${businessName.toUpperCase()}*\n`;
-    msg += `¡Hola *${customerFirstName}*! 👋 Te comparto el presupuesto para tu pedido:\n\n`;
-    msg += `📄 *Folio:* \`${quote.code}\`\n`;
-    if (quote.eventDate) msg += `📅 *Fecha de Entrega:* ${quote.eventDate}\n`;
-    if (quote.deliveryOption) msg += `🚚 *Modalidad:* ${quote.deliveryOption}\n`;
-    msg += `\n🛒 *Detalle del Pedido:*\n${itemsText}`;
-    msg += `\n💰 *Total:* *${Calculator.formatCurrency(total)}*\n`;
-    msg += `💳 *Abono de Reserva (${quote.depositPercent || 50}%):* *${Calculator.formatCurrency(deposit)}*\n`;
-    if (balance > 0) {
-      msg += `💵 *Saldo restante:* ${Calculator.formatCurrency(balance)}\n`;
+    // Formatear fecha y entrega
+    let deliveryInfo = '';
+    if (quote.eventDate || quote.deliveryOption) {
+      let formattedDate = quote.eventDate || '';
+      if (formattedDate.includes('-') && formattedDate.length === 10) {
+        try {
+          const [year, month, day] = formattedDate.split('-');
+          const monthNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+          formattedDate = `${parseInt(day)} de ${monthNames[parseInt(month) - 1]}`;
+        } catch (e) {}
+      }
+      
+      const optionText = quote.deliveryOption ? ` (${quote.deliveryOption})` : '';
+      deliveryInfo = `\n📅 Entrega: ${formattedDate}${optionText}.`;
     }
+
+    let msg = `¡Hola ${customerFirstName}! Te paso el resumen de tu cotización:\n`;
+    msg += itemsBlock;
+    if (deliveryInfo) {
+      msg += `${deliveryInfo}\n`;
+    }
+    msg += `💰 Total: ${Calculator.formatCurrency(total)} | Reserva (${depositPercent}%): ${Calculator.formatCurrency(deposit)}\n`;
     if (quote.notes) {
-      msg += `\n📝 *Nota:* ${quote.notes}\n`;
+      msg += `\n(${quote.notes})\n`;
     }
-    if (settings.businessPhone) {
-      msg += `\n📱 *Contacto:* ${settings.businessPhone}\n`;
-    }
-    msg += `\n🖼️ *Te adjunto la imagen con el presupuesto detallado.* ¡Quedo atenta/o para agendar tu fecha! ✨`;
+    msg += `\nTe adjunto también la imagen con el detalle. ¡Quedo atenta/o a tu confirmación para guardar el cupo!`;
 
     return msg;
   },
@@ -865,6 +1098,18 @@ const QuotesModule = {
     });
   },
 
+  formatPhoneNumberForWhatsApp(rawPhone) {
+    if (!rawPhone) return '';
+    let cleaned = String(rawPhone).replace(/[^0-9]/g, '');
+    // Si tiene 9 dígitos y empieza con 9 (típico móvil en Chile ej. 987654321), anteponer prefijo país 56
+    if (cleaned.length === 9 && cleaned.startsWith('9')) {
+      cleaned = '56' + cleaned;
+    } else if (cleaned.length === 8) {
+      cleaned = '569' + cleaned;
+    }
+    return cleaned;
+  },
+
   openDirectWhatsApp() {
     const quote = DB.getQuoteById(this.activeWhatsAppQuoteId);
     if (!quote) return;
@@ -877,7 +1122,8 @@ const QuotesModule = {
     const phoneInput = document.getElementById('wa-recipient-phone');
     const msgPreview = document.getElementById('wa-message-preview');
 
-    const phone = (phoneInput ? phoneInput.value : quote.customerPhone || '').replace(/[^0-9]/g, '');
+    const rawPhone = phoneInput ? phoneInput.value : quote.customerPhone || '';
+    const phone = this.formatPhoneNumberForWhatsApp(rawPhone);
     const message = msgPreview ? msgPreview.value : this.buildWhatsAppMessage(quote);
     const encodedMsg = encodeURIComponent(message);
 
@@ -887,7 +1133,7 @@ const QuotesModule = {
 
     window.open(url, '_blank');
     this.closeWhatsAppModal();
-    App.showToast('📤 Cotización enviada por WhatsApp y marcada como "Enviada".');
+    App.showToast(phone ? `📤 Abriendo chat de WhatsApp con +${phone}...` : '📤 Abriendo WhatsApp...');
   },
 
   // Generador de HTML para Imagen PNG y Documento
@@ -1097,7 +1343,7 @@ const QuotesModule = {
     }
   },
 
-  // Compartir por WhatsApp con Imagen PNG Adjunta (Web Share API nativo)
+  // Compartir por WhatsApp con Imagen PNG Adjunta (Web Share API nativo / Portapapeles)
   async shareQuoteWithImage() {
     const quote = DB.getQuoteById(this.activeWhatsAppQuoteId);
     if (!quote) return;
@@ -1109,27 +1355,30 @@ const QuotesModule = {
 
     const phoneInput = document.getElementById('wa-recipient-phone');
     const msgPreview = document.getElementById('wa-message-preview');
-    const phone = (phoneInput ? phoneInput.value : quote.customerPhone || '').replace(/[^0-9]/g, '');
+    const rawPhone = phoneInput ? phoneInput.value : quote.customerPhone || '';
+    const phone = this.formatPhoneNumberForWhatsApp(rawPhone);
     const message = msgPreview ? msgPreview.value : this.buildWhatsAppMessage(quote);
     const filename = `Cotizacion_${quote.code}_${(quote.customerName || 'Cliente').replace(/[^a-zA-Z0-9]/g, '_')}.png`;
 
     App.showToast('⏳ Preparando imagen de cotización...');
 
     let sharedNatively = false;
+    let imageBlob = null;
+
     try {
-      const imageBlob = await this.generateQuotePNGBlob(quote);
+      imageBlob = await this.generateQuotePNGBlob(quote);
       const imageFile = new File([imageBlob], filename, { type: 'image/png' });
 
       // Si el navegador soporta compartir archivos directamente (móviles Android, iOS, Safari, Chrome)
       if (navigator.share && navigator.canShare && navigator.canShare({ files: [imageFile] })) {
         await navigator.share({
-          title: `Cotización ${quote.code} - ${quote.customerName}`,
+          title: `Cotización ${quote.code} - ${quote.customerName || 'Cliente'}`,
           text: message,
           files: [imageFile]
         });
         sharedNatively = true;
         this.closeWhatsAppModal();
-        App.showToast('✅ ¡Cotización e imagen enviadas con éxito!');
+        App.showToast('✅ ¡Cotización e imagen enviadas a WhatsApp!');
         return;
       }
     } catch (e) {
@@ -1138,28 +1387,44 @@ const QuotesModule = {
     }
 
     if (!sharedNatively) {
-      // Flujo de respaldo para computadores o navegadores que no comparten archivos directamente:
-      // 1. Descargar la imagen PNG automáticamente en la carpeta de descargas
-      try {
-        const imageBlob = await this.generateQuotePNGBlob(quote);
-        const url = URL.createObjectURL(imageBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.warn('Descarga automática fallback:', err);
+      // Flujo de alta comodidad para WhatsApp Web / Escritorio:
+      // 1. Copiar imagen al portapapeles para poder pegarla con Ctrl+V
+      let copiedImage = false;
+      if (imageBlob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': imageBlob })
+          ]);
+          copiedImage = true;
+        } catch (clipErr) {
+          console.warn('No se pudo copiar imagen al portapapeles:', clipErr);
+        }
       }
 
-      // 2. Copiar mensaje al portapapeles
-      try {
-        await navigator.clipboard.writeText(message);
-      } catch (err) { }
+      // 2. Descargar la imagen PNG automáticamente como archivo
+      if (imageBlob) {
+        try {
+          const url = URL.createObjectURL(imageBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (err) {
+          console.warn('Descarga automática fallback:', err);
+        }
+      }
 
-      // 3. Abrir WhatsApp Web / App con el chat del cliente
+      // Copiar mensaje al portapapeles si no se copió la imagen
+      if (!copiedImage && navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(message);
+        } catch (err) { }
+      }
+
+      // 3. Abrir WhatsApp Web con el chat directo del cliente y el mensaje precargado
       const encodedMsg = encodeURIComponent(message);
       let waUrl = phone
         ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`
@@ -1167,7 +1432,12 @@ const QuotesModule = {
 
       window.open(waUrl, '_blank');
       this.closeWhatsAppModal();
-      App.showToast('📲 WhatsApp abierto y presupuesto PNG descargado para adjuntar.');
+      
+      if (copiedImage) {
+        App.showToast(phone ? `📲 Chat con +${phone} abierto. ¡Pega la imagen con Ctrl+V!` : '📲 WhatsApp abierto. ¡Pega la imagen con Ctrl+V!');
+      } else {
+        App.showToast(phone ? `📲 Abriendo chat con +${phone}. Imagen descargada para adjuntar.` : '📲 WhatsApp abierto. Imagen descargada.');
+      }
     }
   },
 
@@ -1217,6 +1487,24 @@ const QuotesModule = {
   closePrintModal() {
     App.closeModal('quote-print-modal');
     if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
+  },
+
+  renderLoginGate() {
+    return `
+      <div class="max-w-lg mx-auto mt-12 text-center space-y-5">
+        <div class="w-20 h-20 rounded-3xl bg-pink-50 dark:bg-pink-950/40 flex items-center justify-center mx-auto text-4xl shadow-sm border border-pink-100 dark:border-pink-900">
+          📋
+        </div>
+        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100">Presupuestos y Cotizaciones</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm mx-auto leading-relaxed">
+          Inicia sesión con tu cuenta de Google para crear presupuestos formales, compartirlos por WhatsApp con imagen adjunta y llevar el control de tus ventas.
+        </p>
+        <button onclick="AuthModule.showLoginRequiredModal()" class="px-6 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-2xl text-sm shadow-md transition active:scale-95 cursor-pointer inline-flex items-center gap-2">
+          <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.24 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="currentColor" d="M5.84 14.11a7.12 7.12 0 0 1 0-4.22V7.05H2.18A11.96 11.96 0 0 0 0 12c0 1.94.46 3.77 1.28 5.39l3.66-2.84.9-.44z"/><path fill="currentColor" d="M12 4.75c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 1.09 14.97 0 12 0 7.7 0 3.99 2.47 2.18 6.07l3.66 2.84c.87-2.6 3.3-4.16 6.16-4.16z"/></svg>
+          Iniciar Sesión con Google
+        </button>
+      </div>
+    `;
   }
 };
 

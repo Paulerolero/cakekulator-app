@@ -581,3 +581,118 @@ const DEFAULT_SERVICE_RECIPES = [
   }
 ];
 
+const DEFAULT_CUSTOMERS = [
+  {
+    id: 'cust_1',
+    name: 'Camila González',
+    phone: '+56 9 8765 4321',
+    email: 'camila.gonzalez@gmail.com',
+    address: 'Av. Las Condes 1024, Depto 402, Las Condes',
+    isFavorite: true,
+    notes: 'Prefiere tortas húmedas de chocolate y temáticas infantiles. Hija alérgica al maní.',
+    createdAt: new Date().toISOString(),
+    specialDates: [
+      {
+        id: 'sd_1',
+        type: 'child_birthday',
+        title: 'Cumpleaños de Sofía (Hija)',
+        day: 15,
+        month: 9,
+        year: 2021,
+        advanceNoticeDays: 15,
+        notes: 'Le encantan las tortas temáticas con figuritas de azúcar.'
+      },
+      {
+        id: 'sd_2',
+        type: 'anniversary',
+        title: 'Aniversario de Matrimonio',
+        day: 28,
+        month: 11,
+        year: 2019,
+        advanceNoticeDays: 7,
+        notes: 'Suele pedir cajas de alfajores finos y macarons.'
+      }
+    ],
+    purchases: [
+      {
+        id: 'pur_1',
+        quoteId: 'quote_1',
+        date: '2026-09-15',
+        occasion: 'Cumpleaños Infantil 5 Años',
+        items: 'Torta Húmeda de Chocolate (16 Porciones) + 24 Alfajores + 12 Cupcakes',
+        total: 74100,
+        status: 'completed',
+        notes: 'Cliente muy satisfecha, felicitó la suavidad de la crema.'
+      }
+    ]
+  },
+  {
+    id: 'cust_2',
+    name: 'Matías Silva',
+    phone: '+56 9 9123 4567',
+    email: 'matias.silva.val@gmail.com',
+    address: 'Calle Los Alerces 450, Providencia',
+    isFavorite: true,
+    notes: 'Fanático de los profiteroles y postres individuales. Pide habitualmente para eventos de oficina.',
+    createdAt: new Date().toISOString(),
+    specialDates: [
+      {
+        id: 'sd_3',
+        type: 'birthday',
+        title: 'Cumpleaños de Matías',
+        day: 10,
+        month: 9,
+        year: 1990,
+        advanceNoticeDays: 7,
+        notes: 'Le gusta festejar con torres de profiteroles y ganache.'
+      }
+    ],
+    purchases: [
+      {
+        id: 'pur_2',
+        quoteId: null,
+        date: '2026-07-20',
+        occasion: 'Reunión de Equipo Corporativa',
+        items: '60 Profiteroles con Chantilly y Cobertura',
+        total: 58000,
+        status: 'completed',
+        notes: 'Pago puntual por transferencia.'
+      }
+    ]
+  },
+  {
+    id: 'cust_3',
+    name: 'Valentina Morales',
+    phone: '+56 9 7654 3210',
+    email: 'vale.morales.pasteleria@outlook.com',
+    address: 'Pasaje El Roble 12, Ñuñoa',
+    isFavorite: false,
+    notes: 'Pide postres sin azúcar refinada cuando es posible. Muy detallista con la puntualidad.',
+    createdAt: new Date().toISOString(),
+    specialDates: [
+      {
+        id: 'sd_4',
+        type: 'birthday',
+        title: 'Cumpleaños de Valentina',
+        day: 5,
+        month: 10,
+        year: 1994,
+        advanceNoticeDays: 10,
+        notes: 'Prefiere sabores frutales como frambuesa y maracuyá.'
+      }
+    ],
+    purchases: [
+      {
+        id: 'pur_3',
+        quoteId: null,
+        date: '2026-06-12',
+        occasion: 'Día de la Madre Familiar',
+        items: '1 Torta de Frutilla y Crema (12 Porciones)',
+        total: 28000,
+        status: 'completed',
+        notes: 'Excelente feedback.'
+      }
+    ]
+  }
+];
+
