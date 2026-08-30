@@ -28,7 +28,7 @@ const DEFAULT_INGREDIENTS = [
   { id: 'ing_7', name: 'Polvos de hornear', category: 'Secos', packageQty: 100, packageUnit: 'g', packagePrice: 990, yieldWastePercent: 0 },
   { id: 'ing_8', name: 'Bicarbonato de sodio', category: 'Secos', packageQty: 100, packageUnit: 'g', packagePrice: 850, yieldWastePercent: 0 },
   { id: 'ing_9', name: 'Sal fina', category: 'Secos', packageQty: 1000, packageUnit: 'g', packagePrice: 700, yieldWastePercent: 0 },
-  
+
   // Lácteos y Grasas
   { id: 'ing_10', name: 'Mantequilla sin sal', category: 'Lácteos y Grasas', packageQty: 250, packageUnit: 'g', packagePrice: 2500, yieldWastePercent: 0 },
   { id: 'ing_11', name: 'Margarina repostería', category: 'Lácteos y Grasas', packageQty: 1000, packageUnit: 'g', packagePrice: 3200, yieldWastePercent: 0 },
@@ -380,3 +380,204 @@ const DEFAULT_MARKET_STORES = [
     isDefault: true
   }
 ];
+
+// ==========================================
+// Plantillas Iniciales para Servicios & Spa
+// ==========================================
+
+const DEFAULT_SERVICE_INGREDIENTS = [
+  {
+    id: 'ing_srv_1',
+    name: 'Aceite para Masajes Relajantes (Almendras & Esencias)',
+    category: 'Masajes & Aceites',
+    packageQty: 1000,
+    packageUnit: 'ml',
+    packagePrice: 12900,
+    yieldWastePercent: 0,
+    itemType: 'service',
+    yieldApplications: 25
+  },
+  {
+    id: 'ing_srv_2',
+    name: 'Crema Conductora / Reafirmante Corporal',
+    category: 'Corporales',
+    packageQty: 1000,
+    packageUnit: 'g',
+    packagePrice: 14500,
+    yieldWastePercent: 2,
+    itemType: 'service',
+    yieldApplications: 20
+  },
+  {
+    id: 'ing_srv_3',
+    name: 'Serum Ácido Hialurónico Concentrado',
+    category: 'Faciales & Serums',
+    packageQty: 50,
+    packageUnit: 'ml',
+    packagePrice: 18900,
+    yieldWastePercent: 0,
+    itemType: 'service',
+    yieldApplications: 25
+  },
+  {
+    id: 'ing_srv_4',
+    name: 'Mascarilla Facial Hidroplástica / Arcilla',
+    category: 'Faciales & Serums',
+    packageQty: 500,
+    packageUnit: 'g',
+    packagePrice: 15000,
+    yieldWastePercent: 0,
+    itemType: 'service',
+    yieldApplications: 15
+  },
+  {
+    id: 'ing_srv_5',
+    name: 'Guantes de Nitrilo Desechables (Caja 100u)',
+    category: 'Desechables & Cabina',
+    packageQty: 50,
+    packageUnit: 'par',
+    packagePrice: 6900,
+    yieldWastePercent: 0,
+    itemType: 'service',
+    yieldApplications: 50
+  },
+  {
+    id: 'ing_srv_6',
+    name: 'Sábana / Cubre Camilla Desechable',
+    category: 'Desechables & Cabina',
+    packageQty: 50,
+    packageUnit: 'u',
+    packagePrice: 11900,
+    yieldWastePercent: 0,
+    itemType: 'service',
+    yieldApplications: 50
+  },
+  {
+    id: 'ing_srv_7',
+    name: 'Toallitas Húmedas y Algodón Desmaquillante',
+    category: 'Desechables & Cabina',
+    packageQty: 100,
+    packageUnit: 'u',
+    packagePrice: 3500,
+    yieldWastePercent: 0,
+    itemType: 'service',
+    yieldApplications: 35
+  },
+  {
+    id: 'ing_srv_8',
+    name: 'Esmaltes Semipermanentes & Base UV',
+    category: 'Manicure & Pedicure',
+    packageQty: 15,
+    packageUnit: 'ml',
+    packagePrice: 7900,
+    yieldWastePercent: 5,
+    itemType: 'service',
+    yieldApplications: 30
+  }
+];
+
+const DEFAULT_SERVICE_RECIPES = [
+  {
+    id: 'rec_srv_1',
+    name: 'Masaje Descontracturante & Relajante (60 min)',
+    category: 'Masajes & Spa',
+    type: 'service_session',
+    itemType: 'service',
+    durationMinutes: 60,
+    yieldUnits: 1,
+    yieldPortions: 1,
+    unitName: 'sesión (60 min)',
+    prepTimeMinutes: 10,
+    bakeTimeMinutes: 0,
+    laborHours: 1.0,
+    laborRatePerHour: 6000,
+    overheadCost: 2000, // Cabina, aromaterapia, música, toallas
+    suggestedMargin: 55,
+    description: 'Masaje manual completo de cuerpo entero con aceites esenciales para alivio de tensiones musculares y reducción de estrés.',
+    notes: 'Temperatura de cabina a 24°C con música relajante y aromaterapia.',
+    ingredients: [
+      { ingredientId: 'ing_srv_1', quantity: 40, unit: 'ml' },
+      { ingredientId: 'ing_srv_5', quantity: 1, unit: 'par' },
+      { ingredientId: 'ing_srv_6', quantity: 1, unit: 'u' }
+    ],
+    packaging: []
+  },
+  {
+    id: 'rec_srv_2',
+    name: 'Limpieza Facial Profunda con Hidratación (75 min)',
+    category: 'Estética Facial',
+    type: 'service_session',
+    itemType: 'service',
+    durationMinutes: 75,
+    yieldUnits: 1,
+    yieldPortions: 1,
+    unitName: 'sesión (75 min)',
+    prepTimeMinutes: 15,
+    bakeTimeMinutes: 0,
+    laborHours: 1.25,
+    laborRatePerHour: 6500,
+    overheadCost: 2500,
+    suggestedMargin: 50,
+    description: 'Higienización profunda, exfoliación suave, desincrustación de impurezas, alta frecuencia y sellado con ácido hialurónico.',
+    notes: 'Recomendar el uso obligatorio de protector solar FPS 50+ durante las 48h posteriores.',
+    ingredients: [
+      { ingredientId: 'ing_srv_3', quantity: 2, unit: 'ml' },
+      { ingredientId: 'ing_srv_4', quantity: 35, unit: 'g' },
+      { ingredientId: 'ing_srv_5', quantity: 1, unit: 'par' },
+      { ingredientId: 'ing_srv_6', quantity: 1, unit: 'u' },
+      { ingredientId: 'ing_srv_7', quantity: 4, unit: 'u' }
+    ],
+    packaging: []
+  },
+  {
+    id: 'rec_srv_3',
+    name: 'Manicure Rusa & Esmaltado Permanente (60 min)',
+    category: 'Manicure & Pedicure',
+    type: 'service_session',
+    itemType: 'service',
+    durationMinutes: 60,
+    yieldUnits: 1,
+    yieldPortions: 1,
+    unitName: 'servicio (60 min)',
+    prepTimeMinutes: 10,
+    bakeTimeMinutes: 0,
+    laborHours: 1.0,
+    laborRatePerHour: 5500,
+    overheadCost: 1500,
+    suggestedMargin: 50,
+    description: 'Tratamiento de cutículas con fresas rusas, nivelación con base rubber y esmaltado permanente con secado UV.',
+    notes: 'Duración estimada del esmaltado: 21 a 28 días.',
+    ingredients: [
+      { ingredientId: 'ing_srv_8', quantity: 1, unit: 'ml' },
+      { ingredientId: 'ing_srv_5', quantity: 1, unit: 'par' },
+      { ingredientId: 'ing_srv_7', quantity: 2, unit: 'u' }
+    ],
+    packaging: []
+  },
+  {
+    id: 'rec_srv_4',
+    name: 'Drenaje Linfático y Masaje Reductivo (50 min)',
+    category: 'Tratamientos Corporales',
+    type: 'service_session',
+    itemType: 'service',
+    durationMinutes: 50,
+    yieldUnits: 1,
+    yieldPortions: 1,
+    unitName: 'sesión (50 min)',
+    prepTimeMinutes: 10,
+    bakeTimeMinutes: 0,
+    laborHours: 0.85,
+    laborRatePerHour: 7000,
+    overheadCost: 2000,
+    suggestedMargin: 55,
+    description: 'Técnica de masaje manual suave y rítmico para favorecer la circulación linfática, desinflamación y eliminación de toxinas.',
+    notes: 'Recomendar beber 2 litros de agua y paquete de 5 a 10 sesiones para resultados óptimos.',
+    ingredients: [
+      { ingredientId: 'ing_srv_2', quantity: 50, unit: 'g' },
+      { ingredientId: 'ing_srv_5', quantity: 1, unit: 'par' },
+      { ingredientId: 'ing_srv_6', quantity: 1, unit: 'u' }
+    ],
+    packaging: []
+  }
+];
+

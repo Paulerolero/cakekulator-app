@@ -33,12 +33,37 @@ const DB = {
     if (!localStorage.getItem(DB_KEYS.SETTINGS)) {
       this.saveSettings(DEFAULT_SETTINGS);
     }
+    
+    // Cargar o enriquecer ingredientes con insumos de cabina
     if (!localStorage.getItem(DB_KEYS.INGREDIENTS)) {
-      this.saveIngredients(DEFAULT_INGREDIENTS);
+      const allInitialIngs = [...DEFAULT_INGREDIENTS, ...(typeof DEFAULT_SERVICE_INGREDIENTS !== 'undefined' ? DEFAULT_SERVICE_INGREDIENTS : [])];
+      this.saveIngredients(allInitialIngs);
+    } else {
+      // Si ya existen ingredientes pero faltan los de servicios, incorporarlos
+      if (typeof DEFAULT_SERVICE_INGREDIENTS !== 'undefined') {
+        const currentIngs = this.getIngredients();
+        const hasServices = currentIngs.some(i => i.itemType === 'service');
+        if (!hasServices) {
+          this.saveIngredients([...currentIngs, ...DEFAULT_SERVICE_INGREDIENTS]);
+        }
+      }
     }
+
+    // Cargar o enriquecer recetas con protocolos de servicios
     if (!localStorage.getItem(DB_KEYS.RECIPES)) {
-      this.saveRecipes(DEFAULT_RECIPES);
+      const allInitialRecs = [...DEFAULT_RECIPES, ...(typeof DEFAULT_SERVICE_RECIPES !== 'undefined' ? DEFAULT_SERVICE_RECIPES : [])];
+      this.saveRecipes(allInitialRecs);
+    } else {
+      // Si ya existen recetas pero faltan servicios, incorporarlos
+      if (typeof DEFAULT_SERVICE_RECIPES !== 'undefined') {
+        const currentRecs = this.getRecipes();
+        const hasServices = currentRecs.some(r => r.itemType === 'service' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type));
+        if (!hasServices) {
+          this.saveRecipes([...currentRecs, ...DEFAULT_SERVICE_RECIPES]);
+        }
+      }
     }
+
     if (!localStorage.getItem(DB_KEYS.QUOTES)) {
       this.saveQuotes(DEFAULT_QUOTES);
     }
@@ -59,7 +84,7 @@ const DB = {
       try {
         const uid = AuthModule.currentUser.uid;
         this.isSavingLocally = true;
-        
+
         if (AuthModule && AuthModule.updateSyncStatus) {
           AuthModule.updateSyncStatus('syncing', 'Guardando cambios...');
         }
@@ -67,15 +92,15 @@ const DB = {
         // Convertir datos para asegurar que no contengan objetos no serializables
         const cleanData = JSON.parse(JSON.stringify(data));
         const now = Date.now();
-        
+
         await FirebaseService.db.collection('users').doc(uid).collection('data').doc(collectionName).set({
           data: cleanData,
           updatedAt: now
         }, { merge: true });
-        
+
         this.lastSyncTimestamp = now;
         console.log(`☁️ Sincronizado en Firestore: ${collectionName}`);
-        
+
         setTimeout(() => {
           this.isSavingLocally = false;
         }, 800);
@@ -108,7 +133,7 @@ const DB = {
       }
 
       const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
-      
+
       // Primera verificación inicial de datos en la nube
       const [settingsDoc, ingDoc, recDoc, quoteDoc, storeDoc] = await Promise.all([
         userDocRef.doc('settings').get(),
@@ -119,10 +144,10 @@ const DB = {
       ]);
 
       const hasCloudData = (settingsDoc.exists && settingsDoc.data()?.data) ||
-                           (ingDoc.exists && ingDoc.data()?.data) ||
-                           (recDoc.exists && recDoc.data()?.data) ||
-                           (quoteDoc.exists && quoteDoc.data()?.data) ||
-                           (storeDoc.exists && storeDoc.data()?.data);
+        (ingDoc.exists && ingDoc.data()?.data) ||
+        (recDoc.exists && recDoc.data()?.data) ||
+        (quoteDoc.exists && quoteDoc.data()?.data) ||
+        (storeDoc.exists && storeDoc.data()?.data);
 
       if (settingsDoc.exists && settingsDoc.data()?.data) {
         localStorage.setItem(DB_KEYS.SETTINGS, JSON.stringify(settingsDoc.data().data));
@@ -236,7 +261,7 @@ const DB = {
   stopRealtimeListeners() {
     if (this.activeListeners && this.activeListeners.length) {
       this.activeListeners.forEach(unsub => {
-        try { if (typeof unsub === 'function') unsub(); } catch (e) {}
+        try { if (typeof unsub === 'function') unsub(); } catch (e) { }
       });
       this.activeListeners = [];
       console.log('🛑 Listeners de Firestore detenidos.');
@@ -636,7 +661,7 @@ const Calculator = {
 
     // Convertir cantidad requerida a la unidad en que se compró el insumo
     const convertedReqQty = this.convertQuantity(requiredQty, requiredUnit, ingredient.packageUnit);
-    
+
     const costPerPurchaseUnit = Number(ingredient.packagePrice) / effectivePackageQty;
     return convertedReqQty * costPerPurchaseUnit;
   },
@@ -647,7 +672,7 @@ const Calculator = {
     const waste = Number(ingredient.yieldWastePercent || 0);
     const effectivePackageQty = Number(ingredient.packageQty) * (1 - waste / 100);
     const unitMeta = this.unitFactors[ingredient.packageUnit] || { base: ingredient.packageUnit, factor: 1 };
-    
+
     const totalBaseQty = effectivePackageQty * unitMeta.factor;
     const costPerBase = totalBaseQty > 0 ? Number(ingredient.packagePrice) / totalBaseQty : 0;
 
@@ -723,7 +748,7 @@ const Calculator = {
     // 8. Precios Sugeridos por Margen deseado (Aproximados al valor mayor más próximo)
     const targetMargin = Number(recipe.suggestedMargin || DB.getSettings().defaultTargetMargin || 40);
     const marginFraction = targetMargin >= 100 ? 0.99 : targetMargin / 100;
-    
+
     // Precio de venta = Costo / (1 - Margen)
     const rawBatchPrice = marginFraction < 1 ? totalBatchCost / (1 - marginFraction) : totalBatchCost * 2;
     const rawUnitPrice = marginFraction < 1 ? costPerUnit / (1 - marginFraction) : costPerUnit * 2;
@@ -743,7 +768,7 @@ const Calculator = {
       yieldUnits,
       yieldPortions,
       unitName: recipe.unitName || 'unidad',
-      
+
       // Costos totales lote
       ingredientsCost,
       packagingCost,
@@ -894,8 +919,8 @@ const Calculator = {
 
     const scaledRecipe = {
       ...recipe,
-      name: options.newName || (recipe.type === 'cake' 
-        ? `${recipe.name.replace(/\s*\(\d+\s*porc[a-zA-Z.]*\)/gi, '').replace(/\s*\(\d+\s*personas\)/gi, '').trim()} (${targetPortions} Personas)` 
+      name: options.newName || (recipe.type === 'cake'
+        ? `${recipe.name.replace(/\s*\(\d+\s*porc[a-zA-Z.]*\)/gi, '').replace(/\s*\(\d+\s*personas\)/gi, '').trim()} (${targetPortions} Personas)`
         : `${recipe.name} (${targetUnits} un)`),
       yieldPortions: targetPortions,
       yieldUnits: targetUnits,

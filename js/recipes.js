@@ -16,15 +16,24 @@ const RecipesModule = {
     const container = document.getElementById('recipes-view');
     if (!container) return;
 
-    const allRecipes = DB.getRecipes();
+    const isServicesMode = (typeof App !== 'undefined' && App.currentMode === 'services');
+    let allRecipes = DB.getRecipes();
     const allIngredients = DB.getIngredients();
     const ingredientsMap = new Map(allIngredients.map(i => [i.id, i]));
+
+    // Filtrar recetas según el ambiente activo
+    if (isServicesMode) {
+      allRecipes = allRecipes.filter(r => r.itemType === 'service' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type));
+    } else {
+      allRecipes = allRecipes.filter(r => (r.itemType || 'product') === 'product' && !['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type));
+    }
+
     const categories = ['all', ...new Set(allRecipes.map(r => r.category).filter(Boolean))];
 
-    // Filtrar recetas
+    // Filtrar por categoría y texto
     let filtered = allRecipes.filter(r => {
       const matchesCat = this.activeCategory === 'all' || r.category === this.activeCategory;
-      const matchesSearch = !this.searchQuery || 
+      const matchesSearch = !this.searchQuery ||
         r.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         (r.category && r.category.toLowerCase().includes(this.searchQuery.toLowerCase()));
       return matchesCat && matchesSearch;
@@ -38,10 +47,10 @@ const RecipesModule = {
             <input 
               type="text" 
               id="recipe-search" 
-              placeholder="Buscar receta (ej. Alfajores, Torta de Chocolate)..." 
+              placeholder="${isServicesMode ? 'Buscar servicio o tratamiento (ej. Masaje Relajante, Limpieza Facial)...' : 'Buscar receta (ej. Alfajores, Torta de Chocolate)...'}" 
               value="${this.searchQuery}"
               oninput="RecipesModule.onSearch(this.value)"
-              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white shadow-xs text-xs sm:text-sm"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border ${isServicesMode ? 'border-teal-200 focus:ring-teal-400' : 'border-pink-200 focus:ring-pink-400'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-100 shadow-xs text-xs sm:text-sm"
             />
             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-2.5 sm:top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             ${this.searchQuery ? `
@@ -52,12 +61,14 @@ const RecipesModule = {
           </div>
 
           <div class="flex items-center gap-2 shrink-0">
-            <button onclick="RecipeScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap">
-              <span>📸</span> Escanear Receta
-            </button>
-            <button onclick="RecipesModule.openEditor()" class="flex-1 sm:flex-none btn-primary flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md shadow-pink-200 transition active:scale-95 cursor-pointer whitespace-nowrap">
+            ${!isServicesMode ? `
+              <button onclick="RecipeScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap">
+                <span>📸</span> Escanear Receta
+              </button>
+            ` : ''}
+            <button onclick="RecipesModule.openEditor()" class="flex-1 sm:flex-none ${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md transition active:scale-95 cursor-pointer whitespace-nowrap">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              Nueva Receta
+              ${isServicesMode ? 'Nuevo Servicio' : 'Nueva Receta'}
             </button>
           </div>
         </div>
@@ -67,30 +78,37 @@ const RecipesModule = {
           ${categories.map(cat => `
             <button 
               onclick="RecipesModule.filterByCategory('${cat}')"
-              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap transition-colors ${this.activeCategory === cat ? 'bg-pink-500 text-white shadow-xs font-bold' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-100'}">
-              ${cat === 'all' ? '✨ Todas (' + allRecipes.length + ')' : cat}
+              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap transition-colors ${this.activeCategory === cat ? (isServicesMode ? 'bg-teal-600 text-white shadow-xs font-bold' : 'bg-pink-500 text-white shadow-xs font-bold') : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-pink-50 border border-gray-100 dark:border-slate-700'}">
+              ${cat === 'all' ? (isServicesMode ? '✨ Todos los Servicios (' + allRecipes.length + ')' : '✨ Todas las Recetas (' + allRecipes.length + ')') : cat}
             </button>
           `).join('')}
         </div>
       </div>
 
-      <!-- Listado de Recetas -->
+      <!-- Listado de Recetas / Servicios -->
       ${filtered.length === 0 ? `
-        <div class="bg-white rounded-2xl p-8 text-center border border-pink-100 shadow-sm">
-          <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">👩‍🍳</div>
-          <h3 class="text-base font-semibold text-gray-800">No se encontraron recetas</h3>
-          <p class="text-xs text-gray-500 mt-1 mb-4">Crea tu primera ficha técnica para empezar a costear.</p>
-          <button onclick="RecipesModule.openEditor()" class="btn-secondary px-4 py-2 rounded-xl text-xs font-medium text-pink-600 border border-pink-200 hover:bg-pink-50">
-            + Crear Ficha Técnica
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center border ${isServicesMode ? 'border-teal-100' : 'border-pink-100'} dark:border-slate-800 shadow-sm">
+          <div class="w-16 h-16 ${isServicesMode ? 'bg-teal-50 dark:bg-teal-950/60' : 'bg-pink-50 dark:bg-pink-950/60'} rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+            ${isServicesMode ? '💆' : '👩‍🍳'}
+          </div>
+          <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">
+            ${isServicesMode ? 'No se encontraron servicios ni protocolos' : 'No se encontraron recetas'}
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
+            ${isServicesMode ? 'Crea tu primera ficha de servicio para costear duración, insumos de cabina y honorarios.' : 'Crea tu primera ficha técnica para empezar a costear.'}
+          </p>
+          <button onclick="RecipesModule.openEditor()" class="px-4 py-2 rounded-xl text-xs font-bold ${isServicesMode ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 hover:bg-teal-100' : 'btn-secondary text-pink-600 border border-pink-200 hover:bg-pink-50'}">
+            ${isServicesMode ? '+ Crear Ficha de Servicio' : '+ Crear Ficha Técnica'}
           </button>
         </div>
       ` : `
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-12 sm:pb-0">
           ${filtered.map(recipe => {
             const costs = Calculator.calculateRecipeFullCosts(recipe, ingredientsMap);
+            const isServ = costs.isService;
             const isCake = recipe.type === 'cake';
             return `
-              <div onclick="RecipesModule.openEditor('${recipe.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500 transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
+              <div onclick="RecipesModule.openEditor('${recipe.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServ ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div class="p-4">
                   <!-- Header Card -->
                   <div class="flex items-start justify-between gap-2 mb-2">
@@ -99,14 +117,14 @@ const RecipesModule = {
                         <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md ${this.getCategoryBadgeClass(recipe.category)}">
                           ${recipe.category || 'General'}
                         </span>
-                        <span class="px-2 py-0.5 text-[10px] font-medium rounded-md bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300">
-                          ${isCake ? `🎂 Torta (${recipe.yieldPortions} porciones)` : `📦 Lote de ${recipe.yieldUnits} ${recipe.unitName || 'un'}`}
+                        <span class="px-2 py-0.5 text-[10px] font-medium rounded-md ${isServ ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300' : 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300'}">
+                          ${isServ ? `💆 Sesión (${recipe.durationMinutes || 60} min)` : (isCake ? `🎂 Torta (${recipe.yieldPortions} porciones)` : `📦 Lote de ${recipe.yieldUnits} ${recipe.unitName || 'un'}`)}
                         </span>
                       </div>
                       <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">${recipe.name}</h3>
                     </div>
                     <div class="flex items-center gap-1">
-                      <button onclick="event.stopPropagation(); RecipesModule.duplicateRecipe('${recipe.id}')" title="Duplicar receta" class="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg transition">
+                      <button onclick="event.stopPropagation(); RecipesModule.duplicateRecipe('${recipe.id}')" title="Duplicar" class="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                       </button>
                       <button onclick="event.stopPropagation(); RecipesModule.deleteRecipe('${recipe.id}', '${recipe.name}')" title="Eliminar" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition">
@@ -118,15 +136,15 @@ const RecipesModule = {
                   ${recipe.description ? `<p class="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">${recipe.description}</p>` : ''}
 
                   <!-- Métricas de Costo -->
-                  <div class="grid grid-cols-2 gap-2 bg-pink-50/40 dark:bg-slate-800/60 rounded-xl p-2.5 mb-3 text-xs">
+                  <div class="grid grid-cols-2 gap-2 ${isServ ? 'bg-teal-50/40 dark:bg-slate-800/60' : 'bg-pink-50/40 dark:bg-slate-800/60'} rounded-xl p-2.5 mb-3 text-xs">
                     <div>
-                      <span class="text-gray-500 dark:text-gray-400 text-[11px] block">Costo Total Lote:</span>
-                      <span class="font-bold text-gray-900 dark:text-gray-100 text-sm">${Calculator.formatCurrency(costs.totalBatchCost)}</span>
+                      <span class="text-gray-500 dark:text-gray-400 text-[11px] block">${isServ ? 'Costo Directo Sesión:' : 'Costo Total Lote:'}</span>
+                      <span class="font-bold text-gray-900 dark:text-gray-100 text-sm">${Calculator.formatCurrency(isServ ? costs.costPerUnit : costs.totalBatchCost)}</span>
                     </div>
                     <div>
-                      <span class="text-gray-500 dark:text-gray-400 text-[11px] block">${isCake ? 'Costo por Porción:' : 'Costo Unitario:'}</span>
-                      <span class="font-bold text-pink-600 dark:text-pink-400 text-sm">
-                        ${Calculator.formatCurrency(isCake ? costs.costPerPortion : costs.costPerUnit)}
+                      <span class="text-gray-500 dark:text-gray-400 text-[11px] block">${isServ ? 'Honorarios / Mano de Obra:' : (isCake ? 'Costo por Porción:' : 'Costo Unitario:')}</span>
+                      <span class="font-bold ${isServ ? 'text-teal-600 dark:text-teal-400' : 'text-pink-600 dark:text-pink-400'} text-sm">
+                        ${Calculator.formatCurrency(isServ ? costs.laborCost : (isCake ? costs.costPerPortion : costs.costPerUnit))}
                       </span>
                     </div>
                   </div>
@@ -134,15 +152,22 @@ const RecipesModule = {
                   <!-- Desglose Miniatura -->
                   <div class="space-y-1 text-[11px] text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-slate-800 pt-2 mb-2">
                     <div class="flex justify-between">
-                      <span>Insumos (${(recipe.ingredients || []).length} items):</span>
+                      <span>${isServ ? 'Insumos de Cabina / Dosis:' : 'Insumos de Receta:'}</span>
                       <span class="font-medium text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(costs.ingredientsCost)}</span>
                     </div>
+                    ${isServ ? `
+                      <div class="flex justify-between">
+                        <span>Gastos de Cabina / Box:</span>
+                        <span class="font-medium text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(costs.cabinCost || 0)}</span>
+                      </div>
+                    ` : `
+                      <div class="flex justify-between">
+                        <span>Empaque & Presentación:</span>
+                        <span class="font-medium text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(costs.packagingCost)}</span>
+                      </div>
+                    `}
                     <div class="flex justify-between">
-                      <span>Empaque & Presentación:</span>
-                      <span class="font-medium text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(costs.packagingCost)}</span>
-                    </div>
-                    <div class="flex justify-between">
-                      <span>Mano de obra (${recipe.laborHours || 0} hrs):</span>
+                      <span>${isServ ? `Mano de Obra (${recipe.durationMinutes || 60} min):` : `Mano de Obra (${recipe.laborHours || 0} hrs):`}</span>
                       <span class="font-medium text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(costs.laborCost)}</span>
                     </div>
                   </div>
@@ -151,14 +176,14 @@ const RecipesModule = {
                   <div class="bg-emerald-50/80 dark:bg-slate-800/80 border border-emerald-100 dark:border-slate-700 rounded-xl p-2.5 text-xs">
                     <div class="flex justify-between items-center">
                       <div>
-                        <span class="text-emerald-800 dark:text-emerald-300 font-bold block text-[11px]">Precio Venta Sugerido:</span>
+                        <span class="text-emerald-800 dark:text-emerald-300 font-bold block text-[11px]">${isServ ? 'Precio Sesión Sugerido:' : 'Precio Venta Sugerido:'}</span>
                         <span class="text-emerald-700 dark:text-emerald-400 text-[10px] font-medium">Margen meta: ${costs.targetMargin}%</span>
                       </div>
                       <div class="text-right">
                         <span class="text-sm font-black text-emerald-800 dark:text-emerald-300">
-                          ${isCake ? Calculator.formatCurrency(costs.suggestedBatchPrice) : Calculator.formatCurrency(costs.suggestedUnitPrice) + ' c/u'}
+                          ${isServ ? Calculator.formatCurrency(costs.suggestedUnitPrice) + ' / sesión' : (isCake ? Calculator.formatCurrency(costs.suggestedBatchPrice) : Calculator.formatCurrency(costs.suggestedUnitPrice) + ' c/u')}
                         </span>
-                        ${!isCake ? `<span class="block text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">${Calculator.formatCurrency(costs.suggestedBatchPrice)} lote</span>` : `<span class="block text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">${Calculator.formatCurrency(costs.suggestedPortionPrice)} / porción</span>`}
+                        ${isServ && costs.sessionPack4 ? `<span class="block text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Pack 4 (-10%): ${Calculator.formatCurrency(costs.sessionPack4)}</span>` : ''}
                       </div>
                     </div>
                   </div>
@@ -166,10 +191,16 @@ const RecipesModule = {
 
                 <!-- Footer Acciones -->
                 <div class="p-3 bg-gray-50/70 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-800 grid grid-cols-2 gap-2">
-                  <button onclick="event.stopPropagation(); RecipesModule.openScalingModal('${recipe.id}')" title="Agrandar o achicar receta por personas o molde" class="py-2 px-2.5 bg-pink-50 dark:bg-slate-800 hover:bg-pink-100 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
-                    <span>📏</span> Escalar
-                  </button>
-                  <button onclick="event.stopPropagation(); SimulatorModule.loadRecipeForSimulation('${recipe.id}')" class="py-2 px-2.5 bg-pink-600 hover:bg-pink-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm shadow-pink-200/80 transition active:scale-95 cursor-pointer">
+                  ${!isServ ? `
+                    <button onclick="event.stopPropagation(); RecipesModule.openScalingModal('${recipe.id}')" title="Agrandar o achicar receta" class="py-2 px-2.5 bg-pink-50 dark:bg-slate-800 hover:bg-pink-100 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
+                      <span>📏</span> Escalar
+                    </button>
+                  ` : `
+                    <button onclick="event.stopPropagation(); RecipesModule.openEditor('${recipe.id}')" title="Ver o editar protocolo" class="py-2 px-2.5 bg-teal-50 dark:bg-slate-800 hover:bg-teal-100 dark:hover:bg-slate-700 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
+                      <span>✏️</span> Editar
+                    </button>
+                  `}
+                  <button onclick="event.stopPropagation(); SimulatorModule.loadRecipeForSimulation('${recipe.id}')" class="py-2 px-2.5 ${isServ ? 'bg-teal-600 hover:bg-teal-700' : 'bg-pink-600 hover:bg-pink-700'} text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition active:scale-95 cursor-pointer">
                     <span>📊</span> Simular
                   </button>
                 </div>
@@ -401,13 +432,22 @@ const RecipesModule = {
 
   getCategoryBadgeClass(category) {
     switch (category) {
-      case 'Alfajores': return 'bg-amber-100 text-amber-800';
-      case 'Profiteroles': return 'bg-yellow-100 text-yellow-800';
-      case 'Galletas': return 'bg-orange-100 text-orange-800';
-      case 'Tortas': return 'bg-rose-100 text-rose-800';
-      case 'Cupcakes': return 'bg-purple-100 text-purple-800';
-      case 'Tartaletas': return 'bg-pink-100 text-pink-800';
-      default: return 'bg-gray-100 text-gray-800';
+      // Servicios & Spa
+      case 'Masajes & Spa': return 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800';
+      case 'Estética Facial': return 'bg-teal-100 dark:bg-teal-950/80 text-teal-900 dark:text-teal-200 border border-teal-300 dark:border-teal-800';
+      case 'Manicure & Pedicure': return 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-900 dark:text-cyan-200 border border-cyan-300 dark:border-cyan-800';
+      case 'Corporales & Drenaje': return 'bg-sky-100 dark:bg-sky-950/80 text-sky-900 dark:text-sky-200 border border-sky-300 dark:border-sky-800';
+      case 'Pestañas & Cejas': return 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-900 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-800';
+      case 'Depilación': return 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800';
+      
+      // Pastelería
+      case 'Alfajores': return 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800';
+      case 'Profiteroles': return 'bg-yellow-100 dark:bg-yellow-950/80 text-yellow-900 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-800';
+      case 'Galletas': return 'bg-orange-100 dark:bg-orange-950/80 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800';
+      case 'Tortas': return 'bg-rose-100 dark:bg-rose-950/80 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-800';
+      case 'Cupcakes': return 'bg-purple-100 dark:bg-purple-950/80 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-800';
+      case 'Tartaletas': return 'bg-pink-100 dark:bg-pink-950/80 text-pink-900 dark:text-pink-200 border border-pink-300 dark:border-pink-800';
+      default: return 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-slate-700';
     }
   },
 
@@ -461,48 +501,70 @@ const RecipesModule = {
     ingContainer.innerHTML = '';
     packContainer.innerHTML = '';
 
+    const isServicesMode = (typeof App !== 'undefined' && App.currentMode === 'services');
+
     if (id) {
       const rec = DB.getRecipeById(id);
       if (!rec) return;
-      title.innerHTML = '<span>✏️</span> Editar Ficha Técnica';
+      const isServ = rec.itemType === 'service' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(rec.type);
+      title.innerHTML = isServ ? '<span>💆</span> Editar Ficha de Servicio' : '<span>✏️</span> Editar Ficha Técnica';
       document.getElementById('rec-id').value = rec.id;
       document.getElementById('rec-name').value = rec.name;
-      document.getElementById('rec-category').value = rec.category || 'Alfajores';
-      document.getElementById('rec-type').value = rec.type || 'units';
-      document.getElementById('rec-yield-units').value = rec.yieldUnits || 24;
-      document.getElementById('rec-yield-portions').value = rec.yieldPortions || 24;
+      document.getElementById('rec-category').value = rec.category || (isServ ? 'Masajes & Spa' : 'Alfajores');
+      document.getElementById('rec-type').value = rec.type || (isServ ? 'service_session' : 'units');
+      document.getElementById('rec-yield-units').value = rec.yieldUnits || 1;
+      document.getElementById('rec-yield-portions').value = rec.yieldPortions || 1;
       document.getElementById('rec-prep-time').value = rec.prepTimeMinutes || 60;
       document.getElementById('rec-bake-time').value = rec.bakeTimeMinutes || 20;
       document.getElementById('rec-labor-hours').value = rec.laborHours || 1.5;
       document.getElementById('rec-labor-rate').value = rec.laborRatePerHour || settings.defaultHourlyRate || 4000;
-      document.getElementById('rec-overhead').value = rec.overheadCost || 1200;
+      document.getElementById('rec-overhead').value = rec.overheadCost || (isServ ? (rec.cabinCost || 3000) : 1200);
       document.getElementById('rec-suggested-margin').value = rec.suggestedMargin || 45;
       document.getElementById('rec-margin-slider').value = rec.suggestedMargin || 45;
       document.getElementById('rec-notes').value = rec.notes || '';
 
-      // Cargar filas de ingredientes
+      // Campos específicos de servicio
+      const durInput = document.getElementById('serv-duration');
+      if (durInput) durInput.value = rec.durationMinutes || 60;
+      const staffInput = document.getElementById('serv-staff-count');
+      if (staffInput) staffInput.value = rec.staffCount || 1;
+      const cabinInput = document.getElementById('serv-cabin-cost');
+      if (cabinInput) cabinInput.value = rec.cabinCost || 0;
+
+      // Cargar filas de ingredientes / insumos de cabina
       (rec.ingredients || []).forEach(item => {
         this.addIngredientRow(item.ingredientId, item.quantity, item.unit);
       });
 
-      // Cargar filas de empaque
+      // Cargar filas de empaque / desechables
       (rec.packaging || []).forEach(item => {
         this.addPackagingRow(item.ingredientId, item.quantity, item.unit);
       });
+
+      this.switchEditorType(isServ ? 'service' : 'product');
     } else {
-      title.innerHTML = '<span>👩‍🍳</span> Nueva Ficha Técnica';
+      title.innerHTML = isServicesMode ? '<span>💆</span> Nueva Ficha de Servicio & Protocolo' : '<span>👩‍🍳</span> Nueva Ficha Técnica';
       form.reset();
       document.getElementById('rec-id').value = '';
       document.getElementById('rec-labor-rate').value = settings.defaultHourlyRate || 4000;
       document.getElementById('rec-suggested-margin').value = settings.defaultTargetMargin || 40;
       document.getElementById('rec-margin-slider').value = settings.defaultTargetMargin || 40;
-      document.getElementById('rec-overhead').value = 1000;
-      document.getElementById('rec-yield-units').value = 24;
-      document.getElementById('rec-yield-portions').value = 24;
+      document.getElementById('rec-overhead').value = isServicesMode ? 2500 : 1000;
+      document.getElementById('rec-yield-units').value = isServicesMode ? 1 : 24;
+      document.getElementById('rec-yield-portions').value = isServicesMode ? 1 : 24;
+
+      const durInput = document.getElementById('serv-duration');
+      if (durInput) durInput.value = 60;
+      const staffInput = document.getElementById('serv-staff-count');
+      if (staffInput) staffInput.value = 1;
+      const cabinInput = document.getElementById('serv-cabin-cost');
+      if (cabinInput) cabinInput.value = 3000;
 
       // Filas iniciales vacías
       this.addIngredientRow();
-      this.addIngredientRow();
+      if (!isServicesMode) this.addIngredientRow();
+
+      this.switchEditorType(isServicesMode ? 'service' : 'product');
     }
 
     this.onTypeChange(document.getElementById('rec-type').value);
@@ -1151,9 +1213,9 @@ const RecipesModule = {
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                   ${scaledRecipe.ingredients.map(item => {
-                    const ing = ingredientsMap.get(item.ingredientId);
-                    const itemCost = ing ? Calculator.getIngredientItemCost(ing, item.quantity, item.unit) : 0;
-                    return `
+      const ing = ingredientsMap.get(item.ingredientId);
+      const itemCost = ing ? Calculator.getIngredientItemCost(ing, item.quantity, item.unit) : 0;
+      return `
                       <tr class="hover:bg-pink-50/30 transition">
                         <td class="p-2.5 font-bold text-gray-800">${ing ? ing.name : 'Insumo'}</td>
                         <td class="p-2.5 text-center text-gray-500">${item.originalQuantity} ${item.unit}</td>
@@ -1163,7 +1225,7 @@ const RecipesModule = {
                         <td class="p-2.5 text-right font-semibold text-gray-700">${Calculator.formatCurrency(itemCost)}</td>
                       </tr>
                     `;
-                  }).join('')}
+    }).join('')}
                 </tbody>
               </table>
             </div>

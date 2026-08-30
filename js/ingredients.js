@@ -15,13 +15,22 @@ const IngredientsModule = {
     const container = document.getElementById('ingredients-view');
     if (!container) return;
 
-    const allIngredients = DB.getIngredients();
+    const isServicesMode = (typeof App !== 'undefined' && App.currentMode === 'services');
+    let allIngredients = DB.getIngredients();
+
+    // Filtrar insumos según ambiente activo
+    if (isServicesMode) {
+      allIngredients = allIngredients.filter(i => i.itemType === 'service' || i.yieldApplications > 0 || ['facial', 'corporal', 'massage', 'nails', 'hair', 'service', 'spa', 'crema', 'aceite', 'guantes', 'desechable'].some(c => (i.category || '').toLowerCase().includes(c)));
+    } else {
+      allIngredients = allIngredients.filter(i => (i.itemType || 'product') === 'product' && !['facial', 'corporal', 'massage', 'nails', 'hair', 'service', 'spa'].some(c => (i.category || '').toLowerCase().includes(c)));
+    }
+
     const categories = ['all', ...new Set(allIngredients.map(i => i.category).filter(Boolean))];
 
     // Filtrado
     let filtered = allIngredients.filter(item => {
       const matchesCat = this.activeCategory === 'all' || item.category === this.activeCategory;
-      const matchesSearch = !this.searchQuery || 
+      const matchesSearch = !this.searchQuery ||
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         (item.category && item.category.toLowerCase().includes(this.searchQuery.toLowerCase()));
       return matchesCat && matchesSearch;
@@ -37,10 +46,10 @@ const IngredientsModule = {
             <input 
               type="text" 
               id="ingredient-search" 
-              placeholder="Buscar por nombre (ej. Harina, Manjar, Cajas)..." 
+              placeholder="${isServicesMode ? 'Buscar insumo de cabina (ej. Aceite Almendras, Ácido Hialurónico, Guantes)...' : 'Buscar ingrediente (ej. Harina, Manjar, Cajas)...'}" 
               value="${this.searchQuery}"
               oninput="IngredientsModule.onSearch(this.value)"
-              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white shadow-xs text-xs sm:text-sm"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border ${isServicesMode ? 'border-teal-200 focus:ring-teal-400' : 'border-pink-200 focus:ring-pink-400'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-100 shadow-xs text-xs sm:text-sm"
             />
             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-2.5 sm:top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             ${this.searchQuery ? `
@@ -51,12 +60,12 @@ const IngredientsModule = {
           </div>
 
           <div class="flex items-center gap-2 shrink-0">
-            <button onclick="ReceiptScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-pink-100 hover:bg-pink-200 text-pink-700 font-bold text-xs shadow-xs transition active:scale-95 whitespace-nowrap">
+            <button onclick="ReceiptScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl ${isServicesMode ? 'bg-teal-100 hover:bg-teal-200 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300' : 'bg-pink-100 hover:bg-pink-200 text-pink-700'} font-bold text-xs shadow-xs transition active:scale-95 whitespace-nowrap">
               <span>🧾</span> Agregar Boleta
             </button>
-            <button onclick="IngredientsModule.openModal()" class="flex-1 sm:flex-none btn-primary flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md shadow-pink-200 transition active:scale-95 whitespace-nowrap">
+            <button onclick="IngredientsModule.openModal()" class="flex-1 sm:flex-none ${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md transition active:scale-95 whitespace-nowrap">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-              Nuevo Insumo
+              ${isServicesMode ? 'Insumo de Cabina' : 'Nuevo Insumo'}
             </button>
           </div>
         </div>
@@ -66,8 +75,8 @@ const IngredientsModule = {
           ${categories.map(cat => `
             <button 
               onclick="IngredientsModule.filterByCategory('${cat}')"
-              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap transition-colors ${this.activeCategory === cat ? 'bg-pink-500 text-white shadow-xs font-bold' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-100'}">
-              ${cat === 'all' ? '✨ Todos (' + allIngredients.length + ')' : cat}
+              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap transition-colors ${this.activeCategory === cat ? (isServicesMode ? 'bg-teal-600 text-white shadow-xs font-bold' : 'bg-pink-500 text-white shadow-xs font-bold') : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-pink-50 border border-gray-100 dark:border-slate-700'}">
+              ${cat === 'all' ? (isServicesMode ? '✨ Todos los Insumos (' + allIngredients.length + ')' : '✨ Todos (' + allIngredients.length + ')') : cat}
             </button>
           `).join('')}
         </div>
@@ -75,12 +84,18 @@ const IngredientsModule = {
 
       <!-- Listado de Insumos -->
       ${filtered.length === 0 ? `
-        <div class="bg-white rounded-2xl p-8 text-center border border-pink-100 shadow-sm">
-          <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">🥣</div>
-          <h3 class="text-base font-semibold text-gray-800">No se encontraron insumos</h3>
-          <p class="text-xs text-gray-500 mt-1 mb-4">Intenta cambiar la búsqueda o agrega un nuevo ingrediente.</p>
-          <button onclick="IngredientsModule.openModal()" class="btn-secondary px-4 py-2 rounded-xl text-xs font-medium text-pink-600 border border-pink-200 hover:bg-pink-50">
-            + Agregar Insumo
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center border ${isServicesMode ? 'border-teal-100' : 'border-pink-100'} dark:border-slate-800 shadow-sm">
+          <div class="w-16 h-16 ${isServicesMode ? 'bg-teal-50 dark:bg-teal-950/60' : 'bg-pink-50 dark:bg-pink-950/60'} rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+            ${isServicesMode ? '🧴' : '🥣'}
+          </div>
+          <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">
+            ${isServicesMode ? 'No se encontraron insumos de cabina' : 'No se encontraron insumos'}
+          </h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
+            ${isServicesMode ? 'Agrega cremas, aceites, sueros o desechables con cálculo de dosis por sesión.' : 'Intenta cambiar la búsqueda o agrega un nuevo ingrediente.'}
+          </p>
+          <button onclick="IngredientsModule.openModal()" class="px-4 py-2 rounded-xl text-xs font-bold ${isServicesMode ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 hover:bg-teal-100' : 'btn-secondary text-pink-600 border border-pink-200 hover:bg-pink-50'}">
+            ${isServicesMode ? '+ Agregar Insumo de Cabina' : '+ Agregar Insumo'}
           </button>
         </div>
       ` : `
@@ -89,7 +104,7 @@ const IngredientsModule = {
             const baseInfo = Calculator.getIngredientBaseUnitCost(ing);
             const unitLabel = baseInfo.baseUnit === 'g' ? 'gramo' : (baseInfo.baseUnit === 'ml' ? 'ml' : 'unidad');
             return `
-              <div onclick="IngredientsModule.openModal('${ing.id}')" class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500 transition relative flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
+              <div onclick="IngredientsModule.openModal('${ing.id}')" class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition relative flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div>
                   <div class="flex items-start justify-between gap-2">
                     <div>
@@ -133,7 +148,7 @@ const IngredientsModule = {
                 </div>
               </div>
             `;
-          }).join('')}
+    }).join('')}
         </div>
       `}
     `;
@@ -271,16 +286,27 @@ const IngredientsModule = {
 
   getCategoryBadgeClass(category) {
     switch (category) {
-      case 'Secos': return 'bg-amber-100 text-amber-800';
-      case 'Lácteos y Grasas': return 'bg-blue-100 text-blue-800';
-      case 'Huevos': return 'bg-yellow-100 text-yellow-800';
-      case 'Rellenos': return 'bg-orange-100 text-orange-800';
-      case 'Chocolates': return 'bg-amber-900/10 text-amber-900';
-      case 'Frutas': return 'bg-rose-100 text-rose-800';
-      case 'Esencias': return 'bg-purple-100 text-purple-800';
-      case 'Decoración': return 'bg-fuchsia-100 text-fuchsia-800';
-      case 'Empaque': return 'bg-emerald-100 text-emerald-800';
-      default: return 'bg-gray-100 text-gray-800';
+      // Insumos de Cabina & Spa
+      case 'Aceites & Cremas': return 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800';
+      case 'Facial & Serums': return 'bg-teal-100 dark:bg-teal-950/80 text-teal-900 dark:text-teal-200 border border-teal-300 dark:border-teal-800';
+      case 'Desechables & Cabina': return 'bg-cyan-100 dark:bg-cyan-950/80 text-cyan-900 dark:text-cyan-200 border border-cyan-300 dark:border-cyan-800';
+      case 'Uñas & Esmaltes': return 'bg-sky-100 dark:bg-sky-950/80 text-sky-900 dark:text-sky-200 border border-sky-300 dark:border-sky-800';
+      case 'Pestañas & Adhesivos': return 'bg-indigo-100 dark:bg-indigo-950/80 text-indigo-900 dark:text-indigo-200 border border-indigo-300 dark:border-indigo-800';
+      case 'Ceras & Depilación': return 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800';
+      case 'Esterilización & Aseo': return 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-200 border border-slate-300 dark:border-slate-700';
+      case 'Aromaterapia & Bienestar': return 'bg-purple-100 dark:bg-purple-950/80 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-800';
+
+      // Pastelería
+      case 'Secos': return 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800';
+      case 'Lácteos y Grasas': return 'bg-blue-100 dark:bg-blue-950/80 text-blue-900 dark:text-blue-200 border border-blue-300 dark:border-blue-800';
+      case 'Huevos': return 'bg-yellow-100 dark:bg-yellow-950/80 text-yellow-900 dark:text-yellow-200 border border-yellow-300 dark:border-yellow-800';
+      case 'Rellenos': return 'bg-orange-100 dark:bg-orange-950/80 text-orange-900 dark:text-orange-200 border border-orange-300 dark:border-orange-800';
+      case 'Chocolates': return 'bg-stone-200 dark:bg-stone-800 text-stone-900 dark:text-stone-200 border border-stone-400 dark:border-stone-700';
+      case 'Frutas': return 'bg-rose-100 dark:bg-rose-950/80 text-rose-900 dark:text-rose-200 border border-rose-300 dark:border-rose-800';
+      case 'Esencias': return 'bg-purple-100 dark:bg-purple-950/80 text-purple-900 dark:text-purple-200 border border-purple-300 dark:border-purple-800';
+      case 'Decoración': return 'bg-fuchsia-100 dark:bg-fuchsia-950/80 text-fuchsia-900 dark:text-fuchsia-200 border border-fuchsia-300 dark:border-fuchsia-800';
+      case 'Empaque': return 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-800';
+      default: return 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-gray-200 border border-gray-200 dark:border-slate-700';
     }
   },
 

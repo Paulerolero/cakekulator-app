@@ -4,6 +4,7 @@
 
 const App = {
   currentTab: 'dashboard',
+  currentMode: localStorage.getItem('cakekulator_app_mode') || 'products',
   deferredPrompt: null, // Para el banner de instalación PWA
 
   init() {
@@ -27,8 +28,8 @@ const App = {
     // Inicializar Modo Oscuro / Claro
     this.initDarkMode();
 
-    // Actualizar Logo / Nombre en Header
-    this.updateHeaderBrand();
+    // Aplicar clase CSS y textos de navegación según ambiente activo (Productos vs Servicios)
+    this.applyModeTheme();
 
     // Navegación con botón atrás / gestos móviles para modales y scroll
     this.initBackAndScrollHandler();
@@ -36,7 +37,104 @@ const App = {
     // Renderizar pestaña inicial
     this.switchTab('dashboard');
 
-    console.log('Cakekulator cargado correctamente con control de gestos.');
+    // Si el usuario entra por primera vez y no ha elegido ambiente, mostrar modal de selección
+    if (!localStorage.getItem('cakekulator_app_mode')) {
+      setTimeout(() => this.showModeSelectionModal(), 350);
+    }
+
+    console.log('Cakekulator cargado correctamente con control de gestos y ambientes separados.');
+  },
+
+  applyModeTheme() {
+    document.body.classList.remove('mode-products', 'mode-services');
+    document.body.classList.add(this.currentMode === 'services' ? 'mode-services' : 'mode-products');
+    this.updateNavLabels();
+    if (typeof AuthModule !== 'undefined' && AuthModule.renderAuthUI) {
+      AuthModule.renderAuthUI();
+    }
+  },
+
+  showModeSelectionModal() {
+    const modal = document.getElementById('mode-selection-modal');
+    if (modal) modal.classList.remove('hidden');
+  },
+
+  closeModeSelectionModal() {
+    const modal = document.getElementById('mode-selection-modal');
+    if (modal) modal.classList.add('hidden');
+  },
+
+  setAppMode(mode) {
+    this.currentMode = mode;
+    localStorage.setItem('cakekulator_app_mode', mode);
+    this.applyModeTheme();
+    this.closeModeSelectionModal();
+    this.renderCurrentTab();
+    this.showToast(mode === 'products' 
+      ? '🎂 Ambiente: Venta de Productos (Pastelería)' 
+      : '💆 Ambiente: Prestación de Servicios (Spa & Estética)');
+  },
+
+  toggleMode() {
+    this.showModeSelectionModal();
+  },
+
+  updateNavLabels() {
+    const isServ = this.currentMode === 'services';
+    const quotesIcon = isServ ? '💬' : '📋';
+    const quotesText = isServ ? 'Cotizar' : 'Presupuesto';
+    const recipesIcon = isServ ? '💆' : '🎂';
+    const recipesText = isServ ? 'Servicios' : 'Recetas';
+    const ingIcon = isServ ? '🧴' : '📦';
+    const ingText = isServ ? 'Insumos' : 'Insumos';
+
+    // Desktop Nav
+    const qIconD = document.getElementById('nav-icon-quotes-desk');
+    const qTextD = document.getElementById('nav-text-quotes-desk');
+    const rIconD = document.getElementById('nav-icon-recipes-desk');
+    const rTextD = document.getElementById('nav-text-recipes-desk');
+    const iIconD = document.getElementById('nav-icon-ingredients-desk');
+    const iTextD = document.getElementById('nav-text-ingredients-desk');
+
+    if (qIconD) qIconD.textContent = quotesIcon;
+    if (qTextD) qTextD.textContent = quotesText;
+    if (rIconD) rIconD.textContent = recipesIcon;
+    if (rTextD) rTextD.textContent = recipesText;
+    if (iIconD) iIconD.textContent = ingIcon;
+    if (iTextD) iTextD.textContent = ingText;
+
+    // Mobile Nav
+    const qIconM = document.getElementById('nav-icon-quotes-mob');
+    const qTextM = document.getElementById('nav-text-quotes-mob');
+    const rIconM = document.getElementById('nav-icon-recipes-mob');
+    const rTextM = document.getElementById('nav-text-recipes-mob');
+    const iIconM = document.getElementById('nav-icon-ingredients-mob');
+    const iTextM = document.getElementById('nav-text-ingredients-mob');
+
+    if (qIconM) qIconM.textContent = quotesIcon;
+    if (qTextM) qTextM.textContent = quotesText;
+    if (rIconM) rIconM.textContent = recipesIcon;
+    if (rTextM) rTextM.textContent = recipesText;
+    if (iIconM) iIconM.textContent = ingIcon;
+    if (iTextM) iTextM.textContent = ingText;
+
+    // Switcher Button
+    const swIcon = document.getElementById('mode-switcher-icon');
+    const swLabel = document.getElementById('mode-switcher-label');
+    if (swIcon) swIcon.textContent = isServ ? '💆' : '🎂';
+    if (swLabel) swLabel.textContent = isServ ? 'Servicios' : 'Productos';
+
+    // Header Title and Subtitle
+    const hTitle = document.getElementById('header-brand-title');
+    const hName = document.getElementById('header-brand-name');
+    if (hTitle) {
+      hTitle.innerHTML = isServ 
+        ? `Servi<span class="text-teal-600 dark:text-teal-400">kulator</span>` 
+        : `Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>`;
+    }
+    if (hName) {
+      hName.textContent = isServ ? 'Spa & Servicios' : 'Gestión Pastelera';
+    }
   },
 
   initGestures() {
@@ -49,11 +147,11 @@ const App = {
 
     const isInteractiveElement = (target) => {
       if (!target || !(target instanceof Element)) return false;
-      
+
       // Sliders y controles interactivos
       if (target.closest('input[type="range"], .accent-pink-500')) return true;
       if (target.closest('input, textarea, select, option, [contenteditable="true"]')) return true;
-      
+
       // Modales activos abiertos
       const openModal = document.querySelector('#recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #ingredient-modal:not(.hidden), #quote-whatsapp-modal:not(.hidden), #quote-print-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #custom-search-modal:not(.hidden), #store-manager-modal:not(.hidden), #firebase-config-modal:not(.hidden)');
       if (openModal) return true;
@@ -81,7 +179,6 @@ const App = {
     const handleEnd = (clientX, clientY) => {
       if (!isTracking) return;
       isTracking = false;
-
       const deltaX = clientX - startX;
       const deltaY = clientY - startY;
       const deltaTime = Date.now() - startTime;
@@ -129,7 +226,7 @@ const App = {
 
     // Soporte universal para pointer events (ratón, emuladores y trackpads)
     window.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'touch') return; // Ya manejado por touchstart
+      if (e.pointerType === 'touch') return;
       if (e.button !== 0) return;
       handleStart(e.clientX, e.clientY, e.target);
     }, { passive: true });
@@ -141,7 +238,6 @@ const App = {
   },
 
   switchTab(tabName, scrollToTop = true, direction = 'none') {
-    // Si se pide simulador, abrir inicio y scrollear al simulador
     if (tabName === 'simulator') {
       tabName = 'dashboard';
       setTimeout(() => {
@@ -158,7 +254,6 @@ const App = {
       if (el) el.classList.add('hidden');
     });
 
-    // Mostrar la vista activa con animación fluida
     const activeView = document.getElementById(`${tabName}-view`);
     if (activeView) {
       activeView.classList.remove('hidden', 'view-slide-left', 'view-slide-right', 'view-transition');
@@ -212,7 +307,6 @@ const App = {
         break;
     }
 
-    // Scroll to top
     if (scrollToTop) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -230,112 +324,244 @@ const App = {
     const container = document.getElementById('dashboard-view');
     if (!container) return;
 
-    const recipes = DB.getRecipes();
-    const ingredients = DB.getIngredients();
+    const isServicesMode = this.currentMode === 'services';
+    const allRecipes = DB.getRecipes();
+    const allIngredients = DB.getIngredients();
     const quotes = DB.getQuotes();
     const settings = DB.getSettings();
 
-    // Calcular estadísticas
-    let totalStockValue = 0;
-    ingredients.forEach(i => totalStockValue += (Number(i.packagePrice) || 0));
+    // Filtrar según el modo activo
+    const recipes = isServicesMode
+      ? allRecipes.filter(r => r.itemType === 'service' || ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type))
+      : allRecipes.filter(r => (r.itemType || 'product') === 'product' && !['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(r.type));
+
+    const ingredients = isServicesMode
+      ? allIngredients.filter(i => i.itemType === 'service' || i.yieldApplications > 0)
+      : allIngredients.filter(i => (i.itemType || 'product') === 'product');
 
     const pendingQuotes = quotes.filter(q => q.status === 'draft' || q.status === 'sent');
-    const totalQuotedAmount = quotes.reduce((acc, q) => acc + (Number(q.total) || 0), 0);
 
-    container.innerHTML = `
-      <!-- Hero Banner Pastelero Personalizado -->
-      <div class="relative overflow-hidden bg-pink-600 dark:bg-pink-700 rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-md mb-4 sm:mb-6">
-        <div class="relative z-10 flex items-center gap-3 sm:gap-5 max-w-2xl">
-          ${settings.logoUrl ? `
-            <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-white/95 p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
-              <img src="${settings.logoUrl}" alt="Logo ${settings.businessName || ''}" class="w-full h-full object-contain">
+    if (isServicesMode) {
+      // ==========================================
+      // Dashboard Modo Servicios & Spa (Luxe Emerald & Nordic Aesthetic)
+      // ==========================================
+      const businessTitle = (!settings.businessName || settings.businessName === 'Mi Pastelería Artesanal') 
+        ? 'Centro de Estética, Spa & Masajes' 
+        : settings.businessName;
+
+      container.innerHTML = `
+        <!-- Hero Banner Spa & Servicios -->
+        <div class="services-hero-banner rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-md mb-4 sm:mb-6 relative overflow-hidden">
+          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3 sm:gap-5 max-w-2xl">
+              ${settings.logoUrl ? `
+                <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-white/95 p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
+                  <img src="${settings.logoUrl}" alt="Logo" class="w-full h-full object-contain">
+                </div>
+              ` : `
+                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-2xl sm:text-3xl shrink-0 ring-1 ring-white/30">
+                  💆
+                </div>
+              `}
+              <div class="flex-1 min-w-0">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full hero-badge text-[10px] sm:text-xs font-bold mb-1.5 shadow-xs">
+                  <span class="text-xs">💆</span>
+                  <span>Ambiente: Prestación de Servicios & Spa</span>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-black leading-tight truncate text-white">
+                  ${businessTitle}
+                </h1>
+                <p class="hero-subtitle text-[11px] sm:text-xs mt-1 leading-snug line-clamp-2 sm:line-clamp-none font-medium">
+                  Costea con precisión duración en cabina, insumos por aplicación, honorarios y paquetes de sesiones.
+                </p>
+              </div>
             </div>
-          ` : ''}
-          <div class="flex-1 min-w-0">
-            <h1 class="text-lg sm:text-2xl font-black leading-tight truncate">
-              ${settings.businessName || 'Mi Pastelería Artesanal'}
-            </h1>
-            <p class="text-pink-100 text-[11px] sm:text-xs mt-1 leading-snug line-clamp-2 sm:line-clamp-none">
-              Costea con precisión tus tortas, alfajores, galletas y cupcakes. Nunca más cobres a ciegas.
-            </p>
+
+            <!-- Botones de Acción Rápida en Hero -->
+            <div class="flex items-center gap-2 shrink-0 pt-1 md:pt-0">
+              <button onclick="RecipesModule.openEditor()" class="px-3.5 py-2 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-xs font-bold text-white transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer ring-1 ring-white/30">
+                <span>✨</span> Nuevo Servicio
+              </button>
+              <button onclick="App.switchTab('simulator')" class="px-3.5 py-2 rounded-xl bg-emerald-400/25 hover:bg-emerald-400/35 text-white text-xs font-bold transition flex items-center gap-1.5 border border-emerald-300/40 active:scale-95 cursor-pointer">
+                <span>⚡</span> Simular Precios
+              </button>
+            </div>
+          </div>
+          <div class="absolute -right-4 -bottom-6 opacity-15 sm:opacity-20 text-7xl sm:text-8xl pointer-events-none select-none">
+            💆
           </div>
         </div>
 
-        <!-- Decoración flotante -->
-        <div class="absolute -right-4 -bottom-6 opacity-15 sm:opacity-25 text-7xl sm:text-8xl pointer-events-none select-none">
-          🧁
-        </div>
-      </div>
+        <!-- Métricas Clave (KPIs) de Servicios -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mb-4 sm:mb-6">
+          <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Servicios" class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-teal-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-teal-400 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition font-bold">
+              💆
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold block truncate">Servicios / Fichas</span>
+              <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${recipes.length}</span>
+            </div>
+          </div>
 
-      <!-- Métricas Clave (KPIs) con Acceso Directo -->
-      <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mb-4 sm:mb-6">
-        <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Recetas & Costeo" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-pink-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-pink-100 transition duration-200">
-            🎂
+          <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos de Cabina" class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-teal-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-emerald-400 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition font-bold">
+              🧴
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold block truncate">Insumos de Cabina</span>
+              <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${ingredients.length}</span>
+            </div>
           </div>
-          <div class="min-w-0">
-            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-pink-600 transition">Recetas</span>
-            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${recipes.length}</span>
-          </div>
-        </div>
 
-        <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos & Empaques" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-amber-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-amber-100 transition duration-200">
-            📦
-          </div>
-          <div class="min-w-0">
-            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-amber-600 transition">Insumos</span>
-            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${ingredients.length}</span>
-          </div>
-        </div>
-
-        <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-emerald-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-emerald-100 transition duration-200">
-            📋
-          </div>
-          <div class="min-w-0">
-            <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-emerald-600 transition">Cotizaciones</span>
-            <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${pendingQuotes.length}</span>
+          <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-teal-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-teal-400 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-400 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition font-bold">
+              💬
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold block truncate">Cotizaciones</span>
+              <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${pendingQuotes.length}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Simulador de Precios y Rentabilidad Integrado en Inicio -->
-      <div id="dashboard-simulator-container" class="mb-4 sm:mb-6"></div>
+        <!-- Simulador Integrado en Inicio -->
+        <div id="dashboard-simulator-container" class="mb-4 sm:mb-6"></div>
 
-      <!-- Recetas Destacadas y Accesos Rápidos -->
-      <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 shadow-sm mb-4 sm:mb-6">
-        <div class="flex items-center justify-between mb-3 sm:mb-4">
-          <h3 class="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
-            <span>🧁</span> Fichas de Recetas Rápidas
-          </h3>
-          <button onclick="App.switchTab('recipes')" class="text-xs text-pink-600 font-bold hover:underline">
-            Ver todas →
-          </button>
-        </div>
+        <!-- Fichas de Servicios Rápidas -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-teal-100 dark:border-slate-800 shadow-sm mb-4 sm:mb-6">
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 class="font-black text-gray-900 dark:text-gray-100 text-sm sm:text-base flex items-center gap-1.5">
+              <span>💆</span> Protocolos & Servicios de Atención
+            </h3>
+            <button onclick="App.switchTab('recipes')" class="text-xs text-teal-700 dark:text-teal-300 font-bold hover:underline">
+              Ver todos →
+            </button>
+          </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
-          ${recipes.slice(0, 6).map(r => {
-            const costs = Calculator.calculateRecipeFullCosts(r);
-            return `
-              <div class="flex items-center justify-between p-3 rounded-xl sm:rounded-2xl bg-gray-50/80 hover:bg-pink-50/50 transition cursor-pointer border border-gray-100 group" onclick="SimulatorModule.loadRecipeForSimulation('${r.id}')" title="Simular rentabilidad de esta receta">
-                <div class="flex items-center gap-2 truncate">
-                  <span class="text-lg group-hover:scale-110 transition">${r.type === 'cake' ? '🎂' : '🍪'}</span>
-                  <div class="truncate">
-                    <h4 class="font-bold text-xs text-gray-800 truncate group-hover:text-pink-600 transition">${r.name}</h4>
-                    <span class="text-[10px] text-gray-500">Costo: ${Calculator.formatCurrency(costs.costPerUnit)} / un</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+            ${recipes.slice(0, 6).map(r => {
+              const costs = Calculator.calculateRecipeFullCosts(r);
+              return `
+                <div class="flex items-center justify-between p-3 rounded-xl sm:rounded-2xl bg-gray-50/80 dark:bg-slate-800/60 hover:bg-teal-50/60 dark:hover:bg-slate-800 transition cursor-pointer border border-gray-100 dark:border-slate-700 group shadow-2xs hover:border-teal-300" onclick="SimulatorModule.loadRecipeForSimulation('${r.id}')" title="Simular rentabilidad">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="text-lg group-hover:scale-110 transition">💆</span>
+                    <div class="truncate">
+                      <h4 class="font-bold text-xs text-gray-800 dark:text-gray-200 truncate group-hover:text-teal-700 dark:group-hover:text-teal-300 transition">${r.name}</h4>
+                      <span class="text-[10px] text-gray-500 dark:text-gray-400">Duración: ${r.durationMinutes || 60} min · Costo: ${Calculator.formatCurrency(costs.costPerUnit)}</span>
+                    </div>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <span class="text-xs font-black text-emerald-700 dark:text-emerald-400 block">${Calculator.formatCurrency(costs.suggestedUnitPrice)}</span>
+                    <span class="text-[10px] text-gray-400 group-hover:text-teal-600 font-semibold">Simular ↗</span>
                   </div>
                 </div>
-                <div class="text-right shrink-0">
-                  <span class="text-xs font-black text-emerald-600 block">${Calculator.formatCurrency(costs.suggestedUnitPrice)}</span>
-                  <span class="text-[10px] text-gray-400">Simular ↗</span>
-                </div>
-              </div>
-            `;
-          }).join('')}
+              `;
+            }).join('')}
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    } else {
+      // ==========================================
+      // Dashboard Modo Productos (Pastelería Original)
+      // ==========================================
+      container.innerHTML = `
+        <!-- Hero Banner Pastelero Original -->
+        <div class="products-hero-banner rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-md mb-4 sm:mb-6 relative overflow-hidden">
+          <div class="relative z-10 flex items-center gap-3 sm:gap-5 max-w-2xl">
+            ${settings.logoUrl ? `
+              <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-white/95 p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
+                <img src="${settings.logoUrl}" alt="Logo ${settings.businessName || ''}" class="w-full h-full object-contain">
+              </div>
+            ` : ''}
+            <div class="flex-1 min-w-0">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full hero-badge text-[10px] sm:text-xs font-bold mb-1.5 shadow-xs">
+                <span>🎂</span>
+                <span>Ambiente: Venta de Productos & Pastelería</span>
+              </div>
+              <h1 class="text-xl sm:text-2xl font-black leading-tight truncate text-white">
+                ${settings.businessName || 'Mi Pastelería Artesanal'}
+              </h1>
+              <p class="hero-subtitle text-[11px] sm:text-xs mt-1 leading-snug line-clamp-2 sm:line-clamp-none font-medium">
+                Costea con precisión tus tortas, alfajores, galletas y cupcakes. Nunca más cobres a ciegas.
+              </p>
+            </div>
+          </div>
+          <div class="absolute -right-4 -bottom-6 opacity-15 sm:opacity-25 text-7xl sm:text-8xl pointer-events-none select-none">
+            🧁
+          </div>
+        </div>
+
+        <!-- Métricas Clave (KPIs) de Productos -->
+        <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mb-4 sm:mb-6">
+          <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Recetas & Costeo" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-pink-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-pink-50 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-pink-100 transition duration-200">
+              🎂
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-pink-600 transition">Recetas</span>
+              <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${recipes.length}</span>
+            </div>
+          </div>
+
+          <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos & Empaques" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-amber-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-amber-100 transition duration-200">
+              📦
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-amber-600 transition">Insumos</span>
+              <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${ingredients.length}</span>
+            </div>
+          </div>
+
+          <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 shadow-xs hover:shadow-md hover:border-emerald-300 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
+            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 group-hover:bg-emerald-100 transition duration-200">
+              📋
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] sm:text-xs text-gray-500 font-medium block truncate group-hover:text-emerald-600 transition">Cotizaciones</span>
+              <span class="text-base sm:text-xl font-black text-gray-900 leading-tight">${pendingQuotes.length}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulador de Precios y Rentabilidad Integrado en Inicio -->
+        <div id="dashboard-simulator-container" class="mb-4 sm:mb-6"></div>
+
+        <!-- Recetas Destacadas y Accesos Rápidos -->
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 shadow-sm mb-4 sm:mb-6">
+          <div class="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 class="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-1.5">
+              <span>🧁</span> Fichas de Recetas Rápidas
+            </h3>
+            <button onclick="App.switchTab('recipes')" class="text-xs text-pink-600 font-bold hover:underline">
+              Ver todas →
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+            ${recipes.slice(0, 6).map(r => {
+              const costs = Calculator.calculateRecipeFullCosts(r);
+              return `
+                <div class="flex items-center justify-between p-3 rounded-xl sm:rounded-2xl bg-gray-50/80 hover:bg-pink-50/50 transition cursor-pointer border border-gray-100 group" onclick="SimulatorModule.loadRecipeForSimulation('${r.id}')" title="Simular rentabilidad de esta receta">
+                  <div class="flex items-center gap-2 truncate">
+                    <span class="text-lg group-hover:scale-110 transition">${r.type === 'cake' ? '🎂' : '🍪'}</span>
+                    <div class="truncate">
+                      <h4 class="font-bold text-xs text-gray-800 truncate group-hover:text-pink-600 transition">${r.name}</h4>
+                      <span class="text-[10px] text-gray-500">Costo: ${Calculator.formatCurrency(costs.costPerUnit)} / un</span>
+                    </div>
+                  </div>
+                  <div class="text-right shrink-0">
+                    <span class="text-xs font-black text-emerald-600 block">${Calculator.formatCurrency(costs.suggestedUnitPrice)}</span>
+                    <span class="text-[10px] text-gray-400">Simular ↗</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
 
     // Renderizar el Simulador directamente en el contenedor del Dashboard
     if (typeof SimulatorModule !== 'undefined') {
@@ -733,7 +959,7 @@ const App = {
     try {
       this.showToast('🍌 Procesando y eliminando fondo con Nano Banana...');
       const transparentLogo = await GeminiService.removeBackgroundFromImage(currentLogo);
-      
+
       const preview = document.getElementById('settings-logo-preview');
       if (preview) preview.src = transparentLogo;
       if (hiddenInput) hiddenInput.value = transparentLogo;
@@ -797,7 +1023,7 @@ const App = {
   // Modo Oscuro / Claro (Modo Claro por defecto)
   initDarkMode() {
     const isDark = localStorage.getItem('cakekulator_dark_mode') === 'true';
-    
+
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -1014,7 +1240,7 @@ const App = {
         try {
           history.pushState({ isScrolled: true }, '');
           isScrolledPushed = true;
-        } catch (e) {}
+        } catch (e) { }
       } else if (scrollY <= 80 && isScrolledPushed) {
         isScrolledPushed = false;
       }

@@ -23,12 +23,14 @@ const QuotesModule = {
     // Filtrar
     let filtered = allQuotes.filter(q => {
       const matchesStatus = this.filterStatus === 'all' || q.status === this.filterStatus;
-      const matchesSearch = !this.searchQuery || 
+      const matchesSearch = !this.searchQuery ||
         (q.customerName && q.customerName.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
         (q.code && q.code.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
         (q.eventName && q.eventName.toLowerCase().includes(this.searchQuery.toLowerCase()));
       return matchesStatus && matchesSearch;
     });
+
+    const isServicesMode = (typeof App !== 'undefined' && App.currentMode === 'services');
 
     container.innerHTML = `
       <!-- Barra Superior de Acciones y Búsqueda -->
@@ -38,10 +40,10 @@ const QuotesModule = {
             <input 
               type="text" 
               id="quote-search" 
-              placeholder="Buscar por cliente, folio o evento..." 
+              placeholder="${isServicesMode ? 'Buscar por cliente, folio o tratamiento...' : 'Buscar por cliente, folio o evento...'}" 
               value="${this.searchQuery}"
               oninput="QuotesModule.onSearch(this.value)"
-              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border border-pink-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white shadow-xs text-xs sm:text-sm"
+              class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border ${isServicesMode ? 'border-teal-200 focus:ring-teal-400' : 'border-pink-200 focus:ring-pink-400'} focus:outline-none focus:ring-2 bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-100 shadow-xs text-xs sm:text-sm"
             />
             <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 absolute left-3 top-2.5 sm:top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             ${this.searchQuery ? `
@@ -50,7 +52,7 @@ const QuotesModule = {
               </button>
             ` : ''}
           </div>
-          <button onclick="QuotesModule.openEditor()" class="btn-primary shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold shadow-md shadow-pink-200 transition active:scale-95 text-xs sm:text-sm whitespace-nowrap cursor-pointer">
+          <button onclick="QuotesModule.openEditor()" class="${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold shadow-md transition active:scale-95 text-xs sm:text-sm whitespace-nowrap cursor-pointer">
             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Nueva Cotización
           </button>
@@ -59,15 +61,15 @@ const QuotesModule = {
         <!-- Filtros de Estado -->
         <div class="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 no-scrollbar text-xs font-medium">
           ${[
-            { id: 'all', label: '✨ Todas (' + allQuotes.length + ')' },
-            { id: 'draft', label: '📝 Borradores' },
-            { id: 'sent', label: '📤 Enviadas' },
-            { id: 'approved', label: '✅ Aprobadas' },
-            { id: 'rejected', label: '❌ Rechazadas' }
-          ].map(st => `
+        { id: 'all', label: '✨ Todas (' + allQuotes.length + ')' },
+        { id: 'draft', label: '📝 Borradores' },
+        { id: 'sent', label: '📤 Enviadas' },
+        { id: 'approved', label: '✅ Aprobadas' },
+        { id: 'rejected', label: '❌ Rechazadas' }
+      ].map(st => `
             <button 
               onclick="QuotesModule.filterByStatus('${st.id}')"
-              class="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full whitespace-nowrap transition ${this.filterStatus === st.id ? 'bg-pink-500 text-white shadow-xs font-bold' : 'bg-white text-gray-600 hover:bg-pink-50 border border-gray-100'}">
+              class="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full whitespace-nowrap transition ${this.filterStatus === st.id ? (isServicesMode ? 'bg-teal-600 text-white shadow-xs font-bold' : 'bg-pink-500 text-white shadow-xs font-bold') : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-pink-50 border border-gray-100 dark:border-slate-700'}">
               ${st.label}
             </button>
           `).join('')}
@@ -76,33 +78,37 @@ const QuotesModule = {
 
       <!-- Listado de Cotizaciones -->
       ${filtered.length === 0 ? `
-        <div class="bg-white rounded-2xl p-8 text-center border border-pink-100 shadow-sm">
-          <div class="w-16 h-16 bg-pink-50 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">📑</div>
-          <h3 class="text-base font-semibold text-gray-800">No hay presupuestos registrados</h3>
-          <p class="text-xs text-gray-500 mt-1 mb-4">Crea una cotización para un cliente seleccionando tus productos.</p>
-          <button onclick="QuotesModule.openEditor()" class="btn-secondary px-4 py-2 rounded-xl text-xs font-medium text-pink-600 border border-pink-200 hover:bg-pink-50">
-            + Crear Presupuesto
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-8 text-center border ${isServicesMode ? 'border-teal-100' : 'border-pink-100'} dark:border-slate-800 shadow-sm">
+          <div class="w-16 h-16 ${isServicesMode ? 'bg-teal-50 dark:bg-teal-950/60' : 'bg-pink-50 dark:bg-pink-950/60'} rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+            ${isServicesMode ? '💬' : '📑'}
+          </div>
+          <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">No hay cotizaciones registradas</h3>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-4">
+            ${isServicesMode ? 'Crea una cotización para un cliente seleccionando tus sesiones o servicios.' : 'Crea una cotización para un cliente seleccionando tus productos.'}
+          </p>
+          <button onclick="QuotesModule.openEditor()" class="px-4 py-2 rounded-xl text-xs font-bold ${isServicesMode ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800 hover:bg-teal-100' : 'btn-secondary text-pink-600 border border-pink-200 hover:bg-pink-50'}">
+            + Crear Cotización
           </button>
         </div>
       ` : `
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           ${filtered.map(q => {
-            const statusInfo = this.getStatusBadge(q.status);
-            const total = q.total || q.subtotal || 0;
-            const deposit = q.depositAmount || (total * 0.5);
-            const balance = q.remainingBalance || (total - deposit);
+        const statusInfo = this.getStatusBadge(q.status);
+        const total = q.total || q.subtotal || 0;
+        const deposit = q.depositAmount || (total * 0.5);
+        const balance = q.remainingBalance || (total - deposit);
 
-            return `
-              <div onclick="QuotesModule.openEditor('${q.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500 transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
+        return `
+              <div onclick="QuotesModule.openEditor('${q.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div class="p-4">
                   <!-- Top Bar -->
                   <div class="flex items-start justify-between gap-2 mb-2">
                     <div>
                       <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xs font-black text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/60 px-2 py-0.5 rounded-md font-mono">${q.code || 'COT'}</span>
-                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full ${statusInfo.badgeClass}">${statusInfo.label}</span>
+                        <span class="text-xs font-black ${isServicesMode ? 'text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60' : 'text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950/60'} px-2 py-0.5 rounded-md font-mono">${q.code || 'COT'}</span>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${statusInfo.badgeClass}">${statusInfo.label}</span>
                       </div>
-                      <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">${q.customerName || 'Cliente sin nombre'}</h3>
+                      <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight ${isServicesMode ? 'group-hover:text-teal-600 dark:group-hover:text-teal-400' : 'group-hover:text-pink-600 dark:group-hover:text-pink-400'} transition">${q.customerName || 'Cliente sin nombre'}</h3>
                       ${q.customerPhone ? `<p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">📞 ${q.customerPhone}</p>` : ''}
                     </div>
                     <div class="flex items-center gap-1">
@@ -112,25 +118,25 @@ const QuotesModule = {
                     </div>
                   </div>
 
-                  <!-- Detalle Evento -->
+                  <!-- Detalle Evento / Cita -->
                   <div class="bg-gray-50/80 dark:bg-slate-800/60 rounded-xl p-2.5 text-xs text-gray-600 dark:text-gray-300 space-y-1 mb-3">
-                    ${q.eventName ? `<div class="font-medium text-gray-800 dark:text-gray-200">🎉 ${q.eventName}</div>` : ''}
+                    ${q.eventName ? `<div class="font-medium text-gray-800 dark:text-gray-200">✨ ${q.eventName}</div>` : ''}
                     ${q.eventDate ? `<div class="text-gray-500 dark:text-gray-400">📅 Fecha: <span class="font-semibold text-gray-700 dark:text-gray-300">${q.eventDate}</span></div>` : ''}
-                    <div class="text-[11px] text-gray-500 dark:text-gray-400">🛒 ${(q.items || []).length} productos en el pedido</div>
+                    <div class="text-[11px] text-gray-500 dark:text-gray-400">🛒 ${(q.items || []).length} ${isServicesMode ? 'servicios cotizados' : 'productos en el pedido'}</div>
                   </div>
 
                   <!-- Resumen Financiero -->
-                  <div class="bg-pink-50/70 dark:bg-slate-800/80 rounded-xl p-3 border border-pink-100 dark:border-slate-700 text-xs space-y-1.5">
+                  <div class="${isServicesMode ? 'bg-teal-50/60 dark:bg-slate-800/80 border-teal-100' : 'bg-pink-50/70 dark:bg-slate-800/80 border-pink-100'} rounded-xl p-3 border dark:border-slate-700 text-xs space-y-1.5">
                     <div class="flex justify-between items-center">
                       <span class="text-gray-600 dark:text-slate-300 font-medium">Total Cotizado:</span>
                       <span class="text-base font-black text-gray-900 dark:text-white">${Calculator.formatCurrency(total)}</span>
                     </div>
                     <div class="flex justify-between items-center text-emerald-700 dark:text-emerald-400 font-semibold">
-                      <span>Abono requerido (${q.depositPercent || 50}%):</span>
+                      <span>Abono / Reserva (${q.depositPercent || 50}%):</span>
                       <span class="font-bold text-emerald-800 dark:text-emerald-300">${Calculator.formatCurrency(deposit)}</span>
                     </div>
                     <div class="flex justify-between items-center text-gray-600 dark:text-slate-400 text-[11px]">
-                      <span>Saldo al entregar:</span>
+                      <span>Saldo restante:</span>
                       <span class="font-semibold text-gray-800 dark:text-slate-200">${Calculator.formatCurrency(balance)}</span>
                     </div>
                   </div>
@@ -147,7 +153,7 @@ const QuotesModule = {
                 </div>
               </div>
             `;
-          }).join('')}
+      }).join('')}
         </div>
       `}
     `;
@@ -509,6 +515,21 @@ const QuotesModule = {
     if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
+  getStatusBadge(status) {
+    switch (status) {
+      case 'draft':
+        return { label: 'Borrador', badgeClass: 'bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800' };
+      case 'sent':
+        return { label: 'Enviada', badgeClass: 'bg-blue-100 dark:bg-blue-950/80 text-blue-900 dark:text-blue-300 border border-blue-300 dark:border-blue-800' };
+      case 'approved':
+        return { label: 'Aprobada', badgeClass: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-900 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800' };
+      case 'rejected':
+        return { label: 'Rechazada', badgeClass: 'bg-rose-100 dark:bg-rose-950/80 text-rose-900 dark:text-rose-300 border border-rose-300 dark:border-rose-800' };
+      default:
+        return { label: 'Borrador', badgeClass: 'bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-slate-700' };
+    }
+  },
+
   closeEditor() {
     App.closeModal('quote-editor-modal');
     if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
@@ -576,14 +597,14 @@ const QuotesModule = {
         <select class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-pink-400 q-item-recipe bg-white truncate" onchange="QuotesModule.onRecipeSelect('${rowId}')">
           <option value="">-- Producto Personalizado --</option>
           ${allRecipes.map(r => {
-            const costs = Calculator.calculateRecipeFullCosts(r);
-            const sugPrice = r.type === 'cake' ? costs.suggestedBatchPrice : costs.suggestedUnitPrice;
-            return `
+      const costs = Calculator.calculateRecipeFullCosts(r);
+      const sugPrice = r.type === 'cake' ? costs.suggestedBatchPrice : costs.suggestedUnitPrice;
+      return `
               <option value="${r.id}" data-price="${sugPrice}" ${r.id === selectedRecipeId ? 'selected' : ''}>
                 ${r.name} (${Calculator.formatCurrency(sugPrice)})
               </option>
             `;
-          }).join('')}
+    }).join('')}
         </select>
         <input type="text" placeholder="Nombre personalizado del producto" value="${customName}" class="w-full mt-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs q-item-custom-name ${selectedRecipeId ? 'hidden' : ''}" oninput="QuotesModule.recalculateTotals()">
       </div>
@@ -860,7 +881,7 @@ const QuotesModule = {
     const message = msgPreview ? msgPreview.value : this.buildWhatsAppMessage(quote);
     const encodedMsg = encodeURIComponent(message);
 
-    let url = phone 
+    let url = phone
       ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`
       : `https://api.whatsapp.com/send?text=${encodedMsg}`;
 
@@ -1136,11 +1157,11 @@ const QuotesModule = {
       // 2. Copiar mensaje al portapapeles
       try {
         await navigator.clipboard.writeText(message);
-      } catch (err) {}
+      } catch (err) { }
 
       // 3. Abrir WhatsApp Web / App con el chat del cliente
       const encodedMsg = encodeURIComponent(message);
-      let waUrl = phone 
+      let waUrl = phone
         ? `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMsg}`
         : `https://api.whatsapp.com/send?text=${encodedMsg}`;
 
