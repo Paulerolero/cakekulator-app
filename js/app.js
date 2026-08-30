@@ -753,6 +753,9 @@ const App = {
       // ==========================================
       // Calcular Fechas Importantes & Seguimiento
       // ==========================================
+      const upcomingEvents = (typeof CustomersModule !== 'undefined' && typeof CustomersModule.getUpcomingEvents === 'function')
+        ? CustomersModule.getUpcomingEvents(30)
+        : [];
       const importantEvents = [];
 
       // 1. Entregas de Pedidos Aprobados / Aceptados
