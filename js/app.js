@@ -41,6 +41,11 @@ const App = {
       AuthModule.init();
     }
 
+    // Inicializar notificaciones push y alertas FCM
+    if (typeof NotificationsModule !== 'undefined') {
+      NotificationsModule.init();
+    }
+
     // Inicializar Modo Oscuro / Claro
     this.initDarkMode();
 
@@ -1019,21 +1024,6 @@ const App = {
             </div>
           </button>
 
-          <!-- 8. Ajustes -->
-          <button 
-            type="button"
-            onclick="App.switchTab('settings')" 
-            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-pink-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-          >
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-200 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-              ⚙️
-            </div>
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Ajustes</span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${isServicesMode ? 'Centro y nube' : 'Taller y nube'}</span>
-            </div>
-          </button>
-
         </div>
       </div>
 
@@ -1698,10 +1688,117 @@ const App = {
                       Iniciar con Google
                     </button>
                   `}
-                  <button type="button" onclick="AuthModule.showConfigModal()" title="Configurar credenciales de Firebase" class="p-2 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700 cursor-pointer">
-                    ⚙️
-                  </button>
                 </div>
+              </div>
+            </div>
+
+            <!-- Notificaciones Push & Alertas (Firebase Cloud Messaging) -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
+                  <span>🔔</span> Notificaciones Push & Alertas (FCM)
+                </h3>
+                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                  typeof NotificationsModule !== 'undefined' && NotificationsModule.getPermissionStatus() === 'granted'
+                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                    : typeof NotificationsModule !== 'undefined' && NotificationsModule.getPermissionStatus() === 'denied'
+                    ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
+                    : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                }">
+                  ${
+                    typeof NotificationsModule !== 'undefined' && NotificationsModule.getPermissionStatus() === 'granted'
+                      ? 'Push Activo'
+                      : typeof NotificationsModule !== 'undefined' && NotificationsModule.getPermissionStatus() === 'denied'
+                      ? 'Bloqueado'
+                      : 'Sin Activar'
+                  }
+                </span>
+              </div>
+
+              <p class="text-xs text-gray-600 dark:text-gray-400">
+                Recibe alertas en tu dispositivo sobre entregas agendadas, cotizaciones por confirmar y notificaciones remotas enviadas desde Firebase Cloud Messaging (100% gratuito).
+              </p>
+
+              <div class="bg-gray-50 dark:bg-slate-800/80 p-3.5 sm:p-4 rounded-2xl border border-gray-200 dark:border-slate-700 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div>
+                    <h4 class="font-bold text-gray-900 dark:text-gray-100 text-xs">
+                      ${
+                        typeof NotificationsModule !== 'undefined' && NotificationsModule.getPermissionStatus() === 'granted'
+                          ? '✅ Alertas del Sistema Habilitadas'
+                          : '🔔 Activar Notificaciones en este Dispositivo'
+                      }
+                    </h4>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                      ${
+                        typeof NotificationsModule !== 'undefined' && NotificationsModule.getPermissionStatus() === 'granted'
+                          ? 'Tu navegador está vinculado y listo para recibir alertas locales y remotas.'
+                          : 'Autoriza los permisos en tu navegador para recibir avisos push en tiempo real.'
+                      }
+                    </p>
+                  </div>
+
+                  <div class="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                    ${
+                      typeof NotificationsModule !== 'undefined' && NotificationsModule.getPermissionStatus() === 'granted' ? `
+                        <button 
+                          type="button" 
+                          onclick="NotificationsModule.sendTestNotification()" 
+                          class="px-3 py-2 bg-pink-100 dark:bg-slate-700 hover:bg-pink-200 dark:hover:bg-slate-600 text-pink-700 dark:text-pink-300 text-xs font-bold rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                        >
+                          <span>🔔</span> Probar Notificación
+                        </button>
+                      ` : `
+                        <button 
+                          type="button" 
+                          onclick="NotificationsModule.requestPermission()" 
+                          class="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5"
+                        >
+                          <span>🔔</span> Activar Push
+                        </button>
+                      `
+                    }
+                  </div>
+                </div>
+
+                ${typeof NotificationsModule !== 'undefined' && NotificationsModule.currentToken ? `
+                  <div class="pt-2 border-t border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div class="min-w-0 flex-1">
+                      <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Token FCM de este Dispositivo:</span>
+                      <code class="text-[10px] text-pink-600 dark:text-pink-400 font-mono block truncate max-w-full sm:max-w-md bg-white dark:bg-slate-900 px-2 py-1 rounded-lg border border-gray-200 dark:border-slate-700 mt-0.5">${this.escapeHtml(NotificationsModule.currentToken)}</code>
+                    </div>
+                    <button 
+                      type="button" 
+                      onclick="NotificationsModule.copyToken()" 
+                      class="px-2.5 py-1.5 text-xs font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 rounded-xl border border-gray-200 dark:border-slate-600 transition flex items-center gap-1 cursor-pointer shrink-0"
+                    >
+                      <span>📋</span> Copiar Token
+                    </button>
+                  </div>
+                ` : ''}
+              </div>
+
+              <!-- Preferencias de Alertas Automáticas -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    ${typeof NotificationsModule !== 'undefined' && NotificationsModule.settings.notifyOrders ? 'checked' : ''} 
+                    onchange="NotificationsModule.toggleSetting('notifyOrders')"
+                    class="rounded text-pink-600 focus:ring-pink-500 w-4 h-4"
+                  >
+                  <span>🚚 Avisos de Entregas y Citas del Día</span>
+                </label>
+
+                <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40 text-xs text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    ${typeof NotificationsModule !== 'undefined' && NotificationsModule.settings.notifyQuotes ? 'checked' : ''} 
+                    onchange="NotificationsModule.toggleSetting('notifyQuotes')"
+                    class="rounded text-pink-600 focus:ring-pink-500 w-4 h-4"
+                  >
+                  <span>📋 Cotizaciones Pendientes de Respuesta</span>
+                </label>
               </div>
             </div>
 

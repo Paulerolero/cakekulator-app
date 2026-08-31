@@ -1,8 +1,8 @@
 // ==========================================
-// Cakekulator - Service Worker para Soporte Offline 100%
+// Cakekulator - Service Worker para Soporte Offline & Push
 // ==========================================
 
-const CACHE_NAME = 'cakekulator-v3.3';
+const CACHE_NAME = 'cakekulator-v3.5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
   './js/auth.js',
   './js/templates.js',
   './js/db.js',
+  './js/notifications.js',
   './js/ingredients.js',
   './js/receipt-scanner.js',
   './js/recipe-scanner.js',
@@ -32,7 +33,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Precargando archivos en caché v2.7');
+      console.log('[Service Worker] Precargando archivos en caché v3.5');
       return cache.addAll(ASSETS_TO_CACHE);
     }).then(() => self.skipWaiting())
   );
@@ -77,5 +78,48 @@ self.addEventListener('fetch', (event) => {
           }
         });
       })
+  );
+});
+
+// Soporte para Notificaciones Push Web genéricas / FCM
+self.addEventListener('push', (event) => {
+  let title = 'Cakekulator';
+  let options = {
+    body: 'Tienes una nueva notificación de tu taller pastelero.',
+    icon: 'assets/icons/icon-192.png',
+    badge: 'assets/icons/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: { url: './' }
+  };
+
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      title = data.notification?.title || data.title || title;
+      options.body = data.notification?.body || data.body || options.body;
+      if (data.notification?.icon || data.icon) options.icon = data.notification?.icon || data.icon;
+      if (data.data) options.data = data.data;
+    } catch (e) {
+      options.body = event.data.text() || options.body;
+    }
+  }
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Apertura al interactuar con la notificación
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const urlToOpen = (event.notification.data && event.notification.data.url) ? event.notification.data.url : './';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes('index.html') || client.url.endsWith('/') || client.url.includes(self.location.origin)) {
+          if ('focus' in client) return client.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(urlToOpen);
+    })
   );
 });

@@ -80,6 +80,17 @@ const FirebaseService = {
 
         this.googleProvider = new firebase.auth.GoogleAuthProvider();
         this.googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+        // Inicializar Firebase Cloud Messaging si el navegador lo soporta
+        if (typeof firebase.messaging === 'function' && firebase.messaging.isSupported()) {
+          try {
+            this.messaging = firebase.messaging();
+            console.log('✅ Firebase Messaging (FCM) disponible');
+          } catch (e) {
+            console.warn('⚠️ No se pudo inicializar Firebase Messaging:', e);
+          }
+        }
+
         this.isConfigured = true;
         console.log('✅ Firebase inicializado correctamente');
         return true;
