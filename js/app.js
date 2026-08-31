@@ -7,6 +7,22 @@ const App = {
   currentMode: localStorage.getItem('cakekulator_app_mode') || 'products',
   deferredPrompt: null, // Para el banner de instalación PWA
 
+  escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  },
+
+  sanitizePlainText(value) {
+    return String(value ?? '')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+  },
+
   init() {
     // Inicializar base de datos local
     DB.init();
@@ -140,7 +156,7 @@ const App = {
         : `Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>`;
     }
     if (hName) {
-      hName.textContent = currentBizSettings.businessName || (isServ ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal');
+      hName.textContent = this.sanitizePlainText(currentBizSettings.businessName || (isServ ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal'));
     }
   },
 
@@ -703,6 +719,7 @@ const App = {
     const formattedToday = now.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
 
     const businessTitle = settings.businessName || (isServicesMode ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal');
+    const safeBusinessTitle = this.escapeHtml(this.sanitizePlainText(businessTitle));
 
     // Acciones Rápidas Seleccionadas por el Usuario
     const enabledActionIds = this.getEnabledQuickActionIds();
@@ -813,7 +830,7 @@ const App = {
           <div class="flex items-center gap-3.5 sm:gap-5 min-w-0">
             ${settings.logoUrl ? `
               <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
-                <img src="${settings.logoUrl}" alt="Logo ${businessTitle}" class="w-full h-full object-contain">
+                <img src="${this.escapeHtml(settings.logoUrl)}" alt="Logo ${safeBusinessTitle}" class="w-full h-full object-contain">
               </div>
             ` : `
               <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/30 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-inner">
@@ -825,7 +842,7 @@ const App = {
                 <span>📅</span> ${formattedToday}
               </div>
               <h1 class="text-xl sm:text-3xl font-black leading-tight truncate">
-                ${businessTitle}
+                ${safeBusinessTitle}
               </h1>
               <p class="text-white/90 text-xs sm:text-sm mt-0.5 leading-snug line-clamp-2">
                 ${isServicesMode 
@@ -1271,6 +1288,20 @@ const App = {
       this.settingsActiveTab = this.currentMode === 'services' ? 'services' : 'products';
     }
 
+    const safeBusinessNameProducts = this.escapeHtml(this.sanitizePlainText(settings.businessNameProducts || settings.businessName || 'Mi Pastelería Artesanal'));
+    const safeBusinessNameServices = this.escapeHtml(this.sanitizePlainText(settings.businessNameServices || 'Centro de Estética, Spa & Masajes'));
+    const safeBusinessNameSingle = this.escapeHtml(this.sanitizePlainText(settings.businessName || ''));
+    const safeCurrencySymbol = this.escapeHtml(this.sanitizePlainText(settings.currencySymbol || '$'));
+    const safeBusinessPhone = this.escapeHtml(this.sanitizePlainText(settings.businessPhone || ''));
+    const safeBusinessInstagram = this.escapeHtml(this.sanitizePlainText(settings.businessInstagram || ''));
+    const safeBusinessEmail = this.escapeHtml(this.sanitizePlainText(settings.businessEmail || ''));
+    const safeQuoteNote = this.escapeHtml(this.sanitizePlainText(settings.quoteNote || ''));
+    const safeLogoProducts = this.escapeHtml(this.sanitizePlainText(settings.logoUrlProducts || settings.logoUrl || ''));
+    const safeLogoServices = this.escapeHtml(this.sanitizePlainText(settings.logoUrlServices || ''));
+    const safeAuthUserName = this.escapeHtml(typeof AuthModule !== 'undefined' && AuthModule.currentUser ? (AuthModule.currentUser.displayName || 'Usuario') : 'Usuario');
+    const safeAuthUserEmail = this.escapeHtml(typeof AuthModule !== 'undefined' && AuthModule.currentUser ? (AuthModule.currentUser.email || '') : '');
+    const safeAuthUserPhoto = this.escapeHtml(typeof AuthModule !== 'undefined' && AuthModule.currentUser ? (AuthModule.currentUser.photoURL || '') : '');
+
     container.innerHTML = `
       <div class="max-w-3xl mx-auto space-y-4 sm:space-y-5 pb-8">
 
@@ -1326,7 +1357,7 @@ const App = {
 
               <div>
                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre Comercial de la Pastelería / Taller</label>
-                <input type="text" id="set-business-name-products" value="${settings.businessNameProducts || settings.businessName || 'Mi Pastelería Artesanal'}" placeholder="Ej. Pastelería Dulce Sabor" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                <input type="text" id="set-business-name-products" value="${safeBusinessNameProducts}" placeholder="Ej. Pastelería Dulce Sabor" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
                 <span class="text-[11px] text-gray-400 mt-1 block">Aparece en el encabezado, presupuestos y mensajes cuando estás en modo productos.</span>
               </div>
             </div>
@@ -1366,11 +1397,11 @@ const App = {
 
               <div class="flex flex-col sm:flex-row items-center gap-4">
                 <div class="w-20 h-20 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shadow-xs shrink-0">
-                  <img id="settings-logo-preview-products" src="${settings.logoUrlProducts || settings.logoUrl || 'assets/icons/logo.png'}" alt="Logo Productos" class="w-full h-full object-contain p-1">
+                  <img id="settings-logo-preview-products" src="${this.escapeHtml(settings.logoUrlProducts || settings.logoUrl || 'assets/icons/logo.png')}" alt="Logo Productos" class="w-full h-full object-contain p-1">
                 </div>
 
                 <div class="flex-1 space-y-2 w-full">
-                  <input type="hidden" id="set-business-logo-products" value="${settings.logoUrlProducts || settings.logoUrl || ''}">
+                  <input type="hidden" id="set-business-logo-products" value="${safeLogoProducts}">
                   
                   <div class="flex flex-wrap gap-2">
                     <label class="py-2 px-3.5 bg-white dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-slate-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
@@ -1412,7 +1443,7 @@ const App = {
 
               <div>
                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre del Centro de Estética, Spa o Terapias</label>
-                <input type="text" id="set-business-name-services" value="${settings.businessNameServices || 'Centro de Estética, Spa & Masajes'}" placeholder="Ej. Spa & Belleza Natural" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-teal-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                <input type="text" id="set-business-name-services" value="${safeBusinessNameServices}" placeholder="Ej. Spa & Belleza Natural" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-teal-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
                 <span class="text-[11px] text-gray-400 mt-1 block">Aparece en el encabezado, cotizaciones de sesiones y recordatorios de citas.</span>
               </div>
             </div>
@@ -1457,11 +1488,11 @@ const App = {
 
               <div class="flex flex-col sm:flex-row items-center gap-4">
                 <div class="w-20 h-20 rounded-2xl bg-teal-50/50 dark:bg-slate-800 border border-teal-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shadow-xs shrink-0">
-                  <img id="settings-logo-preview-services" src="${settings.logoUrlServices || 'assets/icons/favicon.png'}" alt="Logo Servicios" class="w-full h-full object-contain p-1">
+                  <img id="settings-logo-preview-services" src="${this.escapeHtml(settings.logoUrlServices || 'assets/icons/favicon.png')}" alt="Logo Servicios" class="w-full h-full object-contain p-1">
                 </div>
 
                 <div class="flex-1 space-y-2 w-full">
-                  <input type="hidden" id="set-business-logo-services" value="${settings.logoUrlServices || ''}">
+                  <input type="hidden" id="set-business-logo-services" value="${safeLogoServices}">
                   
                   <div class="flex flex-wrap gap-2">
                     <label class="py-2 px-3.5 bg-white dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-slate-700 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-slate-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
@@ -1514,7 +1545,7 @@ const App = {
 
               <div id="container-single-business-name" class="${settings.useSameBusinessName ? '' : 'hidden'} pt-2">
                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre Comercial Unificado</label>
-                <input type="text" id="set-business-name-single" value="${settings.businessName || ''}" placeholder="Ej. Mi Negocio Multirubro" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                <input type="text" id="set-business-name-single" value="${safeBusinessNameSingle}" placeholder="Ej. Mi Negocio Multirubro" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
               </div>
             </div>
 
@@ -1527,7 +1558,7 @@ const App = {
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Símbolo de Moneda</label>
-                  <input type="text" id="set-currency-symbol" value="${settings.currencySymbol || '$'}" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 font-bold text-xs text-gray-800 dark:text-gray-100">
+                  <input type="text" id="set-currency-symbol" value="${safeCurrencySymbol}" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 font-bold text-xs text-gray-800 dark:text-gray-100">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Comisión Webpay / POS (%)</label>
@@ -1541,7 +1572,7 @@ const App = {
 
               <div>
                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nota Predeterminada para Cotizaciones</label>
-                <textarea id="set-quote-note" rows="2" placeholder="Ej. Presupuesto válido por 15 días. Para reservar se solicita abono del 50%." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">${settings.quoteNote || ''}</textarea>
+                <textarea id="set-quote-note" rows="2" placeholder="Ej. Presupuesto válido por 15 días. Para reservar se solicita abono del 50%." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">${safeQuoteNote}</textarea>
               </div>
             </div>
 
@@ -1554,15 +1585,15 @@ const App = {
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">WhatsApp / Teléfono</label>
-                  <input type="tel" id="set-business-phone" value="${settings.businessPhone || ''}" placeholder="+56 9 1234 5678" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  <input type="tel" id="set-business-phone" value="${safeBusinessPhone}" placeholder="+56 9 1234 5678" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Instagram / Redes</label>
-                  <input type="text" id="set-business-ig" value="${settings.businessInstagram || ''}" placeholder="@minegocio" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  <input type="text" id="set-business-ig" value="${safeBusinessInstagram}" placeholder="@minegocio" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Email de Contacto</label>
-                  <input type="email" id="set-business-email" value="${settings.businessEmail || ''}" placeholder="contacto@minegocio.cl" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  <input type="email" id="set-business-email" value="${safeBusinessEmail}" placeholder="contacto@minegocio.cl" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
                 </div>
               </div>
             </div>
@@ -1626,15 +1657,15 @@ const App = {
                   ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
                     <div class="flex items-center gap-3">
                       ${AuthModule.currentUser.photoURL ? `
-                        <img src="${AuthModule.currentUser.photoURL}" alt="" class="w-10 h-10 rounded-full ring-2 ring-pink-300">
+                        <img src="${this.escapeHtml(AuthModule.currentUser.photoURL)}" alt="" class="w-10 h-10 rounded-full ring-2 ring-pink-300">
                       ` : `
                         <div class="w-10 h-10 rounded-full bg-pink-600 text-white font-bold flex items-center justify-center">
-                          ${(AuthModule.currentUser.displayName || 'U').charAt(0)}
+                          ${(this.escapeHtml(AuthModule.currentUser.displayName || 'U')).charAt(0)}
                         </div>
                       `}
                       <div>
-                        <h4 class="font-bold text-gray-900 dark:text-gray-100 text-xs">${AuthModule.currentUser.displayName || 'Usuario'}</h4>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400">${AuthModule.currentUser.email}</p>
+                        <h4 class="font-bold text-gray-900 dark:text-gray-100 text-xs">${this.escapeHtml(AuthModule.currentUser.displayName || 'Usuario')}</h4>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">${this.escapeHtml(AuthModule.currentUser.email || '')}</p>
                         <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
                           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sincronización en vivo activa
                         </span>
@@ -1751,9 +1782,9 @@ const App = {
 
     const currentSettings = DB.getSettings();
     const useSameBusinessName = document.getElementById('set-use-same-name')?.checked || false;
-    const nameSingle = (document.getElementById('set-business-name-single')?.value || '').trim();
-    const nameProducts = (document.getElementById('set-business-name-products')?.value || '').trim();
-    const nameServices = (document.getElementById('set-business-name-services')?.value || '').trim();
+    const nameSingle = this.sanitizePlainText(document.getElementById('set-business-name-single')?.value || '');
+    const nameProducts = this.sanitizePlainText(document.getElementById('set-business-name-products')?.value || '');
+    const nameServices = this.sanitizePlainText(document.getElementById('set-business-name-services')?.value || '');
 
     const prodRate = parseFloat(document.getElementById('set-hourly-rate-products')?.value) || 4000;
     const servRate = parseFloat(document.getElementById('set-hourly-rate-services')?.value) || 6000;
@@ -1764,12 +1795,12 @@ const App = {
     const prodName = useSameBusinessName ? nameSingle : (nameProducts || 'Mi Pastelería Artesanal');
     const servName = useSameBusinessName ? nameSingle : (nameServices || 'Centro de Estética, Spa & Masajes');
 
-    const logoProducts = (document.getElementById('set-business-logo-products')?.value || currentSettings.logoUrlProducts || currentSettings.logoUrl || '').trim();
-    const logoServices = (document.getElementById('set-business-logo-services')?.value || currentSettings.logoUrlServices || '').trim();
+    const logoProducts = this.sanitizePlainText(document.getElementById('set-business-logo-products')?.value || currentSettings.logoUrlProducts || currentSettings.logoUrl || '');
+    const logoServices = this.sanitizePlainText(document.getElementById('set-business-logo-services')?.value || currentSettings.logoUrlServices || '');
 
     const newSettings = {
       ...currentSettings,
-      currencySymbol: document.getElementById('set-currency-symbol')?.value.trim() || '$',
+      currencySymbol: this.sanitizePlainText(document.getElementById('set-currency-symbol')?.value || '$') || '$',
       defaultHourlyRate: this.currentMode === 'services' ? servRate : prodRate,
       hourlyRateProducts: prodRate,
       hourlyRateServices: servRate,
@@ -1783,10 +1814,10 @@ const App = {
       businessNameProducts: prodName,
       businessNameServices: servName,
       businessName: useSameBusinessName ? nameSingle : (this.currentMode === 'services' ? servName : prodName),
-      businessPhone: (document.getElementById('set-business-phone')?.value || '').trim(),
-      businessInstagram: (document.getElementById('set-business-ig')?.value || '').trim(),
-      businessEmail: (document.getElementById('set-business-email')?.value || '').trim(),
-      quoteNote: (document.getElementById('set-quote-note')?.value || '').trim(),
+      businessPhone: this.sanitizePlainText(document.getElementById('set-business-phone')?.value || ''),
+      businessInstagram: this.sanitizePlainText(document.getElementById('set-business-ig')?.value || ''),
+      businessEmail: this.sanitizePlainText(document.getElementById('set-business-email')?.value || ''),
+      quoteNote: this.sanitizePlainText(document.getElementById('set-quote-note')?.value || ''),
       logoUrlProducts: logoProducts,
       logoUrlServices: logoServices,
       logoUrl: this.currentMode === 'services' ? logoServices : logoProducts,
@@ -1906,7 +1937,7 @@ const App = {
       logoEl.src = settings.logoUrl || 'assets/icons/logo.png';
     }
     if (nameEl) {
-      nameEl.textContent = settings.businessName || (this.currentMode === 'services' ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal');
+      nameEl.textContent = this.sanitizePlainText(settings.businessName || (this.currentMode === 'services' ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal'));
     }
   },
 
@@ -2013,7 +2044,7 @@ const App = {
       document.body.appendChild(toast);
     }
 
-    toast.innerHTML = `<span>✨</span> <span>${message}</span>`;
+    toast.textContent = `✨ ${message}`;
     toast.classList.remove('-translate-y-12', 'opacity-0');
     toast.classList.add('translate-y-0', 'opacity-100');
 
