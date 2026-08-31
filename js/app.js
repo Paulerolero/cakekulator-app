@@ -40,9 +40,11 @@ const App = {
     // Renderizar pestaña inicial
     this.switchTab('dashboard');
 
-    // Si el usuario entra por primera vez y no ha elegido ambiente, mostrar modal de selección
+    // Si el usuario entra por primera vez sin elegir ambiente, usar el modo productos
+    // como valor por defecto para no bloquear la interfaz con un modal inicial.
     if (!localStorage.getItem('cakekulator_app_mode')) {
-      setTimeout(() => this.showModeSelectionModal(), 350);
+      localStorage.setItem('cakekulator_app_mode', 'products');
+      this.currentMode = 'products';
     }
 
     console.log('Cakekulator cargado correctamente con control de gestos y ambientes separados.');
@@ -71,11 +73,12 @@ const App = {
     this.currentMode = mode;
     localStorage.setItem('cakekulator_app_mode', mode);
     this.applyModeTheme();
+    this.updateHeaderBrand();
     this.closeModeSelectionModal();
     this.renderCurrentTab();
     this.showToast(mode === 'products' 
-      ? '🎂 Ambiente: Venta de Productos (Pastelería)' 
-      : '💆 Ambiente: Prestación de Servicios (Spa & Estética)');
+      ? '🎂 Ambiente: Venta de Productos' 
+      : '💆 Ambiente: Prestación de Servicios');
   },
 
   toggleMode() {
@@ -130,13 +133,14 @@ const App = {
     // Header Title and Subtitle
     const hTitle = document.getElementById('header-brand-title');
     const hName = document.getElementById('header-brand-name');
+    const currentBizSettings = DB.getSettings(this.currentMode);
     if (hTitle) {
       hTitle.innerHTML = isServ 
         ? `Servi<span class="text-teal-600 dark:text-teal-400">kulator</span>` 
         : `Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>`;
     }
     if (hName) {
-      hName.textContent = isServ ? 'Spa & Servicios' : 'Gestión Pastelera';
+      hName.textContent = currentBizSettings.businessName || (isServ ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal');
     }
   },
 
@@ -420,6 +424,96 @@ const App = {
     }
   ],
 
+  getQuickActionsCatalog() {
+    const isServices = this.currentMode === 'services';
+    if (isServices) {
+      return [
+        {
+          id: 'new_quote',
+          title: '+ Nueva Cotización',
+          shortTitle: '+ Cotización',
+          icon: '📋',
+          colorClass: 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border-emerald-200/80 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200',
+          description: 'Abre el creador de cotizaciones para sesiones y protocolos',
+          handler: "App.switchTab('quotes'); setTimeout(() => QuotesModule.openEditor(), 80);"
+        },
+        {
+          id: 'new_recipe',
+          title: '+ Nuevo Servicio',
+          shortTitle: '+ Servicio',
+          icon: '💆',
+          colorClass: 'bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border-teal-200/80 dark:border-teal-800 text-teal-800 dark:text-teal-200',
+          description: 'Crea una ficha de atención con duración, honorarios e insumos',
+          handler: "App.switchTab('recipes'); setTimeout(() => RecipesModule.openEditor(), 80);"
+        },
+        {
+          id: 'new_customer',
+          title: '+ Nuevo Cliente Spa',
+          shortTitle: '+ Cliente',
+          icon: '👥',
+          colorClass: 'bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/40 dark:hover:bg-pink-900/50 border-pink-200/80 dark:border-pink-800 text-pink-800 dark:text-pink-200',
+          description: 'Registra un cliente con ficha estética, zonas de tensión y notas',
+          handler: "App.switchTab('customers'); setTimeout(() => CustomersModule.openCustomerEditor(), 80);"
+        },
+        {
+          id: 'simulator',
+          title: 'Simular Sesión',
+          shortTitle: 'Simulador',
+          icon: '⚡',
+          colorClass: 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border-blue-200/80 dark:border-blue-800 text-blue-800 dark:text-blue-200',
+          description: 'Calcula rentabilidad neta por sesión, hora o paquetes',
+          handler: "App.switchTab('simulator');"
+        },
+        {
+          id: 'new_ingredient',
+          title: '+ Insumo de Cabina',
+          shortTitle: '+ Insumo',
+          icon: '🧴',
+          colorClass: 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 border-amber-200/80 dark:border-amber-800 text-amber-800 dark:text-amber-200',
+          description: 'Registra cremas, aceites, sueros o desechables por aplicación',
+          handler: "App.switchTab('ingredients'); setTimeout(() => IngredientsModule.openModal(), 80);"
+        },
+        {
+          id: 'scan_receipt_ocr',
+          title: 'Escanear Boleta',
+          shortTitle: 'Boleta OCR',
+          icon: '🧾',
+          colorClass: 'bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/40 dark:hover:bg-cyan-900/50 border-cyan-200/80 dark:border-cyan-800 text-cyan-800 dark:text-cyan-200',
+          description: 'Escanea boletas de compras para actualizar costos de insumos',
+          handler: "App.switchTab('ingredients'); setTimeout(() => ReceiptScannerModule.openModal(), 80);"
+        },
+        {
+          id: 'market_radar',
+          title: 'Radar de Insumos',
+          shortTitle: 'Ofertas',
+          icon: '🛒',
+          colorClass: 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/50 border-orange-200/80 dark:border-orange-800 text-orange-800 dark:text-orange-200',
+          description: 'Compara precios en distribuidoras y tiendas mayoristas',
+          handler: "App.switchTab('market-radar');"
+        },
+        {
+          id: 'view_finances',
+          title: 'Ver Finanzas Spa',
+          shortTitle: 'Finanzas',
+          icon: '📊',
+          colorClass: 'bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border-teal-200/80 dark:border-teal-800 text-teal-800 dark:text-teal-200',
+          description: 'Revisa ingresos por servicios, ticket promedio y rentabilidad',
+          handler: "App.switchTab('finance');"
+        },
+        {
+          id: 'settings_workshop',
+          title: 'Ajustes del Centro',
+          shortTitle: 'Ajustes',
+          icon: '⚙️',
+          colorClass: 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200',
+          description: 'Configura valor hora, cabina y datos del centro',
+          handler: "App.switchTab('settings');"
+        }
+      ];
+    }
+    return this.QUICK_ACTIONS_CATALOG;
+  },
+
   getEnabledQuickActionIds() {
     const settings = DB.getSettings();
     if (Array.isArray(settings.enabledQuickActions) && settings.enabledQuickActions.length > 0) {
@@ -449,6 +543,7 @@ const App = {
     }
 
     const currentEnabled = this.getEnabledQuickActionIds();
+    const actionCatalog = this.getQuickActionsCatalog();
 
     modal.className = 'fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-fade-in';
     modal.innerHTML = `
@@ -479,25 +574,25 @@ const App = {
           <span class="text-[11px] text-gray-500 font-medium">Atajos rápidos:</span>
           <div class="flex items-center gap-1.5">
             <button 
-              type="button"
+              type="button" 
               onclick="App.setQuickActionsPreset('default')" 
               class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-[11px] font-bold text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
             >
               Básicos (4)
             </button>
             <button 
-              type="button"
+              type="button" 
               onclick="App.setQuickActionsPreset('all')" 
               class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-[11px] font-bold text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-slate-700 transition cursor-pointer shadow-2xs"
             >
-              Todos (10)
+              Todos
             </button>
           </div>
         </div>
 
         <!-- Lista de Acciones con Checkboxes -->
         <form id="quick-actions-form" onsubmit="event.preventDefault(); App.saveQuickActionsForm();" class="p-4 sm:p-5 overflow-y-auto flex-1 space-y-2 custom-scrollbar">
-          ${this.QUICK_ACTIONS_CATALOG.map(action => {
+          ${actionCatalog.map(action => {
             const isChecked = currentEnabled.includes(action.id);
             return `
               <label class="qa-item-label flex items-start gap-3 p-3 rounded-2xl border ${isChecked ? 'bg-pink-50/50 dark:bg-pink-950/20 border-pink-300 dark:border-pink-800/80 shadow-2xs' : 'bg-gray-50/60 dark:bg-slate-900/40 border-gray-100 dark:border-slate-700/60'} hover:border-pink-300 transition cursor-pointer select-none">
@@ -602,472 +697,353 @@ const App = {
     const quotes = DB.getQuotes();
     const customers = DB.getCustomers();
     const settings = DB.getSettings();
-    const pendingQuotes = quotes.filter(q => q.status === 'draft' || q.status === 'sent');
 
-    if (isServicesMode) {
-      // ==========================================
-      // Dashboard Modo Servicios & Spa (Luxe Emerald & Nordic Aesthetic)
-      // ==========================================
-      const businessTitle = settings.businessName || 'Centro de Estética, Spa & Masajes';
+    const now = new Date();
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const formattedToday = now.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
 
-      container.innerHTML = `
-        <!-- Hero Banner Spa & Servicios -->
-        <div class="services-hero-banner rounded-2xl sm:rounded-3xl p-4 sm:p-7 text-white shadow-md mb-4 sm:mb-6 relative overflow-hidden">
-          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3 sm:gap-5 max-w-2xl">
-              ${settings.logoUrl ? `
-                <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-white/95 p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
-                  <img src="${settings.logoUrl}" alt="Logo" class="w-full h-full object-contain">
-                </div>
-              ` : `
-                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center text-2xl sm:text-3xl shrink-0 ring-1 ring-white/30">
-                  💆
-                </div>
-              `}
-              <div class="flex-1 min-w-0">
-                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full hero-badge text-[10px] sm:text-xs font-bold mb-1.5 shadow-xs">
-                  <span class="text-xs">💆</span>
-                  <span>Ambiente: Prestación de Servicios & Spa</span>
-                </div>
-                <h1 class="text-xl sm:text-2xl font-black leading-tight truncate text-white">
-                  ${businessTitle}
-                </h1>
-                <p class="hero-subtitle text-[11px] sm:text-xs mt-1 leading-snug line-clamp-2 sm:line-clamp-none font-medium">
-                  Costea con precisión duración en cabina, insumos por aplicación, honorarios y paquetes de sesiones.
-                </p>
-              </div>
-            </div>
+    const businessTitle = settings.businessName || (isServicesMode ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal');
 
-            <!-- Botones de Acción Rápida en Hero -->
-            <div class="flex items-center gap-2 shrink-0 pt-1 md:pt-0">
-              <button onclick="RecipesModule.openEditor()" class="px-3.5 py-2 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-xs font-bold text-white transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer ring-1 ring-white/30">
-                <span>✨</span> Nuevo Servicio
-              </button>
-              <button onclick="App.switchTab('simulator')" class="px-3.5 py-2 rounded-xl bg-emerald-400/25 hover:bg-emerald-400/35 text-white text-xs font-bold transition flex items-center gap-1.5 border border-emerald-300/40 active:scale-95 cursor-pointer">
-                <span>⚡</span> Simular Precios
-              </button>
-            </div>
-          </div>
-          <div class="absolute -right-4 -bottom-6 opacity-15 sm:opacity-20 text-7xl sm:text-8xl pointer-events-none select-none">
-            💆
-          </div>
-        </div>
+    // Acciones Rápidas Seleccionadas por el Usuario
+    const enabledActionIds = this.getEnabledQuickActionIds();
+    const actionCatalog = this.getQuickActionsCatalog();
+    const enabledActions = enabledActionIds
+      .map(id => actionCatalog.find(a => a.id === id))
+      .filter(Boolean);
 
-        <!-- Métricas Clave (KPIs) de Servicios -->
-        <div class="grid grid-cols-3 gap-2 sm:gap-3.5 mb-4 sm:mb-6">
-          <div onclick="App.switchTab('recipes')" role="button" tabindex="0" title="Ver Servicios" class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-teal-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-teal-400 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition font-bold">
-              💆
-            </div>
-            <div class="min-w-0">
-              <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold block truncate">Servicios / Fichas</span>
-              <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${recipes.length}</span>
-            </div>
-          </div>
+    // ==========================================
+    // Calcular Fechas Importantes & Seguimiento
+    // ==========================================
+    const upcomingEvents = (typeof CustomersModule !== 'undefined' && typeof CustomersModule.getUpcomingEvents === 'function')
+      ? CustomersModule.getUpcomingEvents(30)
+      : [];
+    const importantEvents = [];
 
-          <div onclick="App.switchTab('ingredients')" role="button" tabindex="0" title="Ver Insumos de Cabina" class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-teal-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-emerald-400 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition font-bold">
-              🧴
-            </div>
-            <div class="min-w-0">
-              <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold block truncate">Insumos de Cabina</span>
-              <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${ingredients.length}</span>
-            </div>
-          </div>
+    // 1. Entregas / Citas de Pedidos Aprobados
+    quotes.forEach(q => {
+      if (q.status === 'approved' && q.eventDate) {
+        const parts = q.eventDate.split('-');
+        if (parts.length === 3) {
+          const eventDateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+          const diffTime = eventDateObj.getTime() - todayMidnight.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-          <div onclick="App.switchTab('quotes')" role="button" tabindex="0" title="Ver Cotizaciones" class="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-teal-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-teal-400 hover:scale-[1.02] transition duration-200 cursor-pointer flex items-center gap-2.5 sm:gap-3.5 group select-none">
-            <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-400 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition font-bold">
-              💬
-            </div>
-            <div class="min-w-0">
-              <span class="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 font-semibold block truncate">Cotizaciones</span>
-              <span class="text-base sm:text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">${pendingQuotes.length}</span>
-            </div>
-          </div>
-        </div>
+          if (diffDays >= -2 && diffDays <= 45) {
+            importantEvents.push({
+              type: 'delivery',
+              title: q.eventName || (isServicesMode ? ('Cita ' + (q.code || '')) : ('Pedido ' + (q.code || ''))),
+              customerName: q.customerName || 'Cliente',
+              customerPhone: q.customerPhone || '',
+              date: q.eventDate,
+              formattedDate: eventDateObj.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }),
+              daysLeft: diffDays,
+              amount: Number(q.total) || 0,
+              deposit: Number(q.depositAmount) || 0,
+              balance: Number(q.remainingBalance) || 0,
+              quoteId: q.id,
+              code: q.code || (isServicesMode ? 'COT-S' : 'COT'),
+              statusLabel: isServicesMode ? 'Cita Agendada' : 'Entrega Aceptada'
+            });
+          }
+        }
+      }
 
-        <!-- Simulador Integrado en Inicio -->
-        <div id="dashboard-simulator-container" class="mb-4 sm:mb-6"></div>
-
-        <!-- Fichas de Servicios Rápidas -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-teal-100 dark:border-slate-800 shadow-sm mb-4 sm:mb-6">
-          <div class="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 class="font-black text-gray-900 dark:text-gray-100 text-sm sm:text-base flex items-center gap-1.5">
-              <span>💆</span> Protocolos & Servicios de Atención
-            </h3>
-            <button onclick="App.switchTab('recipes')" class="text-xs text-teal-700 dark:text-teal-300 font-bold hover:underline">
-              Ver todos →
-            </button>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
-            ${recipes.slice(0, 6).map(r => {
-              const costs = Calculator.calculateRecipeFullCosts(r);
-              return `
-                <div class="flex items-center justify-between p-3 rounded-xl sm:rounded-2xl bg-gray-50/80 dark:bg-slate-800/60 hover:bg-teal-50/60 dark:hover:bg-slate-800 transition cursor-pointer border border-gray-100 dark:border-slate-700 group shadow-2xs hover:border-teal-300" onclick="SimulatorModule.loadRecipeForSimulation('${r.id}')" title="Simular rentabilidad">
-                  <div class="flex items-center gap-2 truncate">
-                    <span class="text-lg group-hover:scale-110 transition">💆</span>
-                    <div class="truncate">
-                      <h4 class="font-bold text-xs text-gray-800 dark:text-gray-200 truncate group-hover:text-teal-700 dark:group-hover:text-teal-300 transition">${r.name}</h4>
-                      <span class="text-[10px] text-gray-500 dark:text-gray-400">Duración: ${r.durationMinutes || 60} min · Costo: ${Calculator.formatCurrency(costs.costPerUnit)}</span>
-                    </div>
-                  </div>
-                  <div class="text-right shrink-0">
-                    <span class="text-xs font-black text-emerald-700 dark:text-emerald-400 block">${Calculator.formatCurrency(costs.suggestedUnitPrice)}</span>
-                    <span class="text-[10px] text-gray-400 group-hover:text-teal-600 font-semibold">Simular ↗</span>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
-      setTimeout(() => {
-        SimulatorModule.render('dashboard-simulator-container');
-      }, 50);
-    } else {
-      // ==========================================
-      // Dashboard Modo Productos (Pastelería con Clientes, Agenda y Acciones Rápidas)
-      // ==========================================
-      const now = new Date();
-      const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const formattedToday = now.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
-
-      // Acciones Rápidas Seleccionadas por el Usuario
-      const enabledActionIds = this.getEnabledQuickActionIds();
-      const enabledActions = enabledActionIds
-        .map(id => this.QUICK_ACTIONS_CATALOG.find(a => a.id === id))
-        .filter(Boolean);
-
-      // ==========================================
-      // Calcular Fechas Importantes & Seguimiento
-      // ==========================================
-      const upcomingEvents = (typeof CustomersModule !== 'undefined' && typeof CustomersModule.getUpcomingEvents === 'function')
-        ? CustomersModule.getUpcomingEvents(30)
-        : [];
-      const importantEvents = [];
-
-      // 1. Entregas de Pedidos Aprobados / Aceptados
-      quotes.forEach(q => {
-        if (q.status === 'approved' && q.eventDate) {
+      // 2. Cotizaciones Enviadas sin Respuesta (Pendientes)
+      if (q.status === 'sent') {
+        let diffDays = null;
+        let formattedDate = 'Fecha pendiente';
+        if (q.eventDate) {
           const parts = q.eventDate.split('-');
           if (parts.length === 3) {
             const eventDateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
             const diffTime = eventDateObj.getTime() - todayMidnight.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays >= -2 && diffDays <= 45) {
-              importantEvents.push({
-                type: 'delivery',
-                title: q.eventName || 'Pedido ' + (q.code || ''),
-                customerName: q.customerName || 'Cliente',
-                customerPhone: q.customerPhone || '',
-                date: q.eventDate,
-                formattedDate: eventDateObj.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }),
-                daysLeft: diffDays,
-                amount: Number(q.total) || 0,
-                deposit: Number(q.depositAmount) || 0,
-                balance: Number(q.remainingBalance) || 0,
-                quoteId: q.id,
-                code: q.code || 'COT',
-                statusLabel: 'Entrega Aceptada'
-              });
-            }
+            diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            formattedDate = eventDateObj.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
           }
         }
 
-        // 2. Cotizaciones Enviadas sin Respuesta (Pendientes)
-        if (q.status === 'sent') {
-          let diffDays = null;
-          let formattedDate = 'Fecha pendiente';
-          if (q.eventDate) {
-            const parts = q.eventDate.split('-');
-            if (parts.length === 3) {
-              const eventDateObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-              const diffTime = eventDateObj.getTime() - todayMidnight.getTime();
-              diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-              formattedDate = eventDateObj.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' });
-            }
-          }
+        importantEvents.push({
+          type: 'pending_quote',
+          title: q.eventName || (isServicesMode ? ('Presupuesto ' + (q.code || '')) : ('Presupuesto ' + (q.code || ''))),
+          customerName: q.customerName || 'Cliente',
+          customerPhone: q.customerPhone || '',
+          date: q.eventDate || '',
+          formattedDate,
+          daysLeft: diffDays,
+          amount: Number(q.total) || 0,
+          quoteId: q.id,
+          code: q.code || (isServicesMode ? 'COT-S' : 'COT'),
+          statusLabel: 'Esperando Respuesta'
+        });
+      }
+    });
 
-          importantEvents.push({
-            type: 'pending_quote',
-            title: q.eventName || 'Presupuesto ' + (q.code || ''),
-            customerName: q.customerName || 'Cliente',
-            customerPhone: q.customerPhone || '',
-            date: q.eventDate || '',
-            formattedDate,
-            daysLeft: diffDays,
-            amount: Number(q.total) || 0,
-            quoteId: q.id,
-            code: q.code || 'COT',
-            statusLabel: 'Esperando Respuesta'
-          });
-        }
-      });
+    // 3. Fechas Especiales & Cumpleaños (CRM) - Solo Clientes Favoritos ⭐
+    upcomingEvents.forEach(evt => {
+      if (evt.isFavorite) {
+        importantEvents.push({
+          type: 'birthday',
+          title: evt.title,
+          customerName: evt.customerName,
+          customerPhone: evt.customerPhone || '',
+          customerId: evt.customerId,
+          formattedDate: evt.formattedDate,
+          daysLeft: evt.daysLeft,
+          isFavorite: true,
+          statusLabel: isServicesMode ? (evt.type === 'birthday' ? 'Cumpleaños' : (evt.type === 'control' ? 'Control de Sesión' : 'Fecha Especial')) : (evt.type === 'birthday' ? 'Cumpleaños' : 'Aniversario')
+        });
+      }
+    });
 
-      // 3. Fechas Especiales & Cumpleaños (CRM) - Solo Clientes Favoritos ⭐
-      upcomingEvents.forEach(evt => {
-        if (evt.isFavorite) {
-          importantEvents.push({
-            type: 'birthday',
-            title: evt.title,
-            customerName: evt.customerName,
-            customerPhone: evt.customerPhone || '',
-            customerId: evt.customerId,
-            formattedDate: evt.formattedDate,
-            daysLeft: evt.daysLeft,
-            isFavorite: true,
-            statusLabel: evt.type === 'birthday' ? 'Cumpleaños' : 'Aniversario'
-          });
-        }
-      });
+    // Ordenar por urgencia
+    importantEvents.sort((a, b) => {
+      const da = a.daysLeft !== null ? a.daysLeft : 999;
+      const db = b.daysLeft !== null ? b.daysLeft : 999;
+      return da - db;
+    });
 
-      // Ordenar por urgencia
-      importantEvents.sort((a, b) => {
-        const da = a.daysLeft !== null ? a.daysLeft : 999;
-        const db = b.daysLeft !== null ? b.daysLeft : 999;
-        return da - db;
-      });
+    const deliveriesCount = importantEvents.filter(e => e.type === 'delivery').length;
+    const pendingSentCount = importantEvents.filter(e => e.type === 'pending_quote').length;
+    const birthdaysCount = importantEvents.filter(e => e.type === 'birthday').length;
 
-      const deliveriesCount = importantEvents.filter(e => e.type === 'delivery').length;
-      const pendingSentCount = importantEvents.filter(e => e.type === 'pending_quote').length;
-      const birthdaysCount = importantEvents.filter(e => e.type === 'birthday').length;
-
-      container.innerHTML = `
-        <!-- Hero Banner Pastelero Dinámico -->
-        <div class="products-hero-banner rounded-3xl p-5 sm:p-7 text-white shadow-lg mb-5 sm:mb-6 relative overflow-hidden">
-          <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3.5 sm:gap-5 min-w-0">
-              ${settings.logoUrl ? `
-                <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
-                  <img src="${settings.logoUrl}" alt="Logo ${settings.businessName || ''}" class="w-full h-full object-contain">
-                </div>
-              ` : `
-                <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/30 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-inner">
-                  🎂
-                </div>
-              `}
-              <div class="min-w-0">
-                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-[10px] sm:text-xs font-semibold text-pink-100 mb-1 capitalize">
-                  <span>📅</span> ${formattedToday}
-                </div>
-                <h1 class="text-xl sm:text-3xl font-black leading-tight truncate">
-                  ${settings.businessName || 'Mi Pastelería Artesanal'}
-                </h1>
-                <p class="text-pink-100 text-xs sm:text-sm mt-0.5 leading-snug line-clamp-2">
-                  Centro de control pastelero: Costea, presupuesta, cotiza y gestiona a tus clientes en un solo lugar.
-                </p>
+    container.innerHTML = `
+      <!-- Hero Banner Dinámico -->
+      <div class="${isServicesMode ? 'services-hero-banner' : 'products-hero-banner'} rounded-3xl p-5 sm:p-7 text-white shadow-lg mb-5 sm:mb-6 relative overflow-hidden">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5 sm:gap-5 min-w-0">
+            ${settings.logoUrl ? `
+              <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
+                <img src="${settings.logoUrl}" alt="Logo ${businessTitle}" class="w-full h-full object-contain">
               </div>
+            ` : `
+              <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/30 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-inner">
+                ${isServicesMode ? '💆' : '🎂'}
+              </div>
+            `}
+            <div class="min-w-0">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-[10px] sm:text-xs font-semibold text-white mb-1 capitalize">
+                <span>📅</span> ${formattedToday}
+              </div>
+              <h1 class="text-xl sm:text-3xl font-black leading-tight truncate">
+                ${businessTitle}
+              </h1>
+              <p class="text-white/90 text-xs sm:text-sm mt-0.5 leading-snug line-clamp-2">
+                ${isServicesMode 
+                  ? 'Centro de control de servicios & spa: Costea sesiones, protocolos de cabina, cotiza y gestiona a tus clientes en un solo lugar.'
+                  : 'Centro de control pastelero: Costea, presupuesta, cotiza y gestiona a tus clientes en un solo lugar.'}
+              </p>
             </div>
+          </div>
 
-            <!-- Acceso Directo de Configuración del Negocio -->
-            <button 
-              type="button" 
-              onclick="App.switchTab('settings')" 
-              class="self-start md:self-center px-4 py-2 bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md border border-white/30 rounded-2xl text-xs font-bold transition flex items-center gap-2 text-white shadow-2xs cursor-pointer"
-            >
-              <span>⚙️</span> Personalizar Taller
-            </button>
+          <!-- Acceso Directo de Configuración del Negocio -->
+          <button 
+            type="button" 
+            onclick="App.switchTab('settings')" 
+            class="self-start md:self-center px-4 py-2 bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md border border-white/30 rounded-2xl text-xs font-bold transition flex items-center gap-2 text-white shadow-2xs cursor-pointer"
+          >
+            <span>⚙️</span> ${isServicesMode ? 'Personalizar Centro' : 'Personalizar Taller'}
+          </button>
+        </div>
+        <div class="absolute -right-4 -bottom-6 opacity-15 sm:opacity-20 text-7xl sm:text-9xl pointer-events-none select-none">
+          ${isServicesMode ? '💆' : '🧁'}
+        </div>
+      </div>
+
+      <!-- Barra de Acciones Rápidas (⚡ Personalizable por el usuario) -->
+      <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 mb-5 sm:mb-6 shadow-xs">
+        <div class="flex items-center justify-between gap-2 mb-2.5 px-1">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
+            <span>⚡</span> Acciones Rápidas
+          </span>
+          <button 
+            type="button" 
+            onclick="App.openQuickActionsConfigModal()" 
+            class="text-[11px] text-pink-600 dark:text-pink-400 font-bold hover:underline flex items-center gap-1 cursor-pointer bg-pink-50/70 dark:bg-pink-950/40 hover:bg-pink-100 dark:hover:bg-pink-900/50 px-2.5 py-1 rounded-xl border border-pink-200/80 dark:border-pink-800 transition shadow-2xs active:scale-95"
+            title="Elegir qué botones ver en acciones rápidas"
+          >
+            <span>⚙️</span> Personalizar
+          </button>
+        </div>
+        
+        ${enabledActions.length === 0 ? `
+          <div class="text-center py-4 text-xs text-gray-400">
+            No tienes acciones rápidas seleccionadas. 
+            <button onclick="App.openQuickActionsConfigModal()" class="text-pink-600 font-bold underline ml-1">Configurar atajos</button>
           </div>
-          <div class="absolute -right-4 -bottom-6 opacity-15 sm:opacity-20 text-7xl sm:text-9xl pointer-events-none select-none">
-            🧁
+        ` : `
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5">
+            ${enabledActions.map(action => `
+              <button 
+                type="button" 
+                onclick="${action.handler}"
+                class="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl ${action.colorClass} border text-xs font-bold transition flex items-center gap-2 group active:scale-95 cursor-pointer shadow-2xs text-left"
+              >
+                <span class="text-base sm:text-lg group-hover:scale-110 transition shrink-0">${action.icon}</span>
+                <span class="truncate">${action.title}</span>
+              </button>
+            `).join('')}
           </div>
+        `}
+      </div>
+
+      <!-- Botonera Compacta de Módulos (Keypad de Navegación a los 8 módulos) -->
+      <div class="mb-5 sm:mb-6">
+        <div class="flex items-center justify-between gap-2 mb-2.5 px-1">
+          <h2 class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+            <span>✨</span> Módulos de ${isServicesMode ? 'Servikulator' : 'Cakekulator'}
+          </h2>
+          <span class="text-[11px] text-gray-400">Acceso rápido</span>
         </div>
 
-        <!-- Barra de Acciones Rápidas (⚡ Personalizable por el usuario) -->
-        <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 dark:border-slate-700 mb-5 sm:mb-6 shadow-xs">
-          <div class="flex items-center justify-between gap-2 mb-2.5 px-1">
-            <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
-              <span>⚡</span> Acciones Rápidas
-            </span>
-            <button 
-              type="button" 
-              onclick="App.openQuickActionsConfigModal()" 
-              class="text-[11px] text-pink-600 dark:text-pink-400 font-bold hover:underline flex items-center gap-1 cursor-pointer bg-pink-50/70 dark:bg-pink-950/40 hover:bg-pink-100 dark:hover:bg-pink-900/50 px-2.5 py-1 rounded-xl border border-pink-200/80 dark:border-pink-800 transition shadow-2xs active:scale-95"
-              title="Elegir qué botones ver en acciones rápidas"
-            >
-              <span>⚙️</span> Personalizar
-            </button>
-          </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
           
-          ${enabledActions.length === 0 ? `
-            <div class="text-center py-4 text-xs text-gray-400">
-              No tienes acciones rápidas seleccionadas. 
-              <button onclick="App.openQuickActionsConfigModal()" class="text-pink-600 font-bold underline ml-1">Configurar atajos</button>
+          <!-- 1. Cotizaciones -->
+          <button 
+            type="button"
+            onclick="App.switchTab('quotes')" 
+            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-emerald-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
+          >
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
+              📋
             </div>
-          ` : `
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5">
-              ${enabledActions.map(action => `
-                <button 
-                  type="button" 
-                  onclick="${action.handler}"
-                  class="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl ${action.colorClass} border text-xs font-bold transition flex items-center gap-2 group active:scale-95 cursor-pointer shadow-2xs text-left"
-                >
-                  <span class="text-base sm:text-lg group-hover:scale-110 transition shrink-0">${action.icon}</span>
-                  <span class="truncate">${action.title}</span>
-                </button>
-              `).join('')}
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Cotizaciones</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${quotes.length} registradas</span>
             </div>
-          `}
+          </button>
+
+          <!-- 2. Clientes -->
+          <button 
+            type="button"
+            onclick="App.switchTab('customers')" 
+            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-pink-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
+          >
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
+              👥
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Clientes</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${customers.length} perfiles</span>
+            </div>
+          </button>
+
+          <!-- 3. Servicios / Recetas -->
+          <button 
+            type="button"
+            onclick="App.switchTab('recipes')" 
+            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-purple-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
+          >
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
+              ${isServicesMode ? '💆' : '🎂'}
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">${isServicesMode ? 'Servicios' : 'Recetas'}</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${recipes.length} ${isServicesMode ? 'servicios' : 'fichas'}</span>
+            </div>
+          </button>
+
+          <!-- 4. Insumos -->
+          <button 
+            type="button"
+            onclick="App.switchTab('ingredients')" 
+            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-amber-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
+          >
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
+              ${isServicesMode ? '🧴' : '📦'}
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">${isServicesMode ? 'Insumos Cabina' : 'Insumos'}</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${ingredients.length} ${isServicesMode ? 'insumos' : 'materias'}</span>
+            </div>
+          </button>
+
+          <!-- 5. Simulador -->
+          <button 
+            type="button"
+            onclick="App.switchTab('simulator')" 
+            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-blue-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
+          >
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
+              🧮
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Simulador</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${isServicesMode ? 'Sesiones y paquetes' : 'Precios y márgenes'}</span>
+            </div>
+          </button>
+
+          <!-- 6. Ofertas -->
+          <button 
+            type="button"
+            onclick="App.switchTab('market-radar')" 
+            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-orange-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
+          >
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
+              🛒
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Ofertas</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">Supermercados</span>
+            </div>
+          </button>
+
+          <!-- 7. Finanzas -->
+          <button 
+            type="button"
+            onclick="App.switchTab('finance')" 
+            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-teal-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
+          >
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
+              📊
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Finanzas</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">KPIs y costos</span>
+            </div>
+          </button>
+
+          <!-- 8. Ajustes -->
+          <button 
+            type="button"
+            onclick="App.switchTab('settings')" 
+            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-pink-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
+          >
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-200 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
+              ⚙️
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Ajustes</span>
+              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${isServicesMode ? 'Centro y nube' : 'Taller y nube'}</span>
+            </div>
+          </button>
+
         </div>
+      </div>
 
-        <!-- Botonera Compacta de Módulos (Keypad de Navegación) -->
-        <div class="mb-5 sm:mb-6">
-          <div class="flex items-center justify-between gap-2 mb-2.5 px-1">
-            <h2 class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-              <span>✨</span> Módulos de Cakekulator
-            </h2>
-            <span class="text-[11px] text-gray-400">Acceso rápido</span>
-          </div>
-
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
-            
-            <!-- 1. Cotizaciones -->
-            <button 
-              type="button"
-              onclick="App.switchTab('quotes')" 
-              class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-emerald-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-            >
-              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-                📋
-              </div>
-              <div class="min-w-0 flex-1">
-                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Cotizaciones</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${quotes.length} registradas</span>
-              </div>
-            </button>
-
-            <!-- 2. Clientes -->
-            <button 
-              type="button"
-              onclick="App.switchTab('customers')" 
-              class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-pink-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-            >
-              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-                👥
-              </div>
-              <div class="min-w-0 flex-1">
-                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Clientes</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${customers.length} perfiles</span>
-              </div>
-            </button>
-
-            <!-- 3. Recetas -->
-            <button 
-              type="button"
-              onclick="App.switchTab('recipes')" 
-              class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-purple-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-            >
-              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-                🎂
-              </div>
-              <div class="min-w-0 flex-1">
-                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Recetas</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${recipes.length} fichas</span>
-              </div>
-            </button>
-
-            <!-- 4. Insumos -->
-            <button 
-              type="button"
-              onclick="App.switchTab('ingredients')" 
-              class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-amber-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-            >
-              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-                📦
-              </div>
-              <div class="min-w-0 flex-1">
-                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Insumos</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${ingredients.length} materias</span>
-              </div>
-            </button>
-
-            <!-- 5. Simulador -->
-            <button 
-              type="button"
-              onclick="App.switchTab('simulator')" 
-              class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-blue-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-            >
-              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-                🧮
-              </div>
-              <div class="min-w-0 flex-1">
-                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Simulador</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">Precios y márgenes</span>
-              </div>
-            </button>
-
-            <!-- 6. Ofertas -->
-            <button 
-              type="button"
-              onclick="App.switchTab('market-radar')" 
-              class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-orange-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-            >
-              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-                🛒
-              </div>
-              <div class="min-w-0 flex-1">
-                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Ofertas</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">Supermercados</span>
-              </div>
-            </button>
-
-            <!-- 7. Finanzas -->
-            <button 
-              type="button"
-              onclick="App.switchTab('finance')" 
-              class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-teal-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-            >
-              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-                📊
-              </div>
-              <div class="min-w-0 flex-1">
-                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Finanzas</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">KPIs y costos</span>
-              </div>
-            </button>
-
-            <!-- 8. Ajustes -->
-            <button 
-              type="button"
-              onclick="App.switchTab('settings')" 
-              class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-pink-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-            >
-              <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-200 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-                ⚙️
-              </div>
-              <div class="min-w-0 flex-1">
-                <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Ajustes</span>
-                <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">Taller y nube</span>
-              </div>
-            </button>
-
-          </div>
-        </div>
-
-      <!-- Nuevo Apartado: 📅 Agenda de Fechas Importantes & Seguimiento -->
-      <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-pink-100 dark:border-slate-700 shadow-xs mb-5 sm:mb-6">
+      <!-- Agenda de Fechas Importantes & Seguimiento -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-gray-200/80 dark:border-slate-700 shadow-xs mb-5 sm:mb-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-100 dark:border-slate-700">
           <div>
             <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <span>📅</span> Agenda & Fechas Importantes
             </h3>
             <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-              Entregas de pedidos agendados, cotizaciones sin respuesta y cumpleaños de clientes.
+              ${isServicesMode 
+                ? 'Citas agendadas en cabina, cotizaciones sin respuesta y fechas de clientes.'
+                : 'Entregas de pedidos agendados, cotizaciones sin respuesta y cumpleaños de clientes.'}
             </p>
           </div>
 
           <!-- Píldoras de Conteo de Alertas -->
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center gap-1">
-              <span>🚚</span> ${deliveriesCount} Entregas
+              <span>${isServicesMode ? '💆' : '🚚'}</span> ${deliveriesCount} ${isServicesMode ? 'Citas Agendadas' : 'Entregas'}
             </span>
             <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60 flex items-center gap-1">
               <span>⏳</span> ${pendingSentCount} Por Confirmar
             </span>
             <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-pink-50 dark:bg-pink-950/50 text-pink-700 dark:text-pink-300 border border-pink-200/60 dark:border-pink-800/60 flex items-center gap-1">
-              <span>⭐</span> ${birthdaysCount} Favoritos VIP
+              <span>⭐</span> ${birthdaysCount} ${isServicesMode ? 'Clientes VIP' : 'Favoritos VIP'}
             </span>
           </div>
         </div>
@@ -1075,7 +1051,7 @@ const App = {
         ${importantEvents.length === 0 ? `
           <div class="text-center py-8 text-xs text-gray-400 dark:text-gray-500">
             <span class="text-3xl block mb-2">🎉</span>
-            ¡Estás completamente al día! No tienes entregas pendientes ni fechas de clientes favoritos este mes.
+            ¡Estás completamente al día! No tienes ${isServicesMode ? 'citas' : 'entregas'} pendientes ni fechas de clientes favoritos este mes.
           </div>
         ` : `
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -1091,7 +1067,7 @@ const App = {
               if (isDelivery) {
                 cardBg = 'bg-emerald-50/40 dark:bg-slate-900/60 border-emerald-200/70 dark:border-slate-700 hover:border-emerald-400';
                 badgeBg = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60';
-                icon = '🚚';
+                icon = isServicesMode ? '💆' : '🚚';
               } else if (isPending) {
                 cardBg = 'bg-amber-50/40 dark:bg-slate-900/60 border-amber-200/70 dark:border-slate-700 hover:border-amber-400';
                 badgeBg = 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/60';
@@ -1105,7 +1081,7 @@ const App = {
               let daysBadgeHtml = '';
               if (evt.daysLeft !== null && evt.daysLeft !== undefined) {
                 if (evt.daysLeft === 0) {
-                  daysBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">¡Entrega Hoy!</span>`;
+                  daysBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">${isServicesMode ? '¡Cita Hoy!' : '¡Entrega Hoy!'}</span>`;
                 } else if (evt.daysLeft === 1) {
                   daysBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-500 text-white">¡Mañana!</span>`;
                 } else if (evt.daysLeft < 0) {
@@ -1154,7 +1130,7 @@ const App = {
                           type="button" 
                           onclick="App.sendWhatsAppDeliveryCoordination('${evt.customerPhone}', '${evt.customerName}', '${evt.title}', '${evt.formattedDate}')"
                           class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-[11px] transition shadow-2xs flex items-center gap-1 cursor-pointer"
-                          title="Coordinar entrega por WhatsApp"
+                          title="${isServicesMode ? 'Coordinar cita por WhatsApp' : 'Coordinar entrega por WhatsApp'}"
                         >
                           <span>💬</span> Coordinar
                         </button>
@@ -1208,7 +1184,6 @@ const App = {
         `}
       </div>
     `;
-    }
   },
 
   sendWhatsAppFollowUp(customerPhone, customerName, quoteCode, eventName) {
@@ -1218,8 +1193,11 @@ const App = {
     }
     const cleanPhone = customerPhone.replace(/\D/g, '');
     const settings = DB.getSettings();
-    const businessName = settings.businessName || 'nuestro taller';
-    const text = encodeURIComponent(`¡Hola ${customerName}! 🎂 Te escribo de ${businessName} para consultar si pudiste revisar el presupuesto #${quoteCode} para ${eventName || 'tu pedido'}. ¡Quedamos muy atentos a tus dudas o comentarios! ✨`);
+    const isServices = this.currentMode === 'services';
+    const businessName = settings.businessName || (isServices ? 'nuestro centro' : 'nuestro taller');
+    const text = isServices
+      ? encodeURIComponent(`¡Hola ${customerName}! 💆 Te escribo de ${businessName} para consultar si pudiste revisar el presupuesto #${quoteCode} para ${eventName || 'tu sesión de tratamiento'}. ¡Quedamos muy atentos a tus dudas o para agendar tu cita! ✨`)
+      : encodeURIComponent(`¡Hola ${customerName}! 🎂 Te escribo de ${businessName} para consultar si pudiste revisar el presupuesto #${quoteCode} para ${eventName || 'tu pedido'}. ¡Quedamos muy atentos a tus dudas o comentarios! ✨`);
     window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
   },
 
@@ -1230,8 +1208,11 @@ const App = {
     }
     const cleanPhone = customerPhone.replace(/\D/g, '');
     const settings = DB.getSettings();
-    const businessName = settings.businessName || 'nuestro taller';
-    const text = encodeURIComponent(`¡Hola ${customerName}! 🍰 Te escribo de ${businessName} para coordinar la entrega de tu pedido (${eventName || 'Torta / Pastelería'}) agendado para el ${dateStr || 'próximo evento'}. ¡Ya estamos afinando los detalles para que todo salga perfecto! ✨`);
+    const isServices = this.currentMode === 'services';
+    const businessName = settings.businessName || (isServices ? 'nuestro centro' : 'nuestro taller');
+    const text = isServices
+      ? encodeURIComponent(`¡Hola ${customerName}! 💆 Te escribo de ${businessName} para coordinar tu cita (${eventName || 'Servicio / Tratamiento'}) agendada para el ${dateStr || 'próximo evento'}. ¡Ya tenemos todo preparado para recibirte! ✨`)
+      : encodeURIComponent(`¡Hola ${customerName}! 🍰 Te escribo de ${businessName} para coordinar la entrega de tu pedido (${eventName || 'Torta / Pastelería'}) agendado para el ${dateStr || 'próximo evento'}. ¡Ya estamos afinando los detalles para que todo salga perfecto! ✨`);
     window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank');
   },
 
@@ -1250,262 +1231,575 @@ const App = {
     if (profitEl) profitEl.textContent = `+${Calculator.formatCurrency(profit)}`;
   },
 
+  settingsActiveTab: 'products',
+
+  switchSettingsTab(tab) {
+    this.settingsActiveTab = tab;
+    
+    // Tab panels
+    const panelProducts = document.getElementById('settings-panel-products');
+    const panelServices = document.getElementById('settings-panel-services');
+    const panelGeneral = document.getElementById('settings-panel-general');
+
+    if (panelProducts) panelProducts.classList.toggle('hidden', tab !== 'products');
+    if (panelServices) panelServices.classList.toggle('hidden', tab !== 'services');
+    if (panelGeneral) panelGeneral.classList.toggle('hidden', tab !== 'general');
+
+    // Tab buttons
+    ['products', 'services', 'general'].forEach(t => {
+      const btn = document.getElementById(`settings-tab-btn-${t}`);
+      if (btn) {
+        if (t === tab) {
+          btn.className = `flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 shadow-xs flex items-center justify-center gap-1.5 cursor-pointer ${
+            t === 'products' ? 'bg-pink-600 text-white shadow-pink-200/50' :
+            t === 'services' ? 'bg-teal-600 text-white shadow-teal-200/50' :
+            'bg-slate-800 text-white dark:bg-slate-700 shadow-slate-200/50'
+          }`;
+        } else {
+          btn.className = 'flex-1 py-2.5 px-3 rounded-xl font-medium text-xs sm:text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-200/70 dark:hover:bg-slate-800 transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer';
+        }
+      }
+    });
+  },
+
   renderSettings() {
     const container = document.getElementById('settings-view');
     if (!container) return;
 
     const settings = DB.getSettings();
+    if (!this.settingsActiveTab) {
+      this.settingsActiveTab = this.currentMode === 'services' ? 'services' : 'products';
+    }
 
     container.innerHTML = `
-      <div class="max-w-2xl mx-auto space-y-4 sm:space-y-6">
+      <div class="max-w-3xl mx-auto space-y-4 sm:space-y-5 pb-8">
 
-        <form id="settings-form" onsubmit="App.saveSettingsForm(event)" class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 shadow-sm space-y-4 sm:space-y-5 text-xs sm:text-sm">
-          <!-- Parámetros de Costeo -->
-          <div class="space-y-4">
-            <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 flex items-center gap-2">
-              <span>💰</span> Parámetros Financieros Base
-            </h3>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Símbolo de Moneda</label>
-                <input type="text" id="set-currency-symbol" value="${settings.currencySymbol || '$'}" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white font-bold">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Tarifa Mano de Obra ($/hr)</label>
-                <input type="number" id="set-hourly-rate" value="${settings.defaultHourlyRate || 4000}" step="any" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Margen Objetivo (%)</label>
-                <input type="number" id="set-target-margin" value="${settings.defaultTargetMargin || 40}" min="5" max="90" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
-              </div>
+        <!-- Header de Configuración -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-teal-500 text-white flex items-center justify-center text-xl sm:text-2xl shadow-sm shrink-0">
+              ⚙️
             </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Comisión Pasarela POS / Webpay (%)</label>
-                <input type="number" step="0.01" id="set-payment-comm" value="${settings.defaultPaymentCommission || 3.19}" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Abono Requerido por defecto (%)</label>
-                <input type="number" id="set-deposit-pct" value="${settings.defaultDepositPercent || 50}" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
-              </div>
+            <div>
+              <h2 class="font-black text-gray-900 dark:text-gray-100 text-base sm:text-lg tracking-tight">
+                Configuración del Sistema
+              </h2>
+              <p class="text-gray-500 dark:text-gray-400 text-xs">
+                Ajusta parámetros, tarifas y marca para cada ambiente
+              </p>
             </div>
           </div>
+          <span class="text-xs px-3 py-1 rounded-full font-bold bg-pink-50 dark:bg-slate-800 text-pink-700 dark:text-pink-300 border border-pink-100 dark:border-slate-700 hidden sm:inline-block">
+            ${this.currentMode === 'services' ? '💆 Modo Servicios Activo' : '🎂 Modo Productos Activo'}
+          </span>
+        </div>
 
-          <!-- Datos del Negocio -->
-          <div class="space-y-4 pt-3">
-            <h3 class="font-bold text-gray-800 text-sm border-b border-gray-100 pb-2 flex items-center gap-2">
-              <span>🍰</span> Identidad del Negocio (Para Cotizaciones)
-            </h3>
+        <!-- Selector de Pestañas (Pills) -->
+        <div class="bg-gray-100/90 dark:bg-slate-900 p-1.5 rounded-2xl border border-gray-200 dark:border-slate-800 flex gap-1.5 shadow-2xs">
+          <button type="button" id="settings-tab-btn-products" onclick="App.switchSettingsTab('products')" 
+            class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${this.settingsActiveTab === 'products' ? 'bg-pink-600 text-white shadow-pink-200/50 shadow-xs' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200/70 dark:hover:bg-slate-800'}">
+            <span>🎂</span> <span class="truncate">Productos</span>
+          </button>
+          <button type="button" id="settings-tab-btn-services" onclick="App.switchSettingsTab('services')" 
+            class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${this.settingsActiveTab === 'services' ? 'bg-teal-600 text-white shadow-teal-200/50 shadow-xs' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200/70 dark:hover:bg-slate-800'}">
+            <span>💆</span> <span class="truncate">Servicios</span>
+          </button>
+          <button type="button" id="settings-tab-btn-general" onclick="App.switchSettingsTab('general')" 
+            class="flex-1 py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer ${this.settingsActiveTab === 'general' ? 'bg-slate-800 text-white dark:bg-slate-700 shadow-slate-200/50 shadow-xs' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-200/70 dark:hover:bg-slate-800'}">
+            <span>⚙️</span> <span class="truncate">General & Nube</span>
+          </button>
+        </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Formulario que abarca las 3 pestañas -->
+        <form id="settings-form" onsubmit="App.saveSettingsForm(event)" class="space-y-4 sm:space-y-5 text-xs sm:text-sm">
+          
+          <!-- ========================================== -->
+          <!-- PESTAÑA 1: MODO PRODUCTOS (PASTELERÍA) -->
+          <!-- ========================================== -->
+          <div id="settings-panel-products" class="${this.settingsActiveTab === 'products' ? '' : 'hidden'} space-y-4">
+            
+            <!-- Identidad Productos -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4">
+              <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm border-b border-gray-100 dark:border-slate-800 pb-2 flex items-center gap-2">
+                <span>🎂</span> Identidad en Modo Productos
+              </h3>
+
               <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Nombre de la Pastelería</label>
-                <input type="text" id="set-business-name" value="${settings.businessName || ''}" placeholder="Ej. Pastelería Cakekulator" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">WhatsApp / Teléfono</label>
-                <input type="tel" id="set-business-phone" value="${settings.businessPhone || ''}" placeholder="Ej. +56 9 1234 5678" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre Comercial de la Pastelería / Taller</label>
+                <input type="text" id="set-business-name-products" value="${settings.businessNameProducts || settings.businessName || 'Mi Pastelería Artesanal'}" placeholder="Ej. Pastelería Dulce Sabor" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                <span class="text-[11px] text-gray-400 mt-1 block">Aparece en el encabezado, presupuestos y mensajes cuando estás en modo productos.</span>
               </div>
             </div>
 
-            <!-- Logo Personalizado de la Pastelería -->
-            <div class="bg-gradient-to-r from-pink-50/60 via-purple-50/40 to-pink-50/60 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 dark:from-slate-800/80 dark:to-slate-800/80 space-y-3">
-              <div class="flex items-center justify-between">
-                <label class="block text-xs font-bold text-gray-800 dark:text-gray-200">
-                  Logo de tu Pastelería (Se muestra en Inicio y Presupuestos)
-                </label>
-                ${settings.logoUrl ? `
-                  <button type="button" onclick="App.removeLogo()" class="text-xs text-red-500 hover:text-red-700 font-semibold hover:underline">
+            <!-- Parámetros Financieros Productos -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4">
+              <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm border-b border-gray-100 dark:border-slate-800 pb-2 flex items-center gap-2">
+                <span>💰</span> Costeo y Rentabilidad de Productos
+              </h3>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tarifa Mano de Obra Pastelera ($/hr)</label>
+                  <input type="number" id="set-hourly-rate-products" value="${settings.hourlyRateProducts || settings.defaultHourlyRate || 4000}" step="any" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  <span class="text-[10px] text-gray-400">Valor por hora de horneado y decoración</span>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Margen Objetivo Meta (%)</label>
+                  <input type="number" id="set-target-margin-products" value="${settings.targetMarginProducts || settings.defaultTargetMargin || 40}" min="5" max="90" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  <span class="text-[10px] text-gray-400">Margen sugerido por defecto en recetas (ej. 40%)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Logo Personalizado Productos -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-2">
+                <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-2">
+                  <span>🎨</span> Logo de la Pastelería (Modo Productos)
+                </h3>
+                ${(settings.logoUrlProducts || settings.logoUrl) ? `
+                  <button type="button" onclick="App.removeLogo('products')" class="text-xs text-red-500 hover:text-red-700 font-semibold hover:underline cursor-pointer">
                     ✕ Quitar Logo
                   </button>
                 ` : ''}
               </div>
 
               <div class="flex flex-col sm:flex-row items-center gap-4">
-                <div class="w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shadow-xs shrink-0 relative group">
-                  <img id="settings-logo-preview" src="${settings.logoUrl || 'assets/icons/logo.png'}" alt="Logo Preview" class="w-full h-full object-contain p-1">
+                <div class="w-20 h-20 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shadow-xs shrink-0">
+                  <img id="settings-logo-preview-products" src="${settings.logoUrlProducts || settings.logoUrl || 'assets/icons/logo.png'}" alt="Logo Productos" class="w-full h-full object-contain p-1">
                 </div>
 
                 <div class="flex-1 space-y-2 w-full">
-                  <input type="hidden" id="set-business-logo" value="${settings.logoUrl || ''}">
+                  <input type="hidden" id="set-business-logo-products" value="${settings.logoUrlProducts || settings.logoUrl || ''}">
                   
                   <div class="flex flex-wrap gap-2">
-                    <label class="py-2 px-3.5 bg-white dark:bg-slate-900 hover:bg-pink-50 dark:hover:bg-slate-800 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-slate-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
-                      <span>📤</span> Subir Logo
-                      <input type="file" id="logo-file-input" accept="image/*" onchange="App.handleLogoUpload(event)" class="hidden">
+                    <label class="py-2 px-3.5 bg-white dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-slate-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                      <span>📤</span> Subir Logo Productos
+                      <input type="file" id="logo-file-input-products" accept="image/*" onchange="App.handleLogoUpload(event, 'products')" class="hidden">
                     </label>
 
                     <button 
                       type="button" 
-                      id="remove-bg-btn"
-                      onclick="App.removeLogoBackground()" 
-                      class="py-2 px-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:opacity-90 text-white rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                      ${!settings.logoUrl ? 'disabled' : ''}
+                      id="remove-bg-btn-products"
+                      onclick="App.removeLogoBackground('products')" 
+                      class="py-2 px-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-rose-500 hover:opacity-90 text-white rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      ${!(settings.logoUrlProducts || settings.logoUrl) ? 'disabled' : ''}
                       title="Elimina el fondo blanco o sólido de tu logo automáticamente"
                     >
-                      <span>🍌</span> Quitar Fondo (Nano Banana)
+                      <span>🍌</span> Quitar Fondo (IA)
                     </button>
                   </div>
 
                   <p class="text-[11px] text-gray-500 dark:text-gray-400">
-                    Sube una imagen cuadrada (.PNG o .JPG). Con "Quitar Fondo" convertiremos automáticamente fondos blancos o sólidos en transparentes.
+                    Logo exclusivo para pastelería y cotizaciones de productos (.PNG o .JPG).
                   </p>
                 </div>
               </div>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          </div>
+
+          <!-- ========================================== -->
+          <!-- PESTAÑA 2: MODO SERVICIOS (SPA & ESTÉTICA) -->
+          <!-- ========================================== -->
+          <div id="settings-panel-services" class="${this.settingsActiveTab === 'services' ? '' : 'hidden'} space-y-4">
+            
+            <!-- Identidad Servicios -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-teal-100 dark:border-slate-800 shadow-sm space-y-4">
+              <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm border-b border-gray-100 dark:border-slate-800 pb-2 flex items-center gap-2">
+                <span>💆</span> Identidad en Modo Servicios
+              </h3>
+
               <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Instagram / Redes Sociales</label>
-                <input type="text" id="set-business-ig" value="${settings.businessInstagram || ''}" placeholder="Ej. @mipasteleria" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-700 mb-1">Email de Contacto</label>
-                <input type="email" id="set-business-email" value="${settings.businessEmail || ''}" placeholder="contacto@mipasteleria.cl" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-pink-400 bg-white">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre del Centro de Estética, Spa o Terapias</label>
+                <input type="text" id="set-business-name-services" value="${settings.businessNameServices || 'Centro de Estética, Spa & Masajes'}" placeholder="Ej. Spa & Belleza Natural" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-teal-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                <span class="text-[11px] text-gray-400 mt-1 block">Aparece en el encabezado, cotizaciones de sesiones y recordatorios de citas.</span>
               </div>
             </div>
 
-          <button type="submit" class="w-full py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-2xl shadow-md transition">
-            Guardar Configuración
-          </button>
-        </form>
+            <!-- Parámetros Financieros Servicios -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-teal-100 dark:border-slate-800 shadow-sm space-y-4">
+              <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm border-b border-gray-100 dark:border-slate-800 pb-2 flex items-center gap-2">
+                <span>💰</span> Costeo y Rentabilidad de Servicios
+              </h3>
 
-        <!-- Apariencia y Modo Oscuro / Claro -->
-        <div class="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-pink-100 dark:border-slate-800 shadow-sm text-sm transition-colors">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button 
-              type="button" 
-              onclick="App.setTheme('light')" 
-              id="settings-theme-light" 
-              class="p-4 rounded-2xl border-2 transition text-left flex items-center justify-between cursor-pointer ${!document.documentElement.classList.contains('dark') ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 ring-2 ring-pink-400/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-pink-200'}"
-            >
-              <div class="flex items-center gap-3">
-                <span class="text-2xl">☀️</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
-                  <div class="font-bold text-xs text-gray-900 dark:text-gray-100">Modo Claro</div>
-                  <div class="text-[11px] text-gray-500 dark:text-gray-400">Pastel, suave y luminoso</div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tarifa Terapeuta ($/hr)</label>
+                  <input type="number" id="set-hourly-rate-services" value="${settings.hourlyRateServices || 6000}" step="any" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-teal-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  <span class="text-[10px] text-gray-400">Honorario por hora de sesión</span>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Margen Objetivo Meta (%)</label>
+                  <input type="number" id="set-target-margin-services" value="${settings.targetMarginServices || 50}" min="5" max="90" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-teal-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  <span class="text-[10px] text-gray-400">Margen sugerido para servicios</span>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Gasto de Cabina Base ($)</label>
+                  <input type="number" id="set-cabin-cost-services" value="${settings.serviceCabinCost || 3000}" step="any" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-teal-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  <span class="text-[10px] text-gray-400">Arriendo/luz promedio por sesión</span>
                 </div>
               </div>
-              <span class="text-pink-600 font-bold text-xs ${!document.documentElement.classList.contains('dark') ? 'opacity-100' : 'opacity-0'}">✓ Activo</span>
-            </button>
+            </div>
 
-            <button 
-              type="button" 
-              onclick="App.setTheme('dark')" 
-              id="settings-theme-dark" 
-              class="p-4 rounded-2xl border-2 transition text-left flex items-center justify-between cursor-pointer ${document.documentElement.classList.contains('dark') ? 'border-pink-500 bg-pink-50/50 dark:bg-slate-800 ring-2 ring-pink-400/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-pink-200'}"
-            >
-              <div class="flex items-center gap-3">
-                <span class="text-2xl">🌙</span>
-                <div>
-                  <div class="font-bold text-xs text-gray-900 dark:text-gray-100">Modo Oscuro</div>
-                  <div class="text-[11px] text-gray-500 dark:text-gray-400">Alto contraste y descanso</div>
+            <!-- Logo Personalizado Servicios -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-teal-100 dark:border-slate-800 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-2">
+                <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-2">
+                  <span>💆</span> Logo / Marca de Servicios & Spa
+                </h3>
+                ${settings.logoUrlServices ? `
+                  <button type="button" onclick="App.removeLogo('services')" class="text-xs text-red-500 hover:text-red-700 font-semibold hover:underline cursor-pointer">
+                    ✕ Quitar Logo
+                  </button>
+                ` : ''}
+              </div>
+
+              <div class="flex flex-col sm:flex-row items-center gap-4">
+                <div class="w-20 h-20 rounded-2xl bg-teal-50/50 dark:bg-slate-800 border border-teal-200 dark:border-slate-700 flex items-center justify-center overflow-hidden shadow-xs shrink-0">
+                  <img id="settings-logo-preview-services" src="${settings.logoUrlServices || 'assets/icons/favicon.png'}" alt="Logo Servicios" class="w-full h-full object-contain p-1">
+                </div>
+
+                <div class="flex-1 space-y-2 w-full">
+                  <input type="hidden" id="set-business-logo-services" value="${settings.logoUrlServices || ''}">
+                  
+                  <div class="flex flex-wrap gap-2">
+                    <label class="py-2 px-3.5 bg-white dark:bg-slate-800 hover:bg-teal-50 dark:hover:bg-slate-700 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-slate-700 rounded-xl text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+                      <span>📤</span> Subir Logo Servicios
+                      <input type="file" id="logo-file-input-services" accept="image/*" onchange="App.handleLogoUpload(event, 'services')" class="hidden">
+                    </label>
+
+                    <button 
+                      type="button" 
+                      id="remove-bg-btn-services"
+                      onclick="App.removeLogoBackground('services')" 
+                      class="py-2 px-3.5 bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 hover:opacity-90 text-white rounded-xl text-xs font-black transition flex items-center gap-1.5 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      ${!settings.logoUrlServices ? 'disabled' : ''}
+                      title="Elimina el fondo blanco o sólido de tu logo automáticamente"
+                    >
+                      <span>🍌</span> Quitar Fondo (IA)
+                    </button>
+                  </div>
+
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                    Logo exclusivo para tu centro de estética, sesiones y cotizaciones de servicios (.PNG o .JPG).
+                  </p>
                 </div>
               </div>
-              <span class="text-pink-600 dark:text-pink-400 font-bold text-xs ${document.documentElement.classList.contains('dark') ? 'opacity-100' : 'opacity-0'}">✓ Activo</span>
-            </button>
-          </div>
-        </div>
+            </div>
 
-        <!-- Conexión Nube & Cuenta Google -->
-        <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4 text-sm">
-          <div class="flex items-center justify-between">
-            <h3 class="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-2">
-              <span>🔥</span> Base de Datos y Sesión en la Nube
-            </h3>
-            <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-600'}">
-              ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'Firebase Conectado' : 'Modo Local'}
-            </span>
           </div>
 
-          <p class="text-xs text-gray-500 dark:text-gray-400">Conecta tu cuenta de Google y Firebase Cloud Firestore para que tus recetas, costos y presupuestos se sincronicen automáticamente en todos tus dispositivos.</p>
+          <!-- ========================================== -->
+          <!-- PESTAÑA 3: GENERAL & NUBE -->
+          <!-- ========================================== -->
+          <div id="settings-panel-general" class="${this.settingsActiveTab === 'general' ? '' : 'hidden'} space-y-4">
+            
+            <!-- Nombre Unificado (Toggle) -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-3">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <label for="set-use-same-name" class="font-bold text-xs text-gray-800 dark:text-gray-200 cursor-pointer block">
+                    Usar el mismo nombre comercial para Productos y Servicios
+                  </label>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                    Actívalo solo si tu negocio opera bajo un único nombre unificado en ambos rubros.
+                  </p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input type="checkbox" id="set-use-same-name" class="sr-only peer" ${settings.useSameBusinessName ? 'checked' : ''} onchange="App.toggleBusinessNameInputs(this.checked)">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                </label>
+              </div>
 
-          <div class="bg-gradient-to-br from-pink-50/60 to-rose-50/40 dark:from-slate-800/80 dark:to-slate-800/60 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div>
-              ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
-                <div class="flex items-center gap-3">
-                  ${AuthModule.currentUser.photoURL ? `
-                    <img src="${AuthModule.currentUser.photoURL}" alt="" class="w-10 h-10 rounded-full ring-2 ring-pink-300">
+              <div id="container-single-business-name" class="${settings.useSameBusinessName ? '' : 'hidden'} pt-2">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nombre Comercial Unificado</label>
+                <input type="text" id="set-business-name-single" value="${settings.businessName || ''}" placeholder="Ej. Mi Negocio Multirubro" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+              </div>
+            </div>
+
+            <!-- Parámetros Financieros Globales -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
+              <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm border-b border-gray-100 dark:border-slate-800 pb-2 flex items-center gap-2">
+                <span>🌐</span> Moneda y Pasarelas de Pago
+              </h3>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Símbolo de Moneda</label>
+                  <input type="text" id="set-currency-symbol" value="${settings.currencySymbol || '$'}" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 font-bold text-xs text-gray-800 dark:text-gray-100">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Comisión Webpay / POS (%)</label>
+                  <input type="number" step="0.01" id="set-payment-comm" value="${settings.defaultPaymentCommission || 3.19}" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Abono Requerido (%)</label>
+                  <input type="number" id="set-deposit-pct" value="${settings.defaultDepositPercent || 50}" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Nota Predeterminada para Cotizaciones</label>
+                <textarea id="set-quote-note" rows="2" placeholder="Ej. Presupuesto válido por 15 días. Para reservar se solicita abono del 50%." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">${settings.quoteNote || ''}</textarea>
+              </div>
+            </div>
+
+            <!-- Datos de Contacto Globales -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
+              <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm border-b border-gray-100 dark:border-slate-800 pb-2 flex items-center gap-2">
+                <span>📱</span> Canales de Contacto del Negocio
+              </h3>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">WhatsApp / Teléfono</label>
+                  <input type="tel" id="set-business-phone" value="${settings.businessPhone || ''}" placeholder="+56 9 1234 5678" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Instagram / Redes</label>
+                  <input type="text" id="set-business-ig" value="${settings.businessInstagram || ''}" placeholder="@minegocio" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Email de Contacto</label>
+                  <input type="email" id="set-business-email" value="${settings.businessEmail || ''}" placeholder="contacto@minegocio.cl" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                </div>
+              </div>
+            </div>
+
+            <!-- Apariencia y Modo Oscuro / Claro -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-3">
+              <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm border-b border-gray-100 dark:border-slate-800 pb-2 flex items-center gap-2">
+                <span>🌓</span> Tema y Apariencia Visual
+              </h3>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button 
+                  type="button" 
+                  onclick="App.setTheme('light')" 
+                  id="settings-theme-light" 
+                  class="p-3.5 rounded-2xl border-2 transition text-left flex items-center justify-between cursor-pointer ${!document.documentElement.classList.contains('dark') ? 'border-pink-500 bg-pink-50/50 dark:bg-pink-950/20 ring-2 ring-pink-400/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-pink-200'}"
+                >
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">☀️</span>
+                    <div>
+                      <div class="font-bold text-xs text-gray-900 dark:text-gray-100">Modo Claro</div>
+                      <div class="text-[11px] text-gray-500 dark:text-gray-400">Pastel, suave y luminoso</div>
+                    </div>
+                  </div>
+                  <span class="text-pink-600 font-bold text-xs ${!document.documentElement.classList.contains('dark') ? 'opacity-100' : 'opacity-0'}">✓ Activo</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  onclick="App.setTheme('dark')" 
+                  id="settings-theme-dark" 
+                  class="p-3.5 rounded-2xl border-2 transition text-left flex items-center justify-between cursor-pointer ${document.documentElement.classList.contains('dark') ? 'border-pink-500 bg-pink-50/50 dark:bg-slate-800 ring-2 ring-pink-400/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-pink-200'}"
+                >
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">🌙</span>
+                    <div>
+                      <div class="font-bold text-xs text-gray-900 dark:text-gray-100">Modo Oscuro</div>
+                      <div class="text-[11px] text-gray-500 dark:text-gray-400">Alto contraste y descanso</div>
+                    </div>
+                  </div>
+                  <span class="text-pink-600 dark:text-pink-400 font-bold text-xs ${document.documentElement.classList.contains('dark') ? 'opacity-100' : 'opacity-0'}">✓ Activo</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Conexión Nube & Cuenta Google -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
+                  <span>🔥</span> Base de Datos y Sesión en la Nube
+                </h3>
+                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300'}">
+                  ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'Firebase Conectado' : 'Modo Local'}
+                </span>
+              </div>
+
+              <p class="text-xs text-gray-600 dark:text-gray-400">Conecta tu cuenta de Google y Firebase Cloud Firestore para que tus recetas, costos y presupuestos se sincronicen automáticamente en todos tus dispositivos.</p>
+
+              <div class="bg-gray-50 dark:bg-slate-800/80 p-4 rounded-2xl border border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
+                    <div class="flex items-center gap-3">
+                      ${AuthModule.currentUser.photoURL ? `
+                        <img src="${AuthModule.currentUser.photoURL}" alt="" class="w-10 h-10 rounded-full ring-2 ring-pink-300">
+                      ` : `
+                        <div class="w-10 h-10 rounded-full bg-pink-600 text-white font-bold flex items-center justify-center">
+                          ${(AuthModule.currentUser.displayName || 'U').charAt(0)}
+                        </div>
+                      `}
+                      <div>
+                        <h4 class="font-bold text-gray-900 dark:text-gray-100 text-xs">${AuthModule.currentUser.displayName || 'Usuario'}</h4>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">${AuthModule.currentUser.email}</p>
+                        <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sincronización en vivo activa
+                        </span>
+                      </div>
+                    </div>
                   ` : `
-                    <div class="w-10 h-10 rounded-full bg-pink-500 text-white font-bold flex items-center justify-center">
-                      ${(AuthModule.currentUser.displayName || 'U').charAt(0)}
+                    <div>
+                      <h4 class="font-bold text-gray-800 dark:text-gray-200 text-xs">Sin sesión iniciada</h4>
+                      <p class="text-[11px] text-gray-500 dark:text-gray-400">Inicia sesión con Google para respaldar tus datos en la nube.</p>
                     </div>
                   `}
-                  <div>
-                    <h4 class="font-bold text-gray-900 dark:text-gray-100 text-xs">${AuthModule.currentUser.displayName || 'Usuario'}</h4>
-                    <p class="text-[11px] text-gray-500 dark:text-gray-400">${AuthModule.currentUser.email}</p>
-                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Sincronización en vivo activa
-                    </span>
-                  </div>
                 </div>
-              ` : `
-                <div>
-                  <h4 class="font-bold text-gray-800 dark:text-gray-200 text-xs">Sin sesión iniciada</h4>
-                  <p class="text-[11px] text-gray-500 dark:text-gray-400">Inicia sesión con Google para respaldar tus datos en la nube.</p>
+
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                  ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
+                    <button type="button" onclick="AuthModule.forceSyncNow()" class="flex-1 sm:flex-none px-3 py-2 bg-pink-100 dark:bg-slate-700 hover:bg-pink-200 dark:hover:bg-slate-600 text-pink-700 dark:text-pink-300 text-xs font-bold rounded-xl transition cursor-pointer">
+                      🔄 Sincronizar
+                    </button>
+                    <button type="button" onclick="AuthModule.logout()" class="flex-1 sm:flex-none px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-950/40 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold rounded-xl transition cursor-pointer">
+                      Cerrar Sesión
+                    </button>
+                  ` : `
+                    <button type="button" onclick="AuthModule.loginWithGoogle()" class="w-full sm:w-auto px-4 py-2 bg-white dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-slate-700 border border-pink-300 dark:border-pink-800 text-pink-700 dark:text-pink-300 text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+                      <svg class="w-4 h-4" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                      </svg>
+                      Iniciar con Google
+                    </button>
+                  `}
+                  <button type="button" onclick="AuthModule.showConfigModal()" title="Configurar credenciales de Firebase" class="p-2 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700 cursor-pointer">
+                    ⚙️
+                  </button>
                 </div>
-              `}
+              </div>
             </div>
 
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? `
-                <button onclick="AuthModule.forceSyncNow()" class="flex-1 sm:flex-none px-3 py-2 bg-pink-100 dark:bg-slate-700 hover:bg-pink-200 dark:hover:bg-slate-600 text-pink-700 dark:text-pink-300 text-xs font-bold rounded-xl transition">
-                  🔄 Sincronizar
+            <!-- Datos de Demostración y Pruebas -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
+                  <span>🪄</span> Datos de Demostración y Pruebas
+                </h3>
+                <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-pink-100 text-pink-800 dark:bg-slate-800 dark:text-pink-300">
+                  Pruebas Rápidas
+                </span>
+              </div>
+              <p class="text-xs text-gray-600 dark:text-gray-400">
+                Carga un catálogo completo de insumos, recetas de pastelería, protocolos de estética, clientes y cotizaciones reales para explorar y probar todas las funciones del sistema.
+              </p>
+              
+              <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
+                <button 
+                  type="button" 
+                  onclick="App.loadDemoData()" 
+                  class="flex-1 py-3 px-4 bg-pink-600 hover:bg-pink-700 active:scale-95 text-white font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>🪄</span> Cargar Datos de Ejemplo (Productos + Servicios)
                 </button>
-                <button onclick="AuthModule.logout()" class="flex-1 sm:flex-none px-3 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-950/40 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold rounded-xl transition">
-                  Cerrar Sesión
+                <button 
+                  type="button" 
+                  onclick="App.resetAllData()" 
+                  class="py-3 px-4 bg-gray-100 hover:bg-red-50 hover:text-red-700 dark:bg-slate-800 dark:hover:bg-red-950/40 text-gray-700 dark:text-gray-300 dark:hover:text-red-400 font-bold text-xs rounded-xl border border-gray-200 dark:border-slate-700 transition active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Vaciar todos los registros de prueba"
+                >
+                  <span>🗑️</span> Vaciar Todo
                 </button>
-              ` : `
-                <button onclick="AuthModule.loginWithGoogle()" class="w-full sm:w-auto px-4 py-2 bg-white dark:bg-slate-800 hover:bg-pink-50 dark:hover:bg-slate-700 border border-pink-300 dark:border-pink-800 text-pink-700 dark:text-pink-300 text-xs font-bold rounded-xl shadow-xs transition flex items-center justify-center gap-2">
-                  <svg class="w-4 h-4" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                  </svg>
-                  Iniciar con Google
-                </button>
-              `}
-              <button onclick="AuthModule.showConfigModal()" title="Configurar credenciales de Firebase" class="p-2 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-700">
-                ⚙️
-              </button>
+              </div>
             </div>
+
           </div>
-        </div>
 
-        </div>
+          <!-- Botón de Guardar Permanente -->
+          <div class="pt-2">
+            <button type="submit" class="w-full py-3.5 px-6 rounded-2xl bg-pink-600 hover:bg-pink-700 active:scale-[0.99] text-white font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer">
+              <span>💾</span> Guardar Toda la Configuración
+            </button>
+          </div>
+
+        </form>
       </div>
     `;
+  },
+
+  loadDemoData() {
+    if (confirm('¿Deseas cargar los datos de demostración completos? Se agregarán insumos, recetas, servicios, clientes y cotizaciones de prueba para ambos ambientes.')) {
+      const stats = DB.loadDemoData();
+      this.updateHeaderBrand();
+      this.renderCurrentTab(true);
+      this.showToast(`✨ Se cargaron ${stats.ingredientsCount} insumos, ${stats.recipesCount} recetas/servicios, ${stats.customersCount} clientes y ${stats.quotesCount} presupuestos de prueba`);
+    }
+  },
+
+  resetAllData() {
+    if (confirm('⚠️ ¿Estás seguro de que deseas vaciar todos los registros del sistema? Esta acción no se puede deshacer.')) {
+      DB.resetAllData();
+      this.updateHeaderBrand();
+      this.renderCurrentTab(true);
+      this.showToast('🗑️ Base de datos restablecida correctamente');
+    }
+  },
+
+  toggleBusinessNameInputs(useSame) {
+    const singleContainer = document.getElementById('container-single-business-name');
+    if (singleContainer) {
+      singleContainer.classList.toggle('hidden', !useSame);
+    }
   },
 
   saveSettingsForm(e) {
     e.preventDefault();
 
     const currentSettings = DB.getSettings();
+    const useSameBusinessName = document.getElementById('set-use-same-name')?.checked || false;
+    const nameSingle = (document.getElementById('set-business-name-single')?.value || '').trim();
+    const nameProducts = (document.getElementById('set-business-name-products')?.value || '').trim();
+    const nameServices = (document.getElementById('set-business-name-services')?.value || '').trim();
+
+    const prodRate = parseFloat(document.getElementById('set-hourly-rate-products')?.value) || 4000;
+    const servRate = parseFloat(document.getElementById('set-hourly-rate-services')?.value) || 6000;
+    const prodMargin = parseFloat(document.getElementById('set-target-margin-products')?.value) || 40;
+    const servMargin = parseFloat(document.getElementById('set-target-margin-services')?.value) || 50;
+    const cabinCost = parseFloat(document.getElementById('set-cabin-cost-services')?.value) || 3000;
+
+    const prodName = useSameBusinessName ? nameSingle : (nameProducts || 'Mi Pastelería Artesanal');
+    const servName = useSameBusinessName ? nameSingle : (nameServices || 'Centro de Estética, Spa & Masajes');
+
+    const logoProducts = (document.getElementById('set-business-logo-products')?.value || currentSettings.logoUrlProducts || currentSettings.logoUrl || '').trim();
+    const logoServices = (document.getElementById('set-business-logo-services')?.value || currentSettings.logoUrlServices || '').trim();
+
     const newSettings = {
-      currencySymbol: document.getElementById('set-currency-symbol').value.trim() || '$',
-      defaultHourlyRate: parseFloat(document.getElementById('set-hourly-rate').value) || 4000,
-      defaultTargetMargin: parseFloat(document.getElementById('set-target-margin').value) || 40,
-      defaultPaymentCommission: parseFloat(document.getElementById('set-payment-comm').value) || 3.19,
-      defaultDepositPercent: parseFloat(document.getElementById('set-deposit-pct').value) || 50,
-      businessName: document.getElementById('set-business-name').value.trim(),
-      businessPhone: document.getElementById('set-business-phone').value.trim(),
-      businessInstagram: document.getElementById('set-business-ig').value.trim(),
-      businessEmail: document.getElementById('set-business-email').value.trim(),
-      quoteNote: document.getElementById('set-quote-note').value.trim(),
-      logoUrl: (document.getElementById('set-business-logo')?.value || '').trim(),
+      ...currentSettings,
+      currencySymbol: document.getElementById('set-currency-symbol')?.value.trim() || '$',
+      defaultHourlyRate: this.currentMode === 'services' ? servRate : prodRate,
+      hourlyRateProducts: prodRate,
+      hourlyRateServices: servRate,
+      defaultTargetMargin: this.currentMode === 'services' ? servMargin : prodMargin,
+      targetMarginProducts: prodMargin,
+      targetMarginServices: servMargin,
+      serviceCabinCost: cabinCost,
+      defaultPaymentCommission: parseFloat(document.getElementById('set-payment-comm')?.value) || 3.19,
+      defaultDepositPercent: parseFloat(document.getElementById('set-deposit-pct')?.value) || 50,
+      useSameBusinessName,
+      businessNameProducts: prodName,
+      businessNameServices: servName,
+      businessName: useSameBusinessName ? nameSingle : (this.currentMode === 'services' ? servName : prodName),
+      businessPhone: (document.getElementById('set-business-phone')?.value || '').trim(),
+      businessInstagram: (document.getElementById('set-business-ig')?.value || '').trim(),
+      businessEmail: (document.getElementById('set-business-email')?.value || '').trim(),
+      quoteNote: (document.getElementById('set-quote-note')?.value || '').trim(),
+      logoUrlProducts: logoProducts,
+      logoUrlServices: logoServices,
+      logoUrl: this.currentMode === 'services' ? logoServices : logoProducts,
       geminiApiKey: currentSettings.geminiApiKey || ''
     };
 
     DB.saveSettings(newSettings);
     this.updateHeaderBrand();
-    this.showToast('Configuración guardada correctamente');
+    this.showToast('✅ Configuración guardada correctamente');
   },
 
-  // Manejo de carga de Logo
-  async handleLogoUpload(event) {
+  // Manejo de carga de Logo por Ambiente (productos / servicios)
+  async handleLogoUpload(event, mode = 'products') {
     const file = event.target.files && event.target.files[0];
     if (!file) return;
 
@@ -1515,23 +1809,28 @@ const App = {
     }
 
     try {
-      this.showToast('Cargando logo...');
+      this.showToast(`Cargando logo de ${mode === 'services' ? 'servicios' : 'productos'}...`);
       const reader = new FileReader();
       reader.onload = (e) => {
         const dataUrl = e.target.result;
-        const preview = document.getElementById('settings-logo-preview');
-        const hiddenInput = document.getElementById('set-business-logo');
-        const removeBgBtn = document.getElementById('remove-bg-btn');
+        const preview = document.getElementById(`settings-logo-preview-${mode}`);
+        const hiddenInput = document.getElementById(`set-business-logo-${mode}`);
+        const removeBgBtn = document.getElementById(`remove-bg-btn-${mode}`);
 
         if (preview) preview.src = dataUrl;
         if (hiddenInput) hiddenInput.value = dataUrl;
         if (removeBgBtn) removeBgBtn.disabled = false;
 
         const settings = DB.getSettings();
-        settings.logoUrl = dataUrl;
+        if (mode === 'services') {
+          settings.logoUrlServices = dataUrl;
+        } else {
+          settings.logoUrlProducts = dataUrl;
+          settings.logoUrl = dataUrl;
+        }
         DB.saveSettings(settings);
         this.updateHeaderBrand();
-        this.showToast('✨ Logo cargado con éxito');
+        this.showToast(`✨ Logo de ${mode === 'services' ? 'servicios' : 'productos'} cargado con éxito`);
       };
       reader.readAsDataURL(file);
     } catch (e) {
@@ -1540,9 +1839,9 @@ const App = {
     }
   },
 
-  // Remover fondo con Nano Banana / Canvas Segmentation
-  async removeLogoBackground() {
-    const hiddenInput = document.getElementById('set-business-logo');
+  // Remover fondo con IA por Ambiente
+  async removeLogoBackground(mode = 'products') {
+    const hiddenInput = document.getElementById(`set-business-logo-${mode}`);
     const currentLogo = hiddenInput ? hiddenInput.value : '';
     if (!currentLogo) {
       alert('Primero debes subir una imagen de logo.');
@@ -1550,15 +1849,20 @@ const App = {
     }
 
     try {
-      this.showToast('🍌 Procesando y eliminando fondo con Nano Banana...');
+      this.showToast('🍌 Procesando y eliminando fondo con IA...');
       const transparentLogo = await GeminiService.removeBackgroundFromImage(currentLogo);
 
-      const preview = document.getElementById('settings-logo-preview');
+      const preview = document.getElementById(`settings-logo-preview-${mode}`);
       if (preview) preview.src = transparentLogo;
       if (hiddenInput) hiddenInput.value = transparentLogo;
 
       const settings = DB.getSettings();
-      settings.logoUrl = transparentLogo;
+      if (mode === 'services') {
+        settings.logoUrlServices = transparentLogo;
+      } else {
+        settings.logoUrlProducts = transparentLogo;
+        settings.logoUrl = transparentLogo;
+      }
       DB.saveSettings(settings);
       this.updateHeaderBrand();
       this.showToast('✨ ¡Fondo eliminado con éxito!');
@@ -1568,27 +1872,33 @@ const App = {
     }
   },
 
-  // Quitar logo
-  removeLogo() {
-    const preview = document.getElementById('settings-logo-preview');
-    const hiddenInput = document.getElementById('set-business-logo');
-    const removeBgBtn = document.getElementById('remove-bg-btn');
+  // Quitar logo por Ambiente
+  removeLogo(mode = 'products') {
+    const preview = document.getElementById(`settings-logo-preview-${mode}`);
+    const hiddenInput = document.getElementById(`set-business-logo-${mode}`);
+    const removeBgBtn = document.getElementById(`remove-bg-btn-${mode}`);
 
-    if (preview) preview.src = 'assets/icons/logo.png';
+    const defaultImg = mode === 'services' ? 'assets/icons/favicon.png' : 'assets/icons/logo.png';
+    if (preview) preview.src = defaultImg;
     if (hiddenInput) hiddenInput.value = '';
     if (removeBgBtn) removeBgBtn.disabled = true;
 
     const settings = DB.getSettings();
-    settings.logoUrl = '';
+    if (mode === 'services') {
+      settings.logoUrlServices = '';
+    } else {
+      settings.logoUrlProducts = '';
+      settings.logoUrl = '';
+    }
     DB.saveSettings(settings);
     this.updateHeaderBrand();
-    this.showToast('Logo restablecido al predeterminado');
+    this.showToast(`Logo de ${mode === 'services' ? 'servicios' : 'productos'} restablecido`);
     this.renderCurrentTab(true);
   },
 
   // Actualizar logo y nombre en header
   updateHeaderBrand() {
-    const settings = DB.getSettings();
+    const settings = DB.getSettings(this.currentMode);
     const logoEl = document.getElementById('header-brand-logo');
     const nameEl = document.getElementById('header-brand-name');
 
@@ -1596,7 +1906,7 @@ const App = {
       logoEl.src = settings.logoUrl || 'assets/icons/logo.png';
     }
     if (nameEl) {
-      nameEl.textContent = settings.businessName || 'Gestión Pastelera';
+      nameEl.textContent = settings.businessName || (this.currentMode === 'services' ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal');
     }
   },
 

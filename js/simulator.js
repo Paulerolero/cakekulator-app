@@ -505,7 +505,7 @@ const SimulatorModule = {
           </div>
 
           <!-- Botón de Acción Principal: Agregar a Cotización -->
-          <button onclick="SimulatorModule.openAddToQuoteModal()" class="w-full mt-4 py-3.5 ${isServicesMode ? 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 shadow-teal-200/60' : 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 shadow-pink-200'} text-white font-bold rounded-2xl shadow-lg transition active:scale-95 flex items-center justify-center gap-2 text-sm cursor-pointer">
+          <button onclick="SimulatorModule.openAddToQuoteModal()" class="w-full mt-4 py-3.5 ${isServicesMode ? 'bg-teal-600 hover:bg-teal-700' : 'bg-pink-600 hover:bg-pink-700'} text-white font-bold rounded-2xl shadow-md transition active:scale-95 flex items-center justify-center gap-2 text-sm cursor-pointer">
             <span>📋</span> ${isServicesMode ? 'Agregar Servicio a Cotización' : 'Agregar a Presupuesto / Cotización'}
           </button>
         </div>
@@ -753,7 +753,7 @@ const SimulatorModule = {
       <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden border ${isServicesMode ? 'border-teal-200 dark:border-slate-800' : 'border-pink-100 dark:border-slate-800'} my-auto flex flex-col max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] modal-animate-in">
         
         <!-- Header Estándar de Modal -->
-        <div class="${isServicesMode ? 'bg-gradient-to-r from-teal-800 via-emerald-700 to-teal-800' : 'bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600'} p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
+        <div class="${isServicesMode ? 'bg-teal-700 dark:bg-slate-800' : 'bg-pink-600 dark:bg-slate-800'} p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
           <div class="flex items-center gap-2.5 sm:gap-3">
             <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-xs shrink-0">
               ${isServicesMode ? '💆' : '📋'}

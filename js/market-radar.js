@@ -365,6 +365,109 @@ const MarketRadarModule = {
     }
   ],
 
+  // Catálogo de insumos para Modo Servicios (Spa, Estética, Terapias)
+  serviceMarketData: [
+    // --- ACEITES & CREMAS ---
+    {
+      id: 'smkt_1', name: 'Aceite de Almendras para Masaje 1 L', category: 'Aceites & Cremas',
+      brand: 'Natural Spa', packageQty: 1, packageUnit: 'L', store: 'SpaStore Chile',
+      storeLogo: '💆', normalPrice: 12990, offerPrice: 9990, discountPct: 23,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Aceite', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_2', name: 'Crema de Masaje Neutra 500 ml', category: 'Aceites & Cremas',
+      brand: 'Dermik', packageQty: 500, packageUnit: 'ml', store: 'Distribuidora Estética',
+      storeLogo: '✨', normalPrice: 8990, offerPrice: 7490, discountPct: 17,
+      isBestDeal: false, productUrl: '#', matchedIngredientKeyword: 'Crema', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_3', name: 'Aceite Esencial de Lavanda 30 ml', category: 'Aceites & Cremas',
+      brand: 'DoTerra', packageQty: 30, packageUnit: 'ml', store: 'SpaStore Chile',
+      storeLogo: '💆', normalPrice: 15990, offerPrice: 13490, discountPct: 16,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Lavanda', lastUpdated: 'Ayer'
+    },
+    {
+      id: 'smkt_4', name: 'Gel Conductor para Ultrasonido 1 kg', category: 'Aceites & Cremas',
+      brand: 'MedGel', packageQty: 1, packageUnit: 'kg', store: 'Distribuidora Estética',
+      storeLogo: '✨', normalPrice: 6990, offerPrice: 5490, discountPct: 21,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Gel', lastUpdated: 'Hoy'
+    },
+
+    // --- CERAS & DEPILACIÓN ---
+    {
+      id: 'smkt_5', name: 'Cera Depilatoria Roll-On Miel 100 ml (Pack 6)', category: 'Ceras & Depilación',
+      brand: 'Starpil', packageQty: 6, packageUnit: 'un', store: 'BeautyPro',
+      storeLogo: '💅', normalPrice: 14990, offerPrice: 11990, discountPct: 20,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Cera', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_6', name: 'Bandas de Tela para Depilación (Pack 100 un)', category: 'Ceras & Depilación',
+      brand: 'WaxPro', packageQty: 100, packageUnit: 'un', store: 'BeautyPro',
+      storeLogo: '💅', normalPrice: 4990, offerPrice: 3790, discountPct: 24,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Banda', lastUpdated: 'Ayer'
+    },
+
+    // --- TRATAMIENTOS FACIALES ---
+    {
+      id: 'smkt_7', name: 'Sérum Ácido Hialurónico 30 ml', category: 'Tratamientos Faciales',
+      brand: 'Bioderma', packageQty: 30, packageUnit: 'ml', store: 'Distribuidora Estética',
+      storeLogo: '✨', normalPrice: 18990, offerPrice: 14990, discountPct: 21,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Sérum', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_8', name: 'Mascarilla Facial de Colágeno (Pack 10 un)', category: 'Tratamientos Faciales',
+      brand: 'SkinLab', packageQty: 10, packageUnit: 'un', store: 'SpaStore Chile',
+      storeLogo: '💆', normalPrice: 9990, offerPrice: 7490, discountPct: 25,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Mascarilla', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_9', name: 'Exfoliante Facial Enzimático 200 ml', category: 'Tratamientos Faciales',
+      brand: 'Dermik', packageQty: 200, packageUnit: 'ml', store: 'Distribuidora Estética',
+      storeLogo: '✨', normalPrice: 11990, offerPrice: 9490, discountPct: 21,
+      isBestDeal: false, productUrl: '#', matchedIngredientKeyword: 'Exfoliante', lastUpdated: 'Ayer'
+    },
+
+    // --- DESECHABLES DE CABINA ---
+    {
+      id: 'smkt_10', name: 'Sábanas Desechables TNT 80x200 cm (Pack 50)', category: 'Desechables de Cabina',
+      brand: 'MedSupply', packageQty: 50, packageUnit: 'un', store: 'BeautyPro',
+      storeLogo: '💅', normalPrice: 12990, offerPrice: 9990, discountPct: 23,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Sábana', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_11', name: 'Toallas Desechables Spunlace 30x40 cm (Pack 100)', category: 'Desechables de Cabina',
+      brand: 'CleanPro', packageQty: 100, packageUnit: 'un', store: 'SpaStore Chile',
+      storeLogo: '💆', normalPrice: 7990, offerPrice: 5990, discountPct: 25,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Toalla', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_12', name: 'Guantes de Nitrilo Talla M (Caja 100 un)', category: 'Desechables de Cabina',
+      brand: 'SafeHands', packageQty: 100, packageUnit: 'un', store: 'Distribuidora Estética',
+      storeLogo: '✨', normalPrice: 8990, offerPrice: 6990, discountPct: 22,
+      isBestDeal: false, productUrl: '#', matchedIngredientKeyword: 'Guante', lastUpdated: 'Ayer'
+    },
+
+    // --- AROMATERAPIA & AMBIENTE ---
+    {
+      id: 'smkt_13', name: 'Velas Aromáticas de Soja (Pack 3)', category: 'Aromaterapia & Ambiente',
+      brand: 'Zen Candle', packageQty: 3, packageUnit: 'un', store: 'SpaStore Chile',
+      storeLogo: '💆', normalPrice: 14990, offerPrice: 11990, discountPct: 20,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Vela', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_14', name: 'Difusor de Aromas Ultrasónico 300 ml', category: 'Aromaterapia & Ambiente',
+      brand: 'AromaZen', packageQty: 1, packageUnit: 'un', store: 'BeautyPro',
+      storeLogo: '💅', normalPrice: 24990, offerPrice: 18990, discountPct: 24,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Difusor', lastUpdated: 'Hoy'
+    },
+    {
+      id: 'smkt_15', name: 'Piedras Calientes para Masaje (Set 20 un)', category: 'Aromaterapia & Ambiente',
+      brand: 'Hot Stone Pro', packageQty: 20, packageUnit: 'un', store: 'SpaStore Chile',
+      storeLogo: '💆', normalPrice: 32990, offerPrice: 26990, discountPct: 18,
+      isBestDeal: true, productUrl: '#', matchedIngredientKeyword: 'Piedra', lastUpdated: 'Ayer'
+    }
+  ],
+
   getStores() {
     if (typeof DB !== 'undefined' && DB.getMarketStores) {
       return DB.getMarketStores();
@@ -372,21 +475,29 @@ const MarketRadarModule = {
     return typeof DEFAULT_MARKET_STORES !== 'undefined' ? DEFAULT_MARKET_STORES : [];
   },
 
+  getActiveMarketData() {
+    const isServicesMode = typeof App !== 'undefined' && App.currentMode === 'services';
+    return isServicesMode ? this.serviceMarketData : this.marketData;
+  },
+
+  getActiveCategories() {
+    const isServicesMode = typeof App !== 'undefined' && App.currentMode === 'services';
+    return isServicesMode
+      ? ['all', 'Aceites & Cremas', 'Ceras & Depilación', 'Tratamientos Faciales', 'Desechables de Cabina', 'Aromaterapia & Ambiente']
+      : ['all', 'Lácteos & Manjar', 'Harinas & Polvos', 'Huevos & Frescos', 'Chocolates & Coberturas', 'Azúcares & Endulzantes', 'Empaques & Descartables'];
+  },
+
   render() {
     const container = document.getElementById('market-radar-view');
     if (!container) return;
 
-    const isLoggedIn = typeof AuthModule !== 'undefined' && AuthModule.currentUser;
-    if (!isLoggedIn) {
-      container.innerHTML = this.renderLoginGate();
-      return;
-    }
-
+    const isServicesMode = typeof App !== 'undefined' && App.currentMode === 'services';
     const allStores = this.getStores();
     const enabledStores = allStores.filter(s => s.enabled !== false);
-    const categories = ['all', 'Lácteos & Manjar', 'Harinas & Polvos', 'Huevos & Frescos', 'Chocolates & Coberturas', 'Azúcares & Endulzantes', 'Empaques & Descartables'];
+    const categories = this.getActiveCategories();
+    const activeData = this.getActiveMarketData();
 
-    let filtered = this.marketData.filter(item => {
+    let filtered = activeData.filter(item => {
       const matchCat = this.activeCategory === 'all' || item.category === this.activeCategory;
       const matchStore = this.selectedStore === 'all' || item.store.toLowerCase().includes(this.selectedStore.toLowerCase());
       const matchSearch = !this.searchQuery || 
@@ -438,7 +549,7 @@ const MarketRadarModule = {
           <div class="md:col-span-6 relative">
             <input 
               type="text" 
-              placeholder="Buscar en ofertas (Manjar, Harina, Mantequilla)..." 
+              placeholder="${isServicesMode ? 'Buscar insumos (Aceite, Crema, Cera, Mascarilla)...' : 'Buscar en ofertas (Manjar, Harina, Mantequilla)...'}" 
               value="${this.searchQuery}"
               oninput="MarketRadarModule.onSearch(this.value)"
               class="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 dark:bg-slate-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-400 text-xs bg-gray-50/50 focus:bg-white"
@@ -479,7 +590,7 @@ const MarketRadarModule = {
           ${categories.map(cat => `
             <button 
               onclick="MarketRadarModule.filterByCategory('${cat}')"
-              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl whitespace-nowrap transition shrink-0 cursor-pointer ${this.activeCategory === cat ? 'bg-pink-600 text-white font-bold shadow-xs' : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-slate-700'}"
+              class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl whitespace-nowrap transition shrink-0 cursor-pointer ${this.activeCategory === cat ? (isServicesMode ? 'bg-teal-600 text-white font-bold shadow-xs' : 'bg-pink-600 text-white font-bold shadow-xs') : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-slate-700'}"
             >
               ${cat === 'all' ? '✨ Todas' : cat}
             </button>

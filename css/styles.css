@@ -33,20 +33,32 @@ h1, h2, h3, h4, .font-heading {
 }
 
 /* ==========================================
-   Hero Banners con Alto Contraste Garantizado
+   Hero Banners - Diseño Moderno, Minimalista & Alto Contraste
    ========================================== */
 .products-hero-banner {
-  background: linear-gradient(135deg, #be185d 0%, #db2777 50%, #ec4899 100%) !important;
+  background-color: #be185d !important;
+  background-image: none !important;
   color: #ffffff !important;
-  box-shadow: 0 10px 25px -5px rgba(219, 39, 119, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 20px -2px rgba(190, 24, 93, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .services-hero-banner {
-  background: linear-gradient(135deg, #042f2e 0%, #064e3b 45%, #0f766e 100%) !important;
+  background-color: #0f766e !important;
+  background-image: none !important;
   color: #ffffff !important;
-  box-shadow: 0 10px 25px -5px rgba(15, 118, 110, 0.4);
-  border: 1px solid rgba(45, 212, 191, 0.25);
+  box-shadow: 0 4px 20px -2px rgba(15, 118, 110, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+html.dark .products-hero-banner {
+  background-color: #831843 !important;
+  border-color: #9d174d !important;
+}
+
+html.dark .services-hero-banner {
+  background-color: #115e59 !important;
+  border-color: #134e4a !important;
 }
 
 .services-hero-banner h1,
@@ -55,29 +67,29 @@ h1, h2, h3, h4, .font-heading {
 .products-hero-banner h1,
 .products-hero-banner h2,
 .products-hero-banner span {
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  text-shadow: none !important;
 }
 
 .services-hero-banner .hero-badge {
-  background: rgba(255, 255, 255, 0.18) !important;
-  backdrop-filter: blur(8px);
-  color: #f0fdfa !important;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.2) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-weight: 700;
 }
 
 .services-hero-banner .hero-subtitle {
-  color: #ccfbf1 !important;
+  color: #e6fffa !important;
 }
 
 .products-hero-banner .hero-badge {
-  background: rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.2) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-weight: 700;
 }
 
 .products-hero-banner .hero-subtitle {
-  color: #fce7f3 !important;
+  color: #fdf2f8 !important;
 }
 
 /* ==========================================
@@ -375,6 +387,45 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Mode Selection Card Animation */
+.mode-card {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -5px rgba(0, 0, 0, 0.06);
+}
+
+.mode-card:active {
+  transform: scale(0.97);
+}
+
+.mode-card-selected {
+  animation: modeCardPulse 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modeCardPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.1);
+  }
+  40% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+  }
+  70% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
 body.modal-open {
   overflow: hidden !important;
   touch-action: none;
@@ -501,6 +552,33 @@ body.mode-services #mode-switcher-btn {
 html.dark body.mode-services #mode-switcher-btn {
   border-color: #134e4a !important;
   background-color: #0f2928 !important;
+}
+
+/* ==========================================
+   Hero Banners Dinámicos (Pastelería vs Servicios)
+   ========================================== */
+.products-hero-banner {
+  background: linear-gradient(135deg, #e11d48 0%, #db2777 50%, #f43f5e 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 25px -5px rgba(225, 29, 72, 0.35), 0 8px 10px -6px rgba(225, 29, 72, 0.2);
+}
+
+html.dark .products-hero-banner {
+  background: linear-gradient(135deg, #881337 0%, #9d174d 50%, #4c0519 100%);
+  border: 1px solid rgba(244, 114, 182, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.services-hero-banner {
+  background: linear-gradient(135deg, #065f46 0%, #0f766e 50%, #047857 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(15, 118, 110, 0.35), 0 8px 10px -6px rgba(15, 118, 110, 0.2);
+}
+
+html.dark .services-hero-banner {
+  background: linear-gradient(135deg, #022c22 0%, #134e4a 50%, #064e3b 100%);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
 }
 
 /* Reemplazo global armónico de clases pink -> teal/emerald en Modo Servicios */

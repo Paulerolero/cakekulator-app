@@ -46,8 +46,9 @@ const AuthModule = {
             DB.stopRealtimeListeners();
             DB.stopPeriodicSync();
           }
-          // Si no hay sesión iniciada, mostrar modal de bienvenida para pedir login
-          this.showLoginRequiredModal();
+          // Importante: no bloquear la interfaz en modo local. El usuario puede
+          // iniciar sesión cuando quiera desde el botón de la cabecera.
+          this.closeLoginModal();
         }
       });
     } else {
@@ -56,6 +57,7 @@ const AuthModule = {
       if (typeof App !== 'undefined' && App.updateNavVisibility) {
         App.updateNavVisibility();
       }
+      this.closeLoginModal();
     }
   },
 
@@ -143,69 +145,51 @@ const AuthModule = {
       const name = this.currentUser.displayName || this.currentUser.email || 'Usuario';
       const firstName = name.split(' ')[0];
 
-      let syncBadge = '';
-      let statusTooltip = 'Sincronizado en tiempo real';
-      
-      if (this.syncStatus === 'synced') {
-        syncBadge = '<span class="w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white ring-1 ring-emerald-300"></span>';
-        statusTooltip = 'Sincronizado con Firestore en tiempo real';
-      } else if (this.syncStatus === 'syncing') {
-        syncBadge = '<span class="w-2.5 h-2.5 bg-amber-400 rounded-full border-2 border-white animate-ping"></span>';
-        statusTooltip = 'Sincronizando cambios con Firestore...';
-      } else if (this.syncStatus === 'error') {
-        syncBadge = '<span class="w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white ring-1 ring-red-300"></span>';
-        statusTooltip = 'Error en sincronización';
-      } else if (this.syncStatus === 'offline') {
-        syncBadge = '<span class="w-2.5 h-2.5 bg-gray-400 rounded-full border-2 border-white ring-1 ring-gray-200"></span>';
-        statusTooltip = 'Modo offline - Datos guardados localmente';
-      }
-
       container.innerHTML = `
         <div class="relative">
           <button 
+            id="user-menu-btn" 
             onclick="AuthModule.toggleUserDropdown()" 
-            id="user-profile-btn"
-            title="Cuenta de ${name}"
-            class="flex items-center gap-2 bg-white/90 hover:bg-pink-50/70 border border-pink-100 hover:border-pink-300 px-2 sm:px-3 py-1.5 rounded-2xl shadow-xs transition duration-200 select-none group"
+            class="flex items-center gap-2 bg-pink-50/80 hover:bg-pink-100/80 dark:bg-slate-800 dark:hover:bg-slate-700 border border-pink-200/60 dark:border-slate-700 pl-1 pr-2.5 sm:pr-3 py-1 rounded-2xl transition duration-150 group"
           >
             ${photoURL ? `
               <img src="${photoURL}" alt="${name}" class="w-7 h-7 rounded-full object-cover ring-1 ring-pink-300 group-hover:ring-pink-400 transition">
             ` : `
-              <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-pink-500 to-rose-400 text-white font-bold flex items-center justify-center text-xs shadow-xs">
+              <div class="w-7 h-7 rounded-full bg-pink-600 text-white font-bold flex items-center justify-center text-xs shadow-xs">
                 ${firstName.charAt(0).toUpperCase()}
               </div>
             `}
-            <span class="text-xs font-bold text-gray-800 hidden sm:inline max-w-[120px] truncate">${firstName}</span>
+            <span class="text-xs font-bold text-gray-800 dark:text-gray-100 hidden sm:inline max-w-[120px] truncate">${firstName}</span>
             <svg class="w-3.5 h-3.5 text-gray-400 group-hover:text-pink-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
 
-          <!-- Dropdown Menu de Usuario Pastelero -->
-          <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-72 bg-white rounded-3xl shadow-2xl border border-pink-100 py-2.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+          <!-- Dropdown Menu de Usuario -->
+          <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-pink-100 dark:border-slate-800 py-2.5 z-50 animate-in fade-in zoom-in-95 duration-150">
             <!-- Header con Datos de Usuario -->
-            <div class="px-4 py-3 border-b border-pink-50 bg-gradient-to-b from-pink-50/50 to-transparent">
+            <div class="px-4 py-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/80">
               <div class="flex items-center gap-3">
                 ${photoURL ? `
                   <img src="${photoURL}" alt="${name}" class="w-11 h-11 rounded-full object-cover ring-2 ring-pink-300 shadow-sm">
                 ` : `
-                  <div class="w-11 h-11 rounded-full bg-gradient-to-tr from-pink-500 to-rose-400 text-white font-bold flex items-center justify-center text-base shadow-sm">
+                  <div class="w-11 h-11 rounded-full bg-pink-600 text-white font-bold flex items-center justify-center text-base shadow-sm">
                     ${firstName.charAt(0).toUpperCase()}
                   </div>
                 `}
                 <div class="truncate flex-1">
-                  <h4 class="font-bold text-xs text-gray-900 truncate">${name}</h4>
-                  <p class="text-[11px] text-gray-400 truncate">${this.currentUser.email || ''}</p>
+                  <h4 class="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">${name}</h4>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">${this.currentUser.email || ''}</p>
                   
                   <div class="flex items-center gap-1.5 mt-1">
                     <span class="w-2 h-2 rounded-full ${this.syncStatus === 'synced' ? 'bg-emerald-500 ring-2 ring-emerald-200' : (this.syncStatus === 'syncing' ? 'bg-amber-400 animate-pulse' : 'bg-red-400')}"></span>
-                    <span class="text-[10px] font-bold ${this.syncStatus === 'synced' ? 'text-emerald-700' : 'text-amber-700'}">${this.syncStatusText}</span>
+                    <span class="text-[10px] font-bold ${this.syncStatus === 'synced' ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}">${this.syncStatusText}</span>
                   </div>
                 </div>
               </div>
 
               <!-- Banner de Estado de Respaldo -->
-              <div class="mt-2.5 bg-white/80 border border-pink-100 rounded-xl p-2 flex items-center justify-between text-[10px] text-gray-500">
+              <div class="mt-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-2 flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400">
                 <span>🕒 Último respaldo:</span>
-                <span class="font-bold text-gray-700" id="user-sync-time-label">${this.formatLastSync()}</span>
+                <span class="font-bold text-gray-700 dark:text-gray-200" id="user-sync-time-label">${this.formatLastSync()}</span>
               </div>
             </div>
 
@@ -214,27 +198,27 @@ const AuthModule = {
               <button 
                 onclick="AuthModule.forceSyncNow()" 
                 id="btn-force-sync"
-                class="w-full text-left px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-pink-50 hover:text-pink-700 rounded-2xl transition flex items-center justify-between group"
+                class="w-full text-left px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-slate-800 hover:text-pink-700 dark:hover:text-pink-300 rounded-2xl transition flex items-center justify-between group cursor-pointer"
               >
                 <span class="flex items-center gap-2">
                   <span class="group-hover:rotate-180 transition-transform duration-500">🔄</span>
                   <span>Sincronizar Ahora</span>
                 </span>
-                <span class="text-[10px] bg-pink-100 text-pink-700 px-2 py-0.5 rounded-full font-bold">Nube</span>
+                <span class="text-[10px] bg-pink-100 dark:bg-slate-700 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded-full font-bold">Nube</span>
               </button>
 
               <button 
                 onclick="AuthModule.showConfigModal()" 
-                class="w-full text-left px-3 py-2 text-xs font-medium text-gray-700 hover:bg-pink-50 hover:text-pink-700 rounded-2xl transition flex items-center gap-2"
+                class="w-full text-left px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-slate-800 hover:text-pink-700 dark:hover:text-pink-300 rounded-2xl transition flex items-center gap-2 cursor-pointer"
               >
                 <span>⚙️</span> Estado de la Conexión
               </button>
 
-              <div class="border-t border-gray-100 my-1"></div>
+              <div class="border-t border-gray-100 dark:border-slate-800 my-1"></div>
 
               <button 
                 onclick="AuthModule.logout()" 
-                class="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 rounded-2xl transition flex items-center gap-2"
+                class="w-full text-left px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-2xl transition flex items-center gap-2 cursor-pointer"
               >
                 <span>🚪</span> Cerrar Sesión
               </button>
@@ -246,10 +230,9 @@ const AuthModule = {
       container.innerHTML = `
         <button 
           onclick="AuthModule.showLoginRequiredModal()" 
-          class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-bold px-3.5 py-1.5 rounded-2xl text-xs shadow-sm shadow-pink-200/80 hover:shadow-md hover:shadow-pink-300/80 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          class="flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-bold px-3.5 py-1.5 rounded-2xl text-xs shadow-xs transition-all cursor-pointer"
         >
           <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v8h-2z" class="hidden"/>
             <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/>
           </svg>
           <span class="hidden sm:inline">Iniciar Sesión</span>
@@ -372,6 +355,12 @@ const AuthModule = {
   },
 
   showLoginRequiredModal() {
+    // En modo local el usuario debe poder seguir usando la app sin quedar bloqueado por una
+    // ventana emergente de sincronización. Solo se muestra si es invocada explícitamente.
+    if (this.currentUser) {
+      this.closeLoginModal();
+      return;
+    }
     let modal = document.getElementById('login-prompt-modal');
     if (!modal) {
       modal = document.createElement('div');
@@ -398,9 +387,9 @@ const AuthModule = {
         </button>
 
         <div class="relative z-10">
-          <!-- Icono de Marca Pastelera -->
-          <div class="mx-auto w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-500 text-white shadow-md shadow-pink-200/80 mb-2.5 flex items-center justify-center text-2xl sm:text-3xl select-none">
-            🎂
+          <!-- Icono de Sincronización -->
+          <div class="mx-auto w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-pink-600 dark:bg-slate-800 text-white shadow-sm mb-2.5 flex items-center justify-center text-2xl sm:text-3xl select-none">
+            ☁️
           </div>
 
           <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-pink-50 dark:bg-pink-950/50 border border-pink-100 dark:border-pink-900 text-pink-700 dark:text-pink-300 text-[10px] sm:text-[11px] font-bold mb-1.5">
@@ -408,19 +397,19 @@ const AuthModule = {
           </div>
 
           <h3 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight mb-1 font-heading leading-tight">
-            Tu Pastelería Siempre Conectada
+            Tu Negocio Siempre Conectado
           </h3>
           <p class="text-xs text-gray-500 dark:text-gray-400 mb-3 sm:mb-4 max-w-xs mx-auto leading-snug">
-            Accede a tus recetas, costos e insumos desde cualquier celular, tablet o computador sin perder nada.
+            Accede a tus fichas, costos e insumos desde cualquier celular, tablet o computador sin perder nada.
           </p>
 
           <!-- Tarjetas de Beneficios con diseño pastelero compacto -->
           <div class="bg-pink-50/70 dark:bg-slate-800/80 rounded-2xl p-3 sm:p-3.5 text-left space-y-2 mb-3.5 sm:mb-4 border border-pink-100/70 dark:border-slate-700">
             <div class="flex items-center gap-2.5">
-              <span class="text-base leading-none shrink-0">🎂</span>
+              <span class="text-base leading-none shrink-0">📋</span>
               <div class="min-w-0">
-                <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">Recetas y Fichas Técnicas</h5>
-                <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">Tus costes, ingredientes y porciones siempre respaldados.</p>
+                <h5 class="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">Fichas, Costos y Cotizaciones</h5>
+                <p class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight">Tus fichas técnicas, costos e insumos siempre respaldados.</p>
               </div>
             </div>
             <div class="flex items-center gap-2.5">

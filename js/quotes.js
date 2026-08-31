@@ -17,12 +17,6 @@ const QuotesModule = {
     const container = document.getElementById('quotes-view');
     if (!container) return;
 
-    const isLoggedIn = typeof AuthModule !== 'undefined' && AuthModule.currentUser;
-    if (!isLoggedIn) {
-      container.innerHTML = this.renderLoginGate();
-      return;
-    }
-
     const allQuotes = DB.getQuotes();
     const settings = DB.getSettings();
 
@@ -173,11 +167,11 @@ const QuotesModule = {
       modal.className = 'fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
       modal.innerHTML = `
         <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto flex flex-col modal-animate-in border border-pink-100 dark:border-slate-800">
-          <div class="bg-gradient-to-r from-pink-500 to-rose-400 p-4 text-white flex items-center justify-between shrink-0">
+          <div id="quote-editor-header" class="bg-pink-600 dark:bg-slate-800 p-4 text-white flex items-center justify-between shrink-0">
             <h3 id="quote-editor-title" class="font-bold text-lg flex items-center gap-2">
               <span>📋</span> Nueva Cotización para Cliente
             </h3>
-            <button onclick="QuotesModule.closeEditor()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">
+            <button onclick="QuotesModule.closeEditor()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition cursor-pointer">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -336,7 +330,7 @@ const QuotesModule = {
       modal.className = 'fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto no-scrollbar';
       modal.innerHTML = `
         <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[92vh] my-auto flex flex-col modal-animate-in border border-pink-100 dark:border-slate-800">
-          <div class="bg-gradient-to-r from-emerald-600 to-teal-600 p-4 text-white flex items-center justify-between shrink-0">
+          <div class="bg-teal-700 dark:bg-slate-800 p-4 text-white flex items-center justify-between shrink-0">
             <div class="flex items-center gap-2.5">
               <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl shadow-xs">
                 📲
@@ -346,7 +340,7 @@ const QuotesModule = {
                 <p class="text-xs text-emerald-100" id="wa-modal-subtitle">Mensaje resumido con imagen formal del presupuesto</p>
               </div>
             </div>
-            <button onclick="QuotesModule.closeWhatsAppModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">✕</button>
+            <button onclick="QuotesModule.closeWhatsAppModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition cursor-pointer">✕</button>
           </div>
 
           <div class="p-4 sm:p-6 overflow-y-auto space-y-4 text-xs flex-1">
@@ -1138,7 +1132,8 @@ const QuotesModule = {
 
   // Generador de HTML para Imagen PNG y Documento
   getQuoteHTMLForImage(quote) {
-    const settings = DB.getSettings();
+    const quoteMode = quote.mode || (quote.services && quote.services.length ? 'services' : (App.currentMode || 'products'));
+    const settings = DB.getSettings(quoteMode);
     const total = quote.total || quote.subtotal || 0;
     const deposit = quote.depositAmount || (total * 0.5);
     const balance = quote.remainingBalance || (total - deposit);

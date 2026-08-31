@@ -12,13 +12,6 @@ const FinanceModule = {
     const container = document.getElementById('finance-view');
     if (!container) return;
 
-    const isLoggedIn = typeof AuthModule !== 'undefined' && AuthModule.currentUser;
-
-    if (!isLoggedIn) {
-      container.innerHTML = this.renderLoginGate();
-      return;
-    }
-
     const quotes = DB.getQuotes();
     const recipes = DB.getRecipes();
     const ingredients = DB.getIngredients();
@@ -53,12 +46,63 @@ const FinanceModule = {
       });
     });
     const avgMargin = totalCostWeighted > 0 ? totalMarginWeighted / totalCostWeighted : 0;
+    const isServicesMode = typeof App !== 'undefined' && App.currentMode === 'services';
+    const accentColor = isServicesMode ? 'teal' : 'pink';
+    const modeLabel = isServicesMode ? 'Servicios' : 'Productos';
+    const modeIcon = isServicesMode ? '💆' : '🎂';
+
+    // Métricas adicionales desktop
+    const totalIngredientsCost = ingredients.reduce((s, i) => s + (Number(i.price) || 0), 0);
+    const inventoryValue = ingredients.reduce((s, i) => s + ((Number(i.price) || 0) * (Number(i.stock) || 0)), 0);
+    const avgPricePerUnit = recipes.length > 0 
+      ? recipes.reduce((s, r) => {
+          const costs = Calculator.calculateRecipeFullCosts(r, ingredientsMap);
+          if (costs && costs.costPerUnit > 0) {
+            const margin = (r.suggestedMargin || 40) / 100;
+            return s + (costs.costPerUnit / (1 - margin));
+          }
+          return s;
+        }, 0) / recipes.length 
+      : 0;
+
+    // Cotizaciones este mes
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    const quotesThisMonth = quotes.filter(q => {
+      const d = new Date(q.createdAt || q.date);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+    const quotesLastMonth = quotes.filter(q => {
+      const d = new Date(q.createdAt || q.date);
+      const lm = thisMonth === 0 ? 11 : thisMonth - 1;
+      const ly = thisMonth === 0 ? thisYear - 1 : thisYear;
+      return d.getMonth() === lm && d.getFullYear() === ly;
+    });
+
+    // Crecimiento mensual
+    const salesThisMonth = quotesThisMonth.filter(q => q.status === 'approved').reduce((s, q) => s + (Number(q.total) || 0), 0);
+    const salesLastMonth = quotesLastMonth.filter(q => q.status === 'approved').reduce((s, q) => s + (Number(q.total) || 0), 0);
+    const growthPct = salesLastMonth > 0 ? ((salesThisMonth - salesLastMonth) / salesLastMonth) * 100 : 0;
+
+    // Ganancia neta estimada
+    let totalCostFromApproved = 0;
+    approvedQuotes.forEach(q => {
+      (q.items || []).forEach(item => {
+        const recipe = recipes.find(r => r.id === item.recipeId);
+        if (recipe) {
+          const costs = Calculator.calculateRecipeFullCosts(recipe, ingredientsMap);
+          if (costs) totalCostFromApproved += (costs.costPerUnit || 0) * (Number(item.quantity) || 1);
+        }
+      });
+    });
+    const netProfit = totalSales - totalCostFromApproved;
 
     container.innerHTML = `
       <div class="space-y-4 sm:space-y-5 max-w-6xl mx-auto">
         
         <!-- Header del Panel -->
-        <div class="bg-pink-600 dark:bg-pink-700 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-md relative overflow-hidden">
+        <div class="bg-${accentColor}-600 dark:bg-${accentColor}-700 rounded-2xl sm:rounded-3xl p-4 sm:p-6 text-white shadow-md relative overflow-hidden">
           <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-3">
               <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl sm:text-3xl shadow-inner shrink-0">
@@ -68,14 +112,14 @@ const FinanceModule = {
                 <h2 class="text-lg sm:text-2xl font-black tracking-tight leading-tight">
                   Panel de Finanzas
                 </h2>
-                <p class="text-pink-100 text-[11px] sm:text-xs mt-0.5">
-                  Inteligencia financiera de ${settings.businessName || 'tu pastelería'}
+                <p class="text-${accentColor}-100 text-[11px] sm:text-xs mt-0.5">
+                  Inteligencia financiera de ${settings.businessName || 'tu negocio'} · ${modeIcon} ${modeLabel}
                 </p>
               </div>
             </div>
             <div class="flex items-center gap-2">
               ${['3m', '6m', '12m', 'all'].map(p => `
-                <button onclick="FinanceModule.setPeriod('${p}')" class="px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition ${this.selectedPeriod === p ? 'bg-white text-pink-700 shadow-sm' : 'bg-white/20 text-white hover:bg-white/30'} cursor-pointer">
+                <button onclick="FinanceModule.setPeriod('${p}')" class="px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs font-bold transition ${this.selectedPeriod === p ? 'bg-white text-' + accentColor + '-700 shadow-sm' : 'bg-white/20 text-white hover:bg-white/30'} cursor-pointer">
                   ${p === '3m' ? '3 Meses' : p === '6m' ? '6 Meses' : p === '12m' ? '1 Año' : 'Todo'}
                 </button>
               `).join('')}
@@ -84,18 +128,28 @@ const FinanceModule = {
           <div class="absolute -right-4 -bottom-6 opacity-15 text-7xl sm:text-8xl pointer-events-none select-none">💰</div>
         </div>
 
-        <!-- KPIs Financieros -->
+        <!-- KPIs Financieros Principales -->
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-          ${this.renderKpiCard('💵', 'Ventas Totales', Calculator.formatCurrency(totalSales), 'Cotizaciones aprobadas', 'pink')}
+          ${this.renderKpiCard('💵', 'Ventas Totales', Calculator.formatCurrency(totalSales), 'Cotizaciones aprobadas', accentColor)}
           ${this.renderKpiCard('🎫', 'Ticket Promedio', Calculator.formatCurrency(avgTicket), `${approvedQuotes.length} ventas`, 'purple')}
           ${this.renderKpiCard('📈', 'Tasa Conversión', avgMargin > 0 ? conversionRate.toFixed(1) + '%' : '—', `${approvedQuotes.length} de ${quotes.length}`, 'emerald')}
           ${this.renderKpiCard('💎', 'Margen Promedio', avgMargin > 0 ? avgMargin.toFixed(1) + '%' : '—', 'Ponderado por venta', 'amber')}
         </div>
 
+        <!-- KPIs Extendidos (Solo Desktop) -->
+        <div class="hidden lg:grid grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3">
+          ${this.renderKpiCard('📦', 'Valor Inventario', Calculator.formatCurrency(inventoryValue), `${ingredients.length} insumos`, 'blue')}
+          ${this.renderKpiCard('💸', 'Costo Insumos', Calculator.formatCurrency(totalIngredientsCost), 'Precio unitario total', 'red')}
+          ${this.renderKpiCard('🏷️', 'Precio Prom.', Calculator.formatCurrency(avgPricePerUnit), `Por ${isServicesMode ? 'sesión' : 'unidad'}`, 'violet')}
+          ${this.renderKpiCard('🔄', 'Cotiz. este Mes', quotesThisMonth.length.toString(), `${quotesThisMonth.filter(q => q.status === 'approved').length} aprobadas`, 'cyan')}
+          ${this.renderKpiCard('📊', 'Crecimiento', salesLastMonth > 0 ? (growthPct >= 0 ? '+' : '') + growthPct.toFixed(1) + '%' : '—', 'vs mes anterior', growthPct >= 0 ? 'emerald' : 'red')}
+          ${this.renderKpiCard('💰', 'Ganancia Neta', Calculator.formatCurrency(netProfit), 'Ventas − Costos', netProfit >= 0 ? 'emerald' : 'red')}
+        </div>
+
         <!-- Fila de Gráficos: Evolutivo + Proyección -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <!-- Evolutivo de Cotizaciones -->
-          <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-800 shadow-sm">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-${accentColor}-100 dark:border-slate-800 shadow-sm">
             <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2 mb-3">
               <span>📊</span> Evolutivo de Cotizaciones
             </h3>
@@ -105,7 +159,7 @@ const FinanceModule = {
           </div>
 
           <!-- Proyección de Ventas -->
-          <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-800 shadow-sm">
+          <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-${accentColor}-100 dark:border-slate-800 shadow-sm">
             <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2 mb-3">
               <span>🔮</span> Proyección de Ventas
             </h3>
@@ -115,12 +169,12 @@ const FinanceModule = {
           </div>
         </div>
 
-        <!-- Fila: Productos Más Pedidos -->
+        <!-- Fila: Productos/Servicios Más Pedidos -->
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <!-- Donut Chart -->
-          <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-800 shadow-sm">
+          <div class="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-${accentColor}-100 dark:border-slate-800 shadow-sm">
             <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2 mb-3">
-              <span>🏆</span> Top Productos
+              <span>🏆</span> Top ${isServicesMode ? 'Servicios' : 'Productos'}
             </h3>
             <div class="relative mx-auto" style="height: 220px; max-width: 220px;">
               <canvas id="finance-products-chart"></canvas>
@@ -128,9 +182,9 @@ const FinanceModule = {
           </div>
 
           <!-- Tabla de Productos -->
-          <div class="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-800 shadow-sm">
+          <div class="lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-${accentColor}-100 dark:border-slate-800 shadow-sm">
             <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2 mb-3">
-              <span>📋</span> Detalle de Productos Más Cotizados
+              <span>📋</span> Detalle de ${isServicesMode ? 'Servicios' : 'Productos'} Más Cotizados
             </h3>
             <div class="overflow-x-auto">
               ${this.renderTopProductsTable(quotes, recipes)}
@@ -138,15 +192,25 @@ const FinanceModule = {
           </div>
         </div>
 
+        <!-- Análisis de Costos Detallado (Solo Desktop) -->
+        <div class="hidden lg:block bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-${accentColor}-100 dark:border-slate-800 shadow-sm">
+          <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2 mb-3">
+            <span>🔬</span> Análisis de Costos por ${isServicesMode ? 'Servicio' : 'Receta'} <span class="text-[10px] font-medium text-${accentColor}-500 bg-${accentColor}-50 dark:bg-${accentColor}-950/40 px-2 py-0.5 rounded-full ml-1">Solo Desktop</span>
+          </h3>
+          <div class="overflow-x-auto">
+            ${this.renderDetailedCostTable(recipes, ingredientsMap, isServicesMode)}
+          </div>
+        </div>
+
         <!-- Evolutivo de Precios de Insumos -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-800 shadow-sm">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-${accentColor}-100 dark:border-slate-800 shadow-sm">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
             <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
               <span>📉</span> Evolutivo de Precios de Insumos
             </h3>
             <div class="flex items-center gap-2 flex-wrap">
               <select id="finance-ingredient-select" onchange="FinanceModule.addPriceIngredient(this.value); this.value='';"
-                class="px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-pink-400 max-w-[200px]">
+                class="px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:ring-2 focus:ring-${accentColor}-400 max-w-[200px]">
                 <option value="">+ Agregar insumo al gráfico</option>
                 ${ingredients.map(i => `<option value="${i.id}">${i.name}</option>`).join('')}
               </select>
@@ -157,9 +221,9 @@ const FinanceModule = {
               ${this.selectedPriceIngredients.map(id => {
                 const ing = ingredients.find(i => i.id === id);
                 return ing ? `
-                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-pink-50 dark:bg-pink-950/40 text-pink-700 dark:text-pink-300 text-[11px] font-bold border border-pink-200 dark:border-pink-800">
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-${accentColor}-50 dark:bg-${accentColor}-950/40 text-${accentColor}-700 dark:text-${accentColor}-300 text-[11px] font-bold border border-${accentColor}-200 dark:border-${accentColor}-800">
                     ${ing.name}
-                    <button onclick="FinanceModule.removePriceIngredient('${id}')" class="text-pink-400 hover:text-pink-600 cursor-pointer ml-0.5">✕</button>
+                    <button onclick="FinanceModule.removePriceIngredient('${id}')" class="text-${accentColor}-400 hover:text-${accentColor}-600 cursor-pointer ml-0.5">✕</button>
                   </span>
                 ` : '';
               }).join('')}
@@ -179,10 +243,10 @@ const FinanceModule = {
           ` : ''}
         </div>
 
-        <!-- Rentabilidad por Receta -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-800 shadow-sm">
+        <!-- Rentabilidad por Receta/Servicio -->
+        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-${accentColor}-100 dark:border-slate-800 shadow-sm">
           <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2 mb-3">
-            <span>💰</span> Rentabilidad por Receta
+            <span>💰</span> Rentabilidad por ${isServicesMode ? 'Servicio' : 'Receta'}
           </h3>
           <div class="overflow-x-auto">
             ${this.renderProfitabilityTable(recipes, ingredientsMap)}
@@ -794,6 +858,84 @@ const FinanceModule = {
                     ${r.margin.toFixed(1)}%
                   </span>
                 </td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  },
+
+  renderDetailedCostTable(recipes, ingredientsMap, isServicesMode) {
+    if (recipes.length === 0) {
+      return `<div class="py-6 text-center text-gray-400 text-xs"><span class="text-2xl block mb-1">🔬</span>Agrega ${isServicesMode ? 'servicios' : 'recetas'} para ver el análisis detallado de costos.</div>`;
+    }
+
+    const recipeData = recipes.map(r => {
+      const costs = Calculator.calculateRecipeFullCosts(r, ingredientsMap);
+      if (!costs) return null;
+      const cost = costs.costPerUnit || 0;
+      const margin = (r.suggestedMargin || 40) / 100;
+      const sellingPrice = margin < 1 ? cost / (1 - margin) : cost * 1.4;
+      const profit = sellingPrice - cost;
+      const marginPct = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
+      // Breakeven: Fixed costs / profit per unit (simplified)
+      const fixedCosts = (costs.laborCost || 0) + (costs.overheadCost || 0);
+      const variableCostPerUnit = costs.ingredientsCost || 0;
+      const contributionPerUnit = sellingPrice - (variableCostPerUnit / (costs.yieldUnits || 1));
+      const breakeven = contributionPerUnit > 0 ? Math.ceil(fixedCosts / contributionPerUnit) : 0;
+
+      return { 
+        name: r.name, type: r.type, category: r.category || '—',
+        cost, sellingPrice, profit, marginPct, 
+        ingredientsCost: costs.ingredientsCost || 0,
+        laborCost: costs.laborCost || 0,
+        overheadCost: costs.overheadCost || 0,
+        totalBatchCost: costs.totalCost || 0,
+        yieldUnits: costs.yieldUnits || 1,
+        breakeven
+      };
+    }).filter(Boolean).sort((a, b) => b.marginPct - a.marginPct);
+
+    return `
+      <table class="w-full text-xs">
+        <thead>
+          <tr class="text-left text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-slate-800">
+            <th class="py-2 pr-2 font-bold">${isServicesMode ? 'Servicio' : 'Receta'}</th>
+            <th class="py-2 pr-2 font-bold">Categoría</th>
+            <th class="py-2 pr-2 font-bold text-right">Costo Insumos</th>
+            <th class="py-2 pr-2 font-bold text-right">Mano de Obra</th>
+            <th class="py-2 pr-2 font-bold text-right">${isServicesMode ? 'Gastos Cabina' : 'Fijos'}</th>
+            <th class="py-2 pr-2 font-bold text-right">Costo/ud</th>
+            <th class="py-2 pr-2 font-bold text-right">Precio Venta</th>
+            <th class="py-2 pr-2 font-bold text-right">Ganancia/ud</th>
+            <th class="py-2 pr-2 font-bold text-right">Margen</th>
+            <th class="py-2 font-bold text-right">P. Equilibrio</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${recipeData.map(r => {
+            const marginColor = r.marginPct >= 40
+              ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
+              : r.marginPct >= 20
+                ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40'
+                : 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40';
+            return `
+              <tr class="border-b border-gray-50 dark:border-slate-800/50 hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition">
+                <td class="py-2.5 pr-2 font-bold text-gray-800 dark:text-gray-200 truncate max-w-[140px]">${r.name}</td>
+                <td class="py-2.5 pr-2 text-gray-500 dark:text-gray-400 truncate max-w-[100px]">${r.category}</td>
+                <td class="py-2.5 pr-2 text-right text-gray-600 dark:text-gray-400">${Calculator.formatCurrency(r.ingredientsCost)}</td>
+                <td class="py-2.5 pr-2 text-right text-gray-600 dark:text-gray-400">${Calculator.formatCurrency(r.laborCost)}</td>
+                <td class="py-2.5 pr-2 text-right text-gray-600 dark:text-gray-400">${Calculator.formatCurrency(r.overheadCost)}</td>
+                <td class="py-2.5 pr-2 text-right font-bold text-gray-800 dark:text-gray-200">${Calculator.formatCurrency(r.cost)}</td>
+                <td class="py-2.5 pr-2 text-right font-bold text-blue-600 dark:text-blue-400">${Calculator.formatCurrency(r.sellingPrice)}</td>
+                <td class="py-2.5 pr-2 text-right font-bold ${r.profit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}">${Calculator.formatCurrency(r.profit)}</td>
+                <td class="py-2.5 pr-2 text-right">
+                  <span class="inline-block px-2 py-0.5 rounded-lg text-[11px] font-black ${marginColor}">
+                    ${r.marginPct.toFixed(1)}%
+                  </span>
+                </td>
+                <td class="py-2.5 text-right font-bold text-gray-700 dark:text-gray-300">${r.breakeven > 0 ? r.breakeven + ' ud' : '—'}</td>
               </tr>
             `;
           }).join('')}

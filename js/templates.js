@@ -6,13 +6,23 @@ const DEFAULT_SETTINGS = {
   currencySymbol: '$',
   currencyCode: 'CLP',
   defaultHourlyRate: 4000,
+  hourlyRateProducts: 4000,
+  hourlyRateServices: 6000,
   defaultTargetMargin: 40,
+  targetMarginProducts: 40,
+  targetMarginServices: 50,
+  serviceCabinCost: 3000,
   defaultPaymentCommission: 3.19, // Transbank / POS común
   businessName: 'Mi Pastelería Artesanal',
+  businessNameProducts: 'Mi Pastelería Artesanal',
+  businessNameServices: 'Centro de Estética, Spa & Masajes',
+  useSameBusinessName: false,
   businessPhone: '+56 9 1234 5678',
   businessEmail: 'contacto@mipasteleria.cl',
   businessInstagram: '@mipasteleria',
   logoUrl: '',
+  logoUrlProducts: '',
+  logoUrlServices: '',
   quoteNote: 'Presupuesto válido por 15 días. Para reservar se solicita abono del 50%.',
   defaultDepositPercent: 50
 };

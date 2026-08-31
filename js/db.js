@@ -100,6 +100,71 @@ const DB = {
     }
   },
 
+  // Carga completa de datos de prueba para ambos ambientes (Productos y Servicios)
+  loadDemoData() {
+    // 1. Insumos e ingredientes
+    const allIngs = [
+      ...(typeof DEFAULT_INGREDIENTS !== 'undefined' ? DEFAULT_INGREDIENTS : []),
+      ...(typeof DEFAULT_SERVICE_INGREDIENTS !== 'undefined' ? DEFAULT_SERVICE_INGREDIENTS : (typeof DEFAULT_SERVICE_SUPPLIES !== 'undefined' ? DEFAULT_SERVICE_SUPPLIES : []))
+    ];
+    this.saveIngredients(allIngs);
+
+    // 2. Recetas de pastelería y protocolos de servicios
+    const allRecs = [
+      ...(typeof DEFAULT_RECIPES !== 'undefined' ? DEFAULT_RECIPES : []),
+      ...(typeof DEFAULT_SERVICE_RECIPES !== 'undefined' ? DEFAULT_SERVICE_RECIPES : [])
+    ];
+    this.saveRecipes(allRecs);
+
+    // 3. Clientes de productos y servicios
+    const allCusts = [
+      ...(typeof DEFAULT_CUSTOMERS !== 'undefined' ? DEFAULT_CUSTOMERS : []),
+      ...(typeof DEFAULT_SERVICE_CUSTOMERS !== 'undefined' ? DEFAULT_SERVICE_CUSTOMERS : [])
+    ];
+    this.saveCustomers(allCusts);
+
+    // 4. Cotizaciones y presupuestos
+    const allQuotes = [
+      ...(typeof DEFAULT_QUOTES !== 'undefined' ? DEFAULT_QUOTES : []),
+      ...(typeof DEFAULT_SERVICE_QUOTES !== 'undefined' ? DEFAULT_SERVICE_QUOTES : [])
+    ];
+    this.saveQuotes(allQuotes);
+
+    // 5. Configuración predeterminada lista
+    const settings = {
+      ...DEFAULT_SETTINGS,
+      businessNameProducts: 'Pastelería Dulce Sabor',
+      businessNameServices: 'Centro de Estética & Spa Zen',
+      useSameBusinessName: false,
+      hourlyRateProducts: 4500,
+      hourlyRateServices: 6500,
+      targetMarginProducts: 45,
+      targetMarginServices: 55,
+      serviceCabinCost: 3500,
+      currencySymbol: '$',
+      businessPhone: '+56 9 8765 4321',
+      businessEmail: 'contacto@tunegocioconectado.cl',
+      businessInstagram: '@tunegocio_conectado'
+    };
+    this.saveSettings(settings);
+
+    return {
+      ingredientsCount: allIngs.length,
+      recipesCount: allRecs.length,
+      customersCount: allCusts.length,
+      quotesCount: allQuotes.length
+    };
+  },
+
+  // Limpiar todos los registros
+  resetAllData() {
+    this.saveIngredients([]);
+    this.saveRecipes([]);
+    this.saveCustomers([]);
+    this.saveQuotes([]);
+    this.saveSettings(DEFAULT_SETTINGS);
+  },
+
   // Variables de Estado de Sincronización en la Nube
   activeListeners: [],
   periodicSyncInterval: null,
@@ -377,13 +442,27 @@ const DB = {
       const activeMode = mode || (typeof App !== 'undefined' && App.currentMode ? App.currentMode : 'products');
       const data = localStorage.getItem(DB_KEYS.SETTINGS);
       const parsed = data ? { ...DEFAULT_SETTINGS, ...JSON.parse(data) } : { ...DEFAULT_SETTINGS };
-      if (activeMode === 'services') {
-        parsed.businessName = parsed.businessNameServices || parsed.serviceBusinessName || 'Centro de Estética, Spa & Masajes';
-        parsed.businessType = 'services';
+
+      const useSame = parsed.useSameBusinessName === true;
+      if (useSame) {
+        parsed.businessName = parsed.businessName || parsed.businessNameProducts || 'Mi Negocio';
       } else {
-        parsed.businessName = parsed.businessNameProducts || parsed.businessName || 'Mi Pastelería Artesanal';
-        parsed.businessType = 'products';
+        if (activeMode === 'services') {
+          parsed.businessName = parsed.businessNameServices || 'Centro de Estética, Spa & Masajes';
+        } else {
+          parsed.businessName = parsed.businessNameProducts || parsed.businessName || 'Mi Pastelería Artesanal';
+        }
       }
+      if (activeMode === 'services') {
+        parsed.defaultHourlyRate = parsed.hourlyRateServices || parsed.defaultHourlyRate || 6000;
+        parsed.defaultTargetMargin = parsed.targetMarginServices || parsed.defaultTargetMargin || 50;
+        parsed.logoUrl = parsed.logoUrlServices || '';
+      } else {
+        parsed.defaultHourlyRate = parsed.hourlyRateProducts || parsed.defaultHourlyRate || 4000;
+        parsed.defaultTargetMargin = parsed.targetMarginProducts || parsed.defaultTargetMargin || 40;
+        parsed.logoUrl = parsed.logoUrlProducts || parsed.logoUrl || '';
+      }
+      parsed.businessType = activeMode;
       return parsed;
     } catch (e) {
       console.error('Error al cargar settings:', e);

@@ -221,11 +221,11 @@ const RecipesModule = {
       modal.innerHTML = `
         <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-3xl shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto flex flex-col modal-animate-in border border-pink-100 dark:border-slate-800">
           <!-- Modal Header -->
-          <div class="bg-gradient-to-r from-pink-500 via-rose-400 to-pink-500 p-4 text-white flex items-center justify-between shrink-0">
+          <div id="recipe-editor-header" class="bg-pink-600 dark:bg-slate-800 p-4 text-white flex items-center justify-between shrink-0">
             <h3 id="recipe-editor-title" class="font-bold text-lg flex items-center gap-2">
               <span>👩‍🍳</span> Ficha Técnica de Costos
             </h3>
-            <button onclick="RecipesModule.closeEditor()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">
+            <button onclick="RecipesModule.closeEditor()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition cursor-pointer">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -427,6 +427,91 @@ const RecipesModule = {
       `;
       const root = document.getElementById('modals-root') || document.body;
       root.appendChild(modal);
+    }
+  },
+
+  switchEditorType(mode) {
+    const isServ = mode === 'service';
+    const modal = document.getElementById('recipe-editor-modal');
+    if (!modal) return;
+
+    // --- Header style ---
+    const header = document.getElementById('recipe-editor-header') || (modal ? modal.querySelector('div.p-4.text-white') : null);
+    if (header) {
+      header.className = `${isServ ? 'bg-teal-700' : 'bg-pink-600'} p-4 text-white flex items-center justify-between shrink-0`;
+    }
+
+    // --- Category select ---
+    const catSelect = document.getElementById('rec-category');
+    if (catSelect) {
+      catSelect.innerHTML = isServ
+        ? `<option value="Masajes & Spa">Masajes & Spa</option>
+           <option value="Estética Facial">Estética Facial</option>
+           <option value="Manicure & Pedicure">Manicure & Pedicure</option>
+           <option value="Corporales & Drenaje">Corporales & Drenaje</option>
+           <option value="Pestañas & Cejas">Pestañas & Cejas</option>
+           <option value="Depilación">Depilación</option>
+           <option value="Otros">Otros</option>`
+        : `<option value="Alfajores">Alfajores</option>
+           <option value="Profiteroles">Profiteroles / Masa Choux</option>
+           <option value="Galletas">Galletas</option>
+           <option value="Tortas">Tortas y Pasteles</option>
+           <option value="Cupcakes">Cupcakes & Muffins</option>
+           <option value="Tartaletas">Tartaletas & Pies</option>
+           <option value="Postres">Postres Individuales</option>
+           <option value="Otros">Otros</option>`;
+    }
+
+    // --- Type select ---
+    const typeSelect = document.getElementById('rec-type');
+    if (typeSelect) {
+      typeSelect.innerHTML = isServ
+        ? `<option value="service_session">Por Sesión / Cita</option>
+           <option value="service_hourly">Por Hora de Atención</option>
+           <option value="service_person">Por Persona</option>
+           <option value="service_fixed">Tarifa Fija</option>`
+        : `<option value="units">Por Unidades / Piezas (Alfajores, Galletas, Cupcakes)</option>
+           <option value="cake">Torta Entera (con cálculo por Porción)</option>`;
+    }
+
+    // --- Labels ---
+    const nameLabel = modal.querySelector('label[for="rec-name"], label');
+    const nameLabelEl = modal.querySelector('label');
+    const nameInput = document.getElementById('rec-name');
+    if (nameInput) {
+      nameInput.placeholder = isServ 
+        ? 'Ej. Masaje Relajante 60 min, Limpieza Facial Premium' 
+        : 'Ej. Alfajores de Maicena, Torta Red Velvet';
+    }
+
+    const yieldLabel = document.getElementById('rec-yield-units-label');
+    if (yieldLabel) {
+      yieldLabel.textContent = isServ ? 'Sesiones por bloque *' : 'Unidades producidas por lote *';
+    }
+
+    const overheadInput = document.getElementById('rec-overhead');
+    if (overheadInput) {
+      const overheadLabel = overheadInput.previousElementSibling;
+      if (overheadLabel) overheadLabel.textContent = isServ ? 'Gastos de Cabina / Ambiente ($)' : 'Gas / Electricidad / Fijos ($)';
+      const overheadHint = overheadInput.nextElementSibling;
+      if (overheadHint) overheadHint.textContent = isServ ? 'Arriendo de cabina, electricidad, ambiente' : 'Gas del horno y luz';
+    }
+
+    const notesLabel = modal.querySelector('label[for="rec-notes"]') || document.querySelector('#recipe-editor-modal textarea')?.previousElementSibling;
+    if (notesLabel && notesLabel.tagName === 'LABEL') {
+      notesLabel.textContent = isServ ? 'Notas / Protocolo de Atención' : 'Notas / Instrucciones de Horneado';
+    }
+    const notesArea = document.getElementById('rec-notes');
+    if (notesArea) {
+      notesArea.placeholder = isServ 
+        ? 'Ej. Aplicar aceite tibio. Usar toalla caliente. Duración 60 min.'
+        : 'Ej. Hornear a 180°C por 20 minutos. Dejar reposar 1 hora antes de rellenar.';
+    }
+
+    // --- Submit button text ---
+    const submitBtn = modal.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.textContent = isServ ? 'Guardar Ficha de Servicio' : 'Guardar Ficha Técnica';
     }
   },
 
@@ -1170,59 +1255,86 @@ const RecipesModule = {
               <span class="font-black px-2.5 py-0.5 rounded-full ${factor >= 1 ? 'bg-pink-100 text-pink-800' : 'bg-blue-100 text-blue-800'}">
                 ${factor.toFixed(2)}x (${pctDiff >= 0 ? '+' : ''}${pctDiff}%)
               </span>
+          <!-- Selector de Porciones Objetivo -->
+          <div class="bg-gray-50 dark:bg-slate-800 p-4 rounded-2xl border border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="space-y-0.5 text-center sm:text-left">
+              <span class="text-xs text-gray-500 font-semibold block">1. Selecciona las Porciones Deseadas</span>
+              <h4 class="font-black text-gray-800 dark:text-gray-100 text-sm">${recipe.name}</h4>
+              <span class="text-[11px] text-pink-600 font-bold block">Receta Base Original: ${recipe.yieldPortions} porciones</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button 
+                onclick="RecipesModule.setTargetPortions(${Math.max(1, this.scalingState.targetPortions - 2)})" 
+                class="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 hover:bg-pink-50 border border-gray-200 dark:border-slate-600 font-black text-lg text-gray-700 dark:text-gray-200 shadow-2xs transition active:scale-95 cursor-pointer flex items-center justify-center"
+              >
+                -
+              </button>
+
+              <div class="px-4 py-2 bg-pink-50 dark:bg-slate-700 rounded-xl border border-pink-200 dark:border-slate-600 text-center min-w-[90px]">
+                <span class="text-2xl font-black text-pink-700 dark:text-pink-300 block leading-tight">${this.scalingState.targetPortions}</span>
+                <span class="text-[10px] text-pink-600 dark:text-pink-300 font-bold uppercase tracking-wider">Porciones</span>
+              </div>
+
+              <button 
+                onclick="RecipesModule.setTargetPortions(${this.scalingState.targetPortions + 2})" 
+                class="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 hover:bg-pink-50 border border-gray-200 dark:border-slate-600 font-black text-lg text-gray-700 dark:text-gray-200 shadow-2xs transition active:scale-95 cursor-pointer flex items-center justify-center"
+              >
+                +
+              </button>
             </div>
           </div>
 
-          <!-- Comparativa de Precios y Ganancias -->
+          <!-- Resumen de Costos Comparativos -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="bg-gray-50 p-3.5 rounded-2xl border border-gray-200 text-center">
-              <span class="text-gray-400 block text-[11px]">Receta Base (${recipe.yieldPortions}p)</span>
-              <span class="text-sm font-bold text-gray-600 block mt-0.5">${Calculator.formatCurrency(baseCosts.totalBatchCost)}</span>
-              <span class="text-[10px] text-gray-400">Venta sug: ${Calculator.formatCurrency(baseCosts.suggestedBatchPrice)}</span>
+            <div class="bg-gray-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-gray-200 dark:border-slate-700 text-center">
+              <span class="text-gray-600 dark:text-gray-400 block font-semibold text-[11px]">Factor de Escala</span>
+              <span class="text-lg font-black text-gray-800 dark:text-gray-100 block mt-0.5">${(this.scalingState.targetPortions / recipe.yieldPortions).toFixed(2)}x</span>
+              <span class="text-[10px] text-gray-500">Base: ${recipe.yieldPortions}p → Meta: ${this.scalingState.targetPortions}p</span>
             </div>
 
-            <div class="bg-gradient-to-br from-pink-50 to-rose-50 p-3.5 rounded-2xl border border-pink-200 text-center">
-              <span class="text-pink-700 block font-semibold text-[11px]">Costo Torta Escalada (${this.scalingState.targetPortions}p)</span>
-              <span class="text-base font-black text-pink-700 block mt-0.5">${Calculator.formatCurrency(scaledCosts.totalBatchCost)}</span>
-              <span class="text-[10px] text-pink-600 font-medium">Insumos: ${Calculator.formatCurrency(scaledCosts.ingredientsCost)}</span>
+            <div class="bg-pink-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-pink-200 dark:border-slate-700 text-center">
+              <span class="text-pink-800 dark:text-pink-300 block font-bold text-[11px]">Costo Torta Escalada (${this.scalingState.targetPortions}p)</span>
+              <span class="text-base font-black text-pink-700 dark:text-pink-300 block mt-0.5">${Calculator.formatCurrency(scaledCosts.totalBatchCost)}</span>
+              <span class="text-[10px] text-pink-700 dark:text-pink-400 font-medium">Insumos: ${Calculator.formatCurrency(scaledCosts.ingredientsCost)}</span>
             </div>
 
-            <div class="bg-gradient-to-br from-emerald-50 to-teal-50 p-3.5 rounded-2xl border border-emerald-200 text-center">
-              <span class="text-emerald-800 block font-bold text-[11px]">Precio Venta Sugerido (${scaledCosts.targetMargin}%)</span>
-              <span class="text-lg font-black text-emerald-700 block mt-0.5">${Calculator.formatCurrency(scaledCosts.suggestedBatchPrice)}</span>
-              <span class="text-[10px] text-emerald-600 font-bold">Ganancia: +${Calculator.formatCurrency(scaledCosts.suggestedBatchPrice - scaledCosts.totalBatchCost)}</span>
+            <div class="bg-emerald-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-emerald-200 dark:border-slate-700 text-center">
+              <span class="text-emerald-900 dark:text-emerald-300 block font-bold text-[11px]">Precio Venta Sugerido (${scaledCosts.targetMargin}%)</span>
+              <span class="text-lg font-black text-emerald-800 dark:text-emerald-300 block mt-0.5">${Calculator.formatCurrency(scaledCosts.suggestedBatchPrice)}</span>
+              <span class="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold">Ganancia: +${Calculator.formatCurrency(scaledCosts.suggestedBatchPrice - scaledCosts.totalBatchCost)}</span>
             </div>
           </div>
 
           <!-- Tabla Comparativa de Ingredientes -->
-          <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-2xs">
-            <div class="px-4 py-2.5 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-              <h4 class="font-bold text-gray-800 text-xs">2. Ingredientes con Nuevas Cantidades Exactas</h4>
-              <span class="text-[11px] text-gray-500">${scaledRecipe.ingredients.length} ingredientes</span>
+          <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 overflow-hidden shadow-2xs">
+            <div class="px-4 py-2.5 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
+              <h4 class="font-bold text-gray-800 dark:text-gray-200 text-xs">2. Ingredientes con Nuevas Cantidades Exactas</h4>
+              <span class="text-[11px] text-gray-500 dark:text-gray-400">${scaledRecipe.ingredients.length} ingredientes</span>
             </div>
 
             <div class="overflow-x-auto">
               <table class="w-full text-left text-xs">
                 <thead>
-                  <tr class="bg-gray-50/50 text-gray-500 border-b border-gray-100 font-semibold text-[11px]">
+                  <tr class="bg-gray-50/50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-b border-gray-100 dark:border-slate-700 font-semibold text-[11px]">
                     <th class="p-2.5">Ingrediente</th>
                     <th class="p-2.5 text-center">Base (${recipe.yieldPortions}p)</th>
-                    <th class="p-2.5 text-center bg-pink-50/50 font-black text-pink-700">Nueva Cantidad (${this.scalingState.targetPortions}p)</th>
+                    <th class="p-2.5 text-center bg-pink-50/50 dark:bg-slate-700 font-black text-pink-700 dark:text-pink-300">Nueva Cantidad (${this.scalingState.targetPortions}p)</th>
                     <th class="p-2.5 text-right">Nuevo Costo</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                   ${scaledRecipe.ingredients.map(item => {
       const ing = ingredientsMap.get(item.ingredientId);
       const itemCost = ing ? Calculator.getIngredientItemCost(ing, item.quantity, item.unit) : 0;
       return `
-                      <tr class="hover:bg-pink-50/30 transition">
-                        <td class="p-2.5 font-bold text-gray-800">${ing ? ing.name : 'Insumo'}</td>
-                        <td class="p-2.5 text-center text-gray-500">${item.originalQuantity} ${item.unit}</td>
-                        <td class="p-2.5 text-center bg-pink-50/40 font-black text-pink-600 text-sm">
+                      <tr class="hover:bg-pink-50/30 dark:hover:bg-slate-700/50 transition">
+                        <td class="p-2.5 font-bold text-gray-800 dark:text-gray-200">${ing ? ing.name : 'Insumo'}</td>
+                        <td class="p-2.5 text-center text-gray-500 dark:text-gray-400">${item.originalQuantity} ${item.unit}</td>
+                        <td class="p-2.5 text-center bg-pink-50/40 dark:bg-slate-700 font-black text-pink-600 dark:text-pink-300 text-sm">
                           ${item.quantity} ${item.unit}
                         </td>
-                        <td class="p-2.5 text-right font-semibold text-gray-700">${Calculator.formatCurrency(itemCost)}</td>
+                        <td class="p-2.5 text-right font-semibold text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(itemCost)}</td>
                       </tr>
                     `;
     }).join('')}
@@ -1234,10 +1346,10 @@ const RecipesModule = {
         </div>
 
         <!-- Footer Acciones -->
-        <div class="p-4 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
+        <div class="p-4 bg-gray-50 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
           <button 
             onclick="RecipesModule.openInSimulatorFromScaling()" 
-            class="w-full sm:w-auto py-2.5 px-4 bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 font-bold text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+            class="w-full sm:w-auto py-2.5 px-4 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <span>📊</span> Probar en Simulador
           </button>
@@ -1245,13 +1357,13 @@ const RecipesModule = {
           <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
             <button 
               onclick="RecipesModule.applyScalingToCurrentRecipe()" 
-              class="flex-1 sm:flex-none py-2.5 px-4 bg-pink-100 hover:bg-pink-200 text-pink-800 font-bold text-xs rounded-xl transition cursor-pointer"
+              class="flex-1 sm:flex-none py-2.5 px-4 bg-pink-100 dark:bg-slate-700 hover:bg-pink-200 dark:hover:bg-slate-600 text-pink-800 dark:text-pink-300 font-bold text-xs rounded-xl transition cursor-pointer"
             >
               🔄 Modificar Receta Actual
             </button>
             <button 
               onclick="RecipesModule.saveScaledRecipeAsNew()" 
-              class="flex-1 sm:flex-none py-2.5 px-5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-black text-xs rounded-xl shadow-md shadow-pink-300 transition active:scale-95 cursor-pointer"
+              class="flex-1 sm:flex-none py-2.5 px-5 bg-pink-600 hover:bg-pink-700 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 cursor-pointer"
             >
               💾 Guardar como Nueva Receta (${this.scalingState.targetPortions}p)
             </button>
