@@ -7,6 +7,62 @@ const App = {
   currentMode: localStorage.getItem('cakekulator_app_mode') || 'products',
   deferredPrompt: null, // Para el banner de instalación PWA
 
+  // Detección de Edición (Web: web.cakekulator.com vs App: app.cakekulator.com)
+  getAppEdition() {
+    // 1. Prioridad: Parámetro en URL (?edition=web / ?edition=app o hash #edition=web / #edition=app) para testing/dev
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qEdition = urlParams.get('edition');
+      if (qEdition === 'web' || qEdition === 'app') {
+        return qEdition;
+      }
+      if (window.location.hash === '#edition=web') return 'web';
+      if (window.location.hash === '#edition=app') return 'app';
+    } catch (_) {}
+
+    // 2. Detección por Subdominio en Producción
+    try {
+      const hostname = (window.location.hostname || '').toLowerCase();
+      if (hostname.startsWith('web.') || hostname.includes('web.cakekulator')) {
+        return 'web';
+      }
+      if (hostname.startsWith('app.') || hostname.includes('app.cakekulator')) {
+        return 'app';
+      }
+    } catch (_) {}
+
+    // 3. Preferencia guardada en localStorage
+    const saved = localStorage.getItem('cakekulator_app_edition');
+    if (saved === 'web' || saved === 'app') {
+      return saved;
+    }
+
+    // 4. Heurística de fallback en localhost: Pantalla grande = Web, móvil/PWA = App
+    return (window.innerWidth >= 1024) ? 'web' : 'app';
+  },
+
+  setAppEdition(edition) {
+    if (edition !== 'web' && edition !== 'app') return;
+    localStorage.setItem('cakekulator_app_edition', edition);
+    this.updateNavVisibility();
+    if (edition === 'app' && this.currentTab === 'finance') {
+      this.switchTab('dashboard');
+    } else {
+      this.renderCurrentTab();
+    }
+    this.showToast(edition === 'web' 
+      ? '🖥️ Versión Web Activa (web.cakekulator.com)' 
+      : '📱 Versión App Activa (app.cakekulator.com)');
+  },
+
+  isFeatureAvailable(feature) {
+    // Finanzas está disponible exclusivamente en la versión Web (web.cakekulator.com)
+    if (feature === 'finance') {
+      return this.getAppEdition() === 'web';
+    }
+    return true;
+  },
+
   escapeHtml(value) {
     return String(value ?? '')
       .replace(/&/g, '&amp;')
@@ -191,10 +247,27 @@ const App = {
   },
 
   updateNavVisibility() {
-    // Todos los módulos principales están disponibles en modo local y en la nube
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.classList.remove('hidden');
-    });
+    const hasFinance = this.isFeatureAvailable('finance');
+
+    // Sidebar en Desktop
+    const sidebarFinanceBtn = document.getElementById('sidebar-nav-finance');
+    if (sidebarFinanceBtn) {
+      if (hasFinance) {
+        sidebarFinanceBtn.classList.remove('hidden');
+      } else {
+        sidebarFinanceBtn.classList.add('hidden');
+      }
+    }
+
+    // Botón de navegación móvil
+    const mobFinanceBtn = document.getElementById('nav-btn-finance-mob');
+    if (mobFinanceBtn) {
+      if (hasFinance) {
+        mobFinanceBtn.classList.remove('hidden');
+      } else {
+        mobFinanceBtn.classList.add('hidden');
+      }
+    }
   },
 
   initGestures() {
@@ -204,7 +277,11 @@ const App = {
     let isTracking = false;
 
     const getTabsOrder = () => {
-      return ['dashboard', 'simulator', 'quotes', 'recipes', 'ingredients', 'market-radar', 'customers', 'finance'];
+      const tabs = ['dashboard', 'simulator', 'quotes', 'recipes', 'ingredients', 'market-radar', 'customers'];
+      if (this.isFeatureAvailable('finance')) {
+        tabs.push('finance');
+      }
+      return tabs;
     };
 
     const isInteractiveElement = (target) => {
@@ -276,6 +353,13 @@ const App = {
   },
 
   switchTab(tabName, scrollToTop = true, direction = 'none') {
+    // Si la función no está disponible en la edición activa (ej. Finanzas en Versión App)
+    if (tabName === 'finance' && !this.isFeatureAvailable('finance')) {
+      this.showToast('📊 Finanzas está disponible exclusivamente en la versión Web (web.cakekulator.com)');
+      this.switchTab('dashboard');
+      return;
+    }
+
     this.currentTab = tabName;
 
     const views = ['dashboard-view', 'quotes-view', 'customers-view', 'recipes-view', 'ingredients-view', 'simulator-view', 'market-radar-view', 'finance-view', 'settings-view'];
@@ -771,100 +855,108 @@ const App = {
 
   getQuickActionsCatalog() {
     const isServices = this.currentMode === 'services';
-    if (isServices) {
-      return [
-        {
-          id: 'new_quote',
-          title: '+ Nueva Cotización',
-          shortTitle: '+ Cotización',
-          icon: '📋',
-          colorClass: 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border-emerald-200/80 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200',
-          description: 'Abre el creador de cotizaciones para sesiones y protocolos',
-          handler: "App.switchTab('quotes'); setTimeout(() => QuotesModule.openEditor(), 80);"
-        },
-        {
-          id: 'new_recipe',
-          title: '+ Nuevo Servicio',
-          shortTitle: '+ Servicio',
-          icon: '💆',
-          colorClass: 'bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border-teal-200/80 dark:border-teal-800 text-teal-800 dark:text-teal-200',
-          description: 'Crea una ficha de atención con duración, honorarios e insumos',
-          handler: "App.switchTab('recipes'); setTimeout(() => RecipesModule.openEditor(), 80);"
-        },
-        {
-          id: 'new_customer',
-          title: '+ Nuevo Cliente Spa',
-          shortTitle: '+ Cliente',
-          icon: '👥',
-          colorClass: 'bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/40 dark:hover:bg-pink-900/50 border-pink-200/80 dark:border-pink-800 text-pink-800 dark:text-pink-200',
-          description: 'Registra un cliente con ficha estética, zonas de tensión y notas',
-          handler: "App.switchTab('customers'); setTimeout(() => CustomersModule.openCustomerEditor(), 80);"
-        },
-        {
-          id: 'simulator',
-          title: 'Simular Sesión',
-          shortTitle: 'Simulador',
-          icon: '⚡',
-          colorClass: 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border-blue-200/80 dark:border-blue-800 text-blue-800 dark:text-blue-200',
-          description: 'Calcula rentabilidad neta por sesión, hora o paquetes',
-          handler: "App.switchTab('simulator');"
-        },
-        {
-          id: 'new_ingredient',
-          title: '+ Insumo de Cabina',
-          shortTitle: '+ Insumo',
-          icon: '🧴',
-          colorClass: 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 border-amber-200/80 dark:border-amber-800 text-amber-800 dark:text-amber-200',
-          description: 'Registra cremas, aceites, sueros o desechables por aplicación',
-          handler: "App.switchTab('ingredients'); setTimeout(() => IngredientsModule.openModal(), 80);"
-        },
-        {
-          id: 'scan_receipt_ocr',
-          title: 'Escanear Boleta',
-          shortTitle: 'Boleta OCR',
-          icon: '🧾',
-          colorClass: 'bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/40 dark:hover:bg-cyan-900/50 border-cyan-200/80 dark:border-cyan-800 text-cyan-800 dark:text-cyan-200',
-          description: 'Escanea boletas de compras para actualizar costos de insumos',
-          handler: "App.switchTab('ingredients'); setTimeout(() => ReceiptScannerModule.openModal(), 80);"
-        },
-        {
-          id: 'market_radar',
-          title: 'Radar de Insumos',
-          shortTitle: 'Ofertas',
-          icon: '🛒',
-          colorClass: 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/50 border-orange-200/80 dark:border-orange-800 text-orange-800 dark:text-orange-200',
-          description: 'Compara precios en distribuidoras y tiendas mayoristas',
-          handler: "App.switchTab('market-radar');"
-        },
-        {
-          id: 'view_finances',
-          title: 'Ver Finanzas Spa',
-          shortTitle: 'Finanzas',
-          icon: '📊',
-          colorClass: 'bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border-teal-200/80 dark:border-teal-800 text-teal-800 dark:text-teal-200',
-          description: 'Revisa ingresos por servicios, ticket promedio y rentabilidad',
-          handler: "App.switchTab('finance');"
-        },
-        {
-          id: 'settings_workshop',
-          title: 'Ajustes del Centro',
-          shortTitle: 'Ajustes',
-          icon: '⚙️',
-          colorClass: 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200',
-          description: 'Configura valor hora, cabina y datos del centro',
-          handler: "App.switchTab('settings');"
-        }
-      ];
+    const servicesCatalog = [
+      {
+        id: 'new_quote',
+        title: '+ Nueva Cotización',
+        shortTitle: '+ Cotización',
+        icon: '📋',
+        colorClass: 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 border-emerald-200/80 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200',
+        description: 'Abre el creador de cotizaciones para sesiones y protocolos',
+        handler: "App.switchTab('quotes'); setTimeout(() => QuotesModule.openEditor(), 80);"
+      },
+      {
+        id: 'new_recipe',
+        title: '+ Nuevo Servicio',
+        shortTitle: '+ Servicio',
+        icon: '💆',
+        colorClass: 'bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border-teal-200/80 dark:border-teal-800 text-teal-800 dark:text-teal-200',
+        description: 'Crea una ficha de atención con duración, honorarios e insumos',
+        handler: "App.switchTab('recipes'); setTimeout(() => RecipesModule.openEditor(), 80);"
+      },
+      {
+        id: 'new_customer',
+        title: '+ Nuevo Cliente Spa',
+        shortTitle: '+ Cliente',
+        icon: '👥',
+        colorClass: 'bg-pink-50 hover:bg-pink-100 dark:bg-pink-950/40 dark:hover:bg-pink-900/50 border-pink-200/80 dark:border-pink-800 text-pink-800 dark:text-pink-200',
+        description: 'Registra un cliente con ficha estética, zonas de tensión y notas',
+        handler: "App.switchTab('customers'); setTimeout(() => CustomersModule.openCustomerEditor(), 80);"
+      },
+      {
+        id: 'simulator',
+        title: 'Simular Sesión',
+        shortTitle: 'Simulador',
+        icon: '⚡',
+        colorClass: 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border-blue-200/80 dark:border-blue-800 text-blue-800 dark:text-blue-200',
+        description: 'Calcula rentabilidad neta por sesión, hora o paquetes',
+        handler: "App.switchTab('simulator');"
+      },
+      {
+        id: 'new_ingredient',
+        title: '+ Insumo de Cabina',
+        shortTitle: '+ Insumo',
+        icon: '🧴',
+        colorClass: 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50 border-amber-200/80 dark:border-amber-800 text-amber-800 dark:text-amber-200',
+        description: 'Registra cremas, aceites, sueros o desechables por aplicación',
+        handler: "App.switchTab('ingredients'); setTimeout(() => IngredientsModule.openModal(), 80);"
+      },
+      {
+        id: 'scan_receipt_ocr',
+        title: 'Escanear Boleta',
+        shortTitle: 'Boleta OCR',
+        icon: '🧾',
+        colorClass: 'bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/40 dark:hover:bg-cyan-900/50 border-cyan-200/80 dark:border-cyan-800 text-cyan-800 dark:text-cyan-200',
+        description: 'Escanea boletas de compras para actualizar costos de insumos',
+        handler: "App.switchTab('ingredients'); setTimeout(() => ReceiptScannerModule.openModal(), 80);"
+      },
+      {
+        id: 'market_radar',
+        title: 'Radar de Insumos',
+        shortTitle: 'Ofertas',
+        icon: '🛒',
+        colorClass: 'bg-orange-50 hover:bg-orange-100 dark:bg-orange-950/40 dark:hover:bg-orange-900/50 border-orange-200/80 dark:border-orange-800 text-orange-800 dark:text-orange-200',
+        description: 'Compara precios en distribuidoras y tiendas mayoristas',
+        handler: "App.switchTab('market-radar');"
+      },
+      {
+        id: 'view_finances',
+        title: 'Ver Finanzas Spa',
+        shortTitle: 'Finanzas',
+        icon: '📊',
+        colorClass: 'bg-teal-50 hover:bg-teal-100 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border-teal-200/80 dark:border-teal-800 text-teal-800 dark:text-teal-200',
+        description: 'Revisa ingresos por servicios, ticket promedio y rentabilidad',
+        handler: "App.switchTab('finance');"
+      },
+      {
+        id: 'settings_workshop',
+        title: 'Ajustes del Centro',
+        shortTitle: 'Ajustes',
+        icon: '⚙️',
+        colorClass: 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200',
+        description: 'Configura valor hora, cabina y datos del centro',
+        handler: "App.switchTab('settings');"
+      }
+    ];
+
+    const catalog = isServices ? servicesCatalog : this.QUICK_ACTIONS_CATALOG;
+
+    if (!this.isFeatureAvailable('finance')) {
+      return catalog.filter(a => a.id !== 'view_finances');
     }
-    return this.QUICK_ACTIONS_CATALOG;
+    return catalog;
   },
 
   getEnabledQuickActionIds() {
     const settings = DB.getSettings();
-    if (Array.isArray(settings.enabledQuickActions) && settings.enabledQuickActions.length > 0) {
-      return settings.enabledQuickActions;
+    let actions = (Array.isArray(settings.enabledQuickActions) && settings.enabledQuickActions.length > 0)
+      ? settings.enabledQuickActions
+      : ['new_quote', 'new_recipe', 'new_customer', 'simulator'];
+    
+    if (!this.isFeatureAvailable('finance')) {
+      actions = actions.filter(id => id !== 'view_finances');
     }
-    return ['new_quote', 'new_recipe', 'new_customer', 'simulator'];
+    return actions;
   },
 
   saveEnabledQuickActionIds(actionIds) {
@@ -1331,7 +1423,8 @@ const App = {
             </div>
           </button>
 
-          <!-- 7. Finanzas -->
+          ${this.isFeatureAvailable('finance') ? `
+          <!-- 7. Finanzas (Exclusivo Web) -->
           <button 
             type="button"
             onclick="App.switchTab('finance')" 
@@ -1345,6 +1438,7 @@ const App = {
               <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">KPIs y costos</span>
             </div>
           </button>
+          ` : ''}
 
           <!-- 8. Ajustes -->
           <button 
@@ -1853,6 +1947,56 @@ const App = {
           <!-- ========================================== -->
           <div id="settings-panel-general" class="${this.settingsActiveTab === 'general' ? '' : 'hidden'} space-y-4">
             
+            <!-- Edición del Sistema & Subdominios de Despliegue -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-slate-800 pb-3">
+                <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
+                  <span>🌐</span> Edición & Subdominio de Despliegue
+                </h3>
+                <span class="text-xs px-3 py-1 rounded-full font-bold self-start sm:self-auto ${this.getAppEdition() === 'web' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'}">
+                  ${this.getAppEdition() === 'web' ? '🖥️ Modo Web (web.cakekulator.com)' : '📱 Modo App (app.cakekulator.com)'}
+                </span>
+              </div>
+
+              <p class="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                Cakekulator adapta automáticamente sus herramientas según el subdominio desde el que se accede. Puedes alternar la vista aquí para probar cómo se comporta cada entorno:
+              </p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button 
+                  type="button" 
+                  onclick="App.setAppEdition('web')" 
+                  class="p-3.5 rounded-2xl border-2 transition text-left flex items-center justify-between cursor-pointer ${this.getAppEdition() === 'web' ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 ring-2 ring-blue-400/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-blue-200'}"
+                >
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">🖥️</span>
+                    <div>
+                      <div class="font-bold text-xs text-gray-900 dark:text-gray-100">Versión Web / Escritorio</div>
+                      <div class="text-[10px] text-gray-500 dark:text-gray-400 font-mono mt-0.5">web.cakekulator.com</div>
+                      <div class="text-[10px] text-blue-600 dark:text-blue-400 font-semibold mt-1">✓ Incluye Módulo de Finanzas & Métricas</div>
+                    </div>
+                  </div>
+                  <span class="text-blue-600 font-bold text-xs ${this.getAppEdition() === 'web' ? 'opacity-100' : 'opacity-0'}">✓ Activo</span>
+                </button>
+
+                <button 
+                  type="button" 
+                  onclick="App.setAppEdition('app')" 
+                  class="p-3.5 rounded-2xl border-2 transition text-left flex items-center justify-between cursor-pointer ${this.getAppEdition() === 'app' ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-2 ring-emerald-400/30' : 'border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800/60 hover:border-emerald-200'}"
+                >
+                  <div class="flex items-center gap-3">
+                    <span class="text-2xl">📱</span>
+                    <div>
+                      <div class="font-bold text-xs text-gray-900 dark:text-gray-100">Versión App / Móvil</div>
+                      <div class="text-[10px] text-gray-500 dark:text-gray-400 font-mono mt-0.5">app.cakekulator.com</div>
+                      <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1">⚡ Interfaz ágil para taller (sin sobrecarga)</div>
+                    </div>
+                  </div>
+                  <span class="text-emerald-600 font-bold text-xs ${this.getAppEdition() === 'app' ? 'opacity-100' : 'opacity-0'}">✓ Activo</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Nombre Unificado (Toggle) -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-3">
               <div class="flex items-center justify-between gap-3">
