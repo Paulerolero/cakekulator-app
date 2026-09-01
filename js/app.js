@@ -36,6 +36,9 @@ const App = {
     // Inicializar navegación táctil por gestos (Swipe)
     this.initGestures();
 
+    // Inicializar buscador global y atajos de teclado
+    this.initGlobalSearch();
+
     // Inicializar autenticación y sesión con Google / Firebase
     if (typeof AuthModule !== 'undefined') {
       AuthModule.init();
@@ -68,13 +71,14 @@ const App = {
       this.currentMode = 'products';
     }
 
-    console.log('Cakekulator cargado correctamente con control de gestos y ambientes separados.');
+    console.log('Cakekulator cargado correctamente con control de gestos, buscador y ambientes separados.');
   },
 
   applyModeTheme() {
     document.body.classList.remove('mode-products', 'mode-services');
     document.body.classList.add(this.currentMode === 'services' ? 'mode-services' : 'mode-products');
     this.updateNavLabels();
+    this.updateSidebarBadges();
     if (typeof AuthModule !== 'undefined' && AuthModule.renderAuthUI) {
       AuthModule.renderAuthUI();
     }
@@ -115,20 +119,33 @@ const App = {
     const ingIcon = isServ ? '🧴' : '📦';
     const ingText = isServ ? 'Insumos' : 'Insumos';
 
-    // Desktop Nav
-    const qIconD = document.getElementById('nav-icon-quotes-desk');
-    const qTextD = document.getElementById('nav-text-quotes-desk');
-    const rIconD = document.getElementById('nav-icon-recipes-desk');
-    const rTextD = document.getElementById('nav-text-recipes-desk');
-    const iIconD = document.getElementById('nav-icon-ingredients-desk');
-    const iTextD = document.getElementById('nav-text-ingredients-desk');
+    // Desktop Sidebar
+    const sIconR = document.getElementById('sidebar-icon-recipes');
+    const sTextR = document.getElementById('sidebar-text-recipes');
+    const sIconI = document.getElementById('sidebar-icon-ingredients');
+    const sTextI = document.getElementById('sidebar-text-ingredients');
+    const sIconQ = document.getElementById('sidebar-icon-quotes');
+    const sTextQ = document.getElementById('sidebar-text-quotes');
 
-    if (qIconD) qIconD.textContent = quotesIcon;
-    if (qTextD) qTextD.textContent = quotesText;
-    if (rIconD) rIconD.textContent = recipesIcon;
-    if (rTextD) rTextD.textContent = recipesText;
-    if (iIconD) iIconD.textContent = ingIcon;
-    if (iTextD) iTextD.textContent = ingText;
+    const sModeBadge = document.getElementById('sidebar-mode-badge');
+    const sModeIcon = document.getElementById('sidebar-mode-icon');
+    const sModeName = document.getElementById('sidebar-mode-name');
+
+    if (sIconR) sIconR.textContent = recipesIcon;
+    if (sTextR) sTextR.textContent = isServ ? 'Servicios & Protocolos' : 'Recetas & Fichas';
+    if (sIconI) sIconI.textContent = ingIcon;
+    if (sTextI) sTextI.textContent = isServ ? 'Insumos de Cabina' : 'Insumos & Stock';
+    if (sIconQ) sIconQ.textContent = quotesIcon;
+    if (sTextQ) sTextQ.textContent = isServ ? 'Cotizaciones & Citas' : 'Cotizaciones & Pedidos';
+
+    if (sModeBadge) {
+      sModeBadge.textContent = isServ ? '💆 Serv' : '🎂 Prod';
+      sModeBadge.className = isServ 
+        ? 'px-2 py-0.5 text-[10px] font-black rounded-lg bg-teal-100 dark:bg-slate-800 text-teal-700 dark:text-teal-300'
+        : 'px-2 py-0.5 text-[10px] font-black rounded-lg bg-pink-100 dark:bg-slate-800 text-pink-700 dark:text-pink-300';
+    }
+    if (sModeIcon) sModeIcon.textContent = isServ ? '💆' : '🎂';
+    if (sModeName) sModeName.textContent = isServ ? 'Servicios & Spa' : 'Venta Productos';
 
     // Mobile Nav
     const qIconM = document.getElementById('nav-icon-quotes-mob');
@@ -154,15 +171,23 @@ const App = {
     // Header Title and Subtitle
     const hTitle = document.getElementById('header-brand-title');
     const hName = document.getElementById('header-brand-name');
+    const sTitle = document.getElementById('sidebar-brand-title');
+    const sName = document.getElementById('sidebar-brand-name');
+
     const currentBizSettings = DB.getSettings(this.currentMode);
-    if (hTitle) {
-      hTitle.innerHTML = isServ 
-        ? `Servi<span class="text-teal-600 dark:text-teal-400">kulator</span>` 
-        : `Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>`;
-    }
-    if (hName) {
-      hName.textContent = this.sanitizePlainText(currentBizSettings.businessName || (isServ ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal'));
-    }
+    const titleHtml = isServ 
+      ? `Servi<span class="text-teal-600 dark:text-teal-400">kulator</span>` 
+      : `Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>`;
+    const nameText = this.sanitizePlainText(currentBizSettings.businessName || (isServ ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal'));
+
+    if (hTitle) hTitle.innerHTML = titleHtml;
+    if (hName) hName.textContent = nameText;
+    if (sTitle) sTitle.innerHTML = titleHtml;
+    if (sName) sName.textContent = nameText;
+  },
+
+  updateHeaderBrand() {
+    this.updateNavLabels();
   },
 
   updateNavVisibility() {
@@ -285,7 +310,15 @@ const App = {
       }
     }
 
-    // Actualizar estilos de los botones de navegación (desktop y móvil)
+    // Actualizar estilos de los botones de navegación (desktop sidebar y móvil)
+    document.querySelectorAll('.sidebar-nav-item').forEach(item => {
+      if (item.dataset.tab === tabName) {
+        item.classList.add('sidebar-active');
+      } else {
+        item.classList.remove('sidebar-active');
+      }
+    });
+
     document.querySelectorAll('.nav-btn').forEach(btn => {
       const btnTab = btn.dataset.tab;
       if (btnTab === tabName) {
@@ -296,6 +329,10 @@ const App = {
         btn.classList.add('text-gray-400', 'dark:text-slate-500', 'font-medium');
       }
     });
+
+    // Actualizar encabezado del topbar en Desktop
+    this.updateDesktopHeaderInfo(tabName);
+    this.updateSidebarBadges();
 
     // Renderizar módulo correspondiente
     switch (tabName) {
@@ -338,6 +375,289 @@ const App = {
 
     if (scrollToTop) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  },
+
+  updateDesktopHeaderInfo(tabName) {
+    const iconEl = document.getElementById('desktop-view-icon');
+    const titleEl = document.getElementById('desktop-view-title');
+    const subtitleEl = document.getElementById('desktop-view-subtitle');
+    const isServ = this.currentMode === 'services';
+
+    const infoMap = {
+      'dashboard': {
+        icon: '🏠',
+        title: 'Dashboard Principal',
+        subtitle: 'Resumen operativo, métricas y pedidos del taller'
+      },
+      'finance': {
+        icon: '📊',
+        title: 'Finanzas & Rendimiento',
+        subtitle: 'Ingresos, costos fijos, ventas netas y rentabilidad'
+      },
+      'recipes': {
+        icon: isServ ? '💆' : '🎂',
+        title: isServ ? 'Servicios & Protocolos' : 'Recetario & Fichas Técnicas',
+        subtitle: isServ ? 'Catálogo de sesiones y costos de cabina' : 'Fichas técnicas con costeo por porción y margenes'
+      },
+      'ingredients': {
+        icon: isServ ? '🧴' : '📦',
+        title: isServ ? 'Insumos de Cabina & Descartables' : 'Insumos & Inventario',
+        subtitle: isServ ? 'Precios por ml/aplicación y rendimiento' : 'Precios por kg/lt, rendimiento y mermas'
+      },
+      'simulator': {
+        icon: '🧮',
+        title: 'Simulador de Precios',
+        subtitle: 'Cálculo de márgenes netos, moldes y precio sugerido'
+      },
+      'quotes': {
+        icon: isServ ? '💬' : '📋',
+        title: isServ ? 'Cotizaciones & Presupuestos' : 'Cotizaciones & Pedidos',
+        subtitle: isServ ? 'Presupuestos de servicios, abonos y citas' : 'Presupuestos en PDF, abonos y seguimiento de entregas'
+      },
+      'customers': {
+        icon: '👥',
+        title: 'Gestión de Clientes (CRM)',
+        subtitle: 'Historial de compras, contactos y fechas especiales'
+      },
+      'market-radar': {
+        icon: '🛒',
+        title: 'Radar de Ofertas & Precios',
+        subtitle: 'Comparador de precios en distribuidoras y tiendas mayoristas'
+      },
+      'settings': {
+        icon: '⚙️',
+        title: 'Configuración del Taller',
+        subtitle: 'Valor hora, comisiones de pago, notificaciones y nube'
+      }
+    };
+
+    const info = infoMap[tabName] || infoMap['dashboard'];
+    if (iconEl) iconEl.textContent = info.icon;
+    if (titleEl) titleEl.textContent = info.title;
+    if (subtitleEl) subtitleEl.textContent = info.subtitle;
+  },
+
+  initGlobalSearch() {
+    window.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        const input = document.getElementById('global-search-input');
+        if (input) {
+          input.focus();
+          input.select();
+        }
+      }
+      if (e.key === 'Escape') {
+        this.closeGlobalSearch();
+        this.closeQuickCreateDropdown();
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#global-search-input') && !e.target.closest('#global-search-results')) {
+        this.closeGlobalSearch();
+      }
+      if (!e.target.closest('#quick-create-dropdown') && !e.target.closest('button[onclick*="toggleQuickCreateDropdown"]')) {
+        this.closeQuickCreateDropdown();
+      }
+    });
+  },
+
+  closeGlobalSearch() {
+    const res = document.getElementById('global-search-results');
+    if (res) res.classList.add('hidden');
+  },
+
+  handleGlobalSearch(query) {
+    const res = document.getElementById('global-search-results');
+    if (!res) return;
+
+    const q = (query || '').trim().toLowerCase();
+    if (!q) {
+      res.innerHTML = `
+        <div class="p-4 text-center text-xs text-gray-400">
+          Escribe para buscar recetas, insumos, clientes o cotizaciones...
+        </div>
+      `;
+      res.classList.remove('hidden');
+      return;
+    }
+
+    const recipes = DB.getRecipes().filter(r => (r.name || '').toLowerCase().includes(q) || (r.category || '').toLowerCase().includes(q));
+    const ingredients = DB.getIngredients().filter(i => (i.name || '').toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q));
+    const customers = DB.getCustomers().filter(c => (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q) || (c.email || '').toLowerCase().includes(q));
+    const quotes = DB.getQuotes().filter(qt => (qt.customerName || '').toLowerCase().includes(q) || (qt.code || '').toLowerCase().includes(q) || (qt.eventName || '').toLowerCase().includes(q));
+
+    const total = recipes.length + ingredients.length + customers.length + quotes.length;
+
+    if (total === 0) {
+      res.innerHTML = `
+        <div class="p-4 text-center text-xs text-gray-400">
+          No se encontraron resultados para "<strong>${this.escapeHtml(query)}</strong>"
+        </div>
+      `;
+      res.classList.remove('hidden');
+      return;
+    }
+
+    let html = '';
+
+    if (recipes.length > 0) {
+      html += `
+        <div class="p-2 border-b border-gray-100 dark:border-slate-800">
+          <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase px-2">🎂 Recetas & Servicios (${recipes.length})</span>
+          <div class="mt-1 space-y-1">
+            ${recipes.slice(0, 4).map(r => `
+              <button type="button" onclick="App.openSearchResult('recipe', '${r.id}')" class="w-full text-left p-2 rounded-xl hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center justify-between text-xs transition cursor-pointer">
+                <span class="font-bold text-gray-800 dark:text-gray-200 truncate">${this.escapeHtml(r.name)}</span>
+                <span class="text-[10px] text-pink-600 dark:text-pink-400 font-mono">${r.category || ''}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (ingredients.length > 0) {
+      html += `
+        <div class="p-2 border-b border-gray-100 dark:border-slate-800">
+          <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase px-2">📦 Insumos (${ingredients.length})</span>
+          <div class="mt-1 space-y-1">
+            ${ingredients.slice(0, 4).map(i => `
+              <button type="button" onclick="App.openSearchResult('ingredient', '${i.id}')" class="w-full text-left p-2 rounded-xl hover:bg-amber-50 dark:hover:bg-slate-800 flex items-center justify-between text-xs transition cursor-pointer">
+                <span class="font-bold text-gray-800 dark:text-gray-200 truncate">${this.escapeHtml(i.name)}</span>
+                <span class="text-[10px] text-amber-600 dark:text-amber-400 font-mono">$${(i.packagePrice || 0).toLocaleString('es-CL')}/${i.packageUnit}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (customers.length > 0) {
+      html += `
+        <div class="p-2 border-b border-gray-100 dark:border-slate-800">
+          <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase px-2">👥 Clientes (${customers.length})</span>
+          <div class="mt-1 space-y-1">
+            ${customers.slice(0, 4).map(c => `
+              <button type="button" onclick="App.openSearchResult('customer', '${c.id}')" class="w-full text-left p-2 rounded-xl hover:bg-purple-50 dark:hover:bg-slate-800 flex items-center justify-between text-xs transition cursor-pointer">
+                <span class="font-bold text-gray-800 dark:text-gray-200 truncate">${this.escapeHtml(c.name)}</span>
+                <span class="text-[10px] text-purple-600 dark:text-purple-400 font-mono">${this.escapeHtml(c.phone || '')}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    if (quotes.length > 0) {
+      html += `
+        <div class="p-2">
+          <span class="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase px-2">📋 Cotizaciones (${quotes.length})</span>
+          <div class="mt-1 space-y-1">
+            ${quotes.slice(0, 4).map(q => `
+              <button type="button" onclick="App.openSearchResult('quote', '${q.id}')" class="w-full text-left p-2 rounded-xl hover:bg-emerald-50 dark:hover:bg-slate-800 flex items-center justify-between text-xs transition cursor-pointer">
+                <span class="font-bold text-gray-800 dark:text-gray-200 truncate">${this.escapeHtml(q.customerName || 'Cliente')} (${q.code || 'COT'})</span>
+                <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-bold">$${(q.total || 0).toLocaleString('es-CL')}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    res.innerHTML = html;
+    res.classList.remove('hidden');
+  },
+
+  openSearchResult(type, id) {
+    this.closeGlobalSearch();
+    const input = document.getElementById('global-search-input');
+    if (input) input.value = '';
+
+    if (type === 'recipe') {
+      this.switchTab('recipes');
+      setTimeout(() => {
+        if (typeof RecipesModule !== 'undefined') RecipesModule.openEditor(id);
+      }, 100);
+    } else if (type === 'ingredient') {
+      this.switchTab('ingredients');
+      setTimeout(() => {
+        if (typeof IngredientsModule !== 'undefined') IngredientsModule.openModal(id);
+      }, 100);
+    } else if (type === 'customer') {
+      this.switchTab('customers');
+      setTimeout(() => {
+        if (typeof CustomersModule !== 'undefined') CustomersModule.openCustomerDetail(id);
+      }, 100);
+    } else if (type === 'quote') {
+      this.switchTab('quotes');
+      setTimeout(() => {
+        if (typeof QuotesModule !== 'undefined') QuotesModule.openEditor(id);
+      }, 100);
+    }
+  },
+
+  toggleQuickCreateDropdown() {
+    const dd = document.getElementById('quick-create-dropdown');
+    if (dd) dd.classList.toggle('hidden');
+  },
+
+  closeQuickCreateDropdown() {
+    const dd = document.getElementById('quick-create-dropdown');
+    if (dd) dd.classList.add('hidden');
+  },
+
+  quickCreateAction(action) {
+    this.closeQuickCreateDropdown();
+    if (action === 'quote') {
+      this.switchTab('quotes');
+      setTimeout(() => QuotesModule.openEditor(), 80);
+    } else if (action === 'recipe') {
+      this.switchTab('recipes');
+      setTimeout(() => RecipesModule.openEditor(), 80);
+    } else if (action === 'ingredient') {
+      this.switchTab('ingredients');
+      setTimeout(() => {
+        if (this.currentMode === 'services') {
+          IngredientsModule.openModal();
+        } else {
+          IngredientsModule.openEditor();
+        }
+      }, 80);
+    } else if (action === 'customer') {
+      this.switchTab('customers');
+      setTimeout(() => CustomersModule.openCustomerEditor(), 80);
+    } else if (action === 'scan_receipt') {
+      this.switchTab('ingredients');
+      setTimeout(() => ReceiptScannerModule.openModal(), 80);
+    }
+  },
+
+  updateSidebarBadges() {
+    const recipes = DB.getRecipes();
+    const ingredients = DB.getIngredients();
+    const quotes = DB.getQuotes();
+    const customers = DB.getCustomers();
+
+    const rBadge = document.getElementById('sidebar-badge-recipes');
+    const iBadge = document.getElementById('sidebar-badge-ingredients');
+    const qBadge = document.getElementById('sidebar-badge-quotes');
+    const cBadge = document.getElementById('sidebar-badge-customers');
+
+    if (rBadge) rBadge.textContent = recipes.length;
+    if (iBadge) iBadge.textContent = ingredients.length;
+    if (cBadge) cBadge.textContent = customers.length;
+
+    if (qBadge) {
+      const pendingCount = quotes.filter(q => q.status === 'sent' || q.status === 'approved').length;
+      if (pendingCount > 0) {
+        qBadge.textContent = pendingCount;
+        qBadge.classList.remove('hidden');
+      } else {
+        qBadge.classList.add('hidden');
+      }
     }
   },
 
@@ -708,6 +1028,8 @@ const App = {
     this.closeQuickActionsConfigModal();
   },
 
+  dashboardChartInstance: null,
+
   renderDashboard() {
     const container = document.getElementById('dashboard-view');
     if (!container) return;
@@ -720,11 +1042,32 @@ const App = {
     const settings = DB.getSettings();
 
     const now = new Date();
-    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+    const todayMidnight = new Date(currentYear, currentMonth, now.getDate());
     const formattedToday = now.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' });
 
     const businessTitle = settings.businessName || (isServicesMode ? 'Centro de Estética, Spa & Masajes' : 'Mi Pastelería Artesanal');
     const safeBusinessTitle = this.escapeHtml(this.sanitizePlainText(businessTitle));
+
+    // ==========================================
+    // Cálculo de Métricas Clave (KPIs)
+    // ==========================================
+    const approvedQuotes = quotes.filter(q => q.status === 'approved');
+    
+    // Ventas del Mes en Curso
+    const currentMonthQuotes = approvedQuotes.filter(q => {
+      if (!q.createdAt && !q.eventDate) return false;
+      const dateStr = q.eventDate || q.createdAt;
+      const d = new Date(dateStr);
+      return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
+    });
+
+    const monthSalesTotal = currentMonthQuotes.reduce((acc, q) => acc + (Number(q.total) || 0), 0);
+    const allTimeSalesTotal = approvedQuotes.reduce((acc, q) => acc + (Number(q.total) || 0), 0);
+    const avgTicket = currentMonthQuotes.length > 0 
+      ? monthSalesTotal / currentMonthQuotes.length 
+      : (approvedQuotes.length > 0 ? allTimeSalesTotal / approvedQuotes.length : 0);
 
     // Acciones Rápidas Seleccionadas por el Usuario
     const enabledActionIds = this.getEnabledQuickActionIds();
@@ -764,7 +1107,7 @@ const App = {
               balance: Number(q.remainingBalance) || 0,
               quoteId: q.id,
               code: q.code || (isServicesMode ? 'COT-S' : 'COT'),
-              statusLabel: isServicesMode ? 'Cita Agendada' : 'Entrega Aceptada'
+              statusLabel: isServicesMode ? 'Cita Agendada' : 'Entrega Confirmada'
             });
           }
         }
@@ -795,12 +1138,12 @@ const App = {
           amount: Number(q.total) || 0,
           quoteId: q.id,
           code: q.code || (isServicesMode ? 'COT-S' : 'COT'),
-          statusLabel: 'Esperando Respuesta'
+          statusLabel: 'Por Confirmar'
         });
       }
     });
 
-    // 3. Fechas Especiales & Cumpleaños (CRM) - Solo Clientes Favoritos ⭐
+    // 3. Fechas Especiales & Cumpleaños (CRM) - Clientes Favoritos ⭐
     upcomingEvents.forEach(evt => {
       if (evt.isFavorite) {
         importantEvents.push({
@@ -812,7 +1155,7 @@ const App = {
           formattedDate: evt.formattedDate,
           daysLeft: evt.daysLeft,
           isFavorite: true,
-          statusLabel: isServicesMode ? (evt.type === 'birthday' ? 'Cumpleaños' : (evt.type === 'control' ? 'Control de Sesión' : 'Fecha Especial')) : (evt.type === 'birthday' ? 'Cumpleaños' : 'Aniversario')
+          statusLabel: isServicesMode ? (evt.type === 'birthday' ? 'Cumpleaños' : 'Fecha Especial') : (evt.type === 'birthday' ? 'Cumpleaños' : 'Aniversario')
         });
       }
     });
@@ -824,12 +1167,19 @@ const App = {
       return da - db;
     });
 
-    const deliveriesCount = importantEvents.filter(e => e.type === 'delivery').length;
+    const deliveriesThisWeek = importantEvents.filter(e => e.type === 'delivery' && e.daysLeft >= 0 && e.daysLeft <= 7).length;
     const pendingSentCount = importantEvents.filter(e => e.type === 'pending_quote').length;
-    const birthdaysCount = importantEvents.filter(e => e.type === 'birthday').length;
+
+    // Top Insumos con Mayor Costo
+    const topCostIngredients = [...ingredients]
+      .sort((a, b) => (Number(b.packagePrice) || 0) - (Number(a.packagePrice) || 0))
+      .slice(0, 4);
+
+    // Top Recetas / Servicios
+    const topRecipes = [...recipes].slice(0, 4);
 
     container.innerHTML = `
-      <!-- Hero Banner Dinámico -->
+      <!-- Hero Banner Ejecutivo Dinámico -->
       <div class="${isServicesMode ? 'services-hero-banner' : 'products-hero-banner'} rounded-3xl p-5 sm:p-7 text-white shadow-lg mb-5 sm:mb-6 relative overflow-hidden">
         <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div class="flex items-center gap-3.5 sm:gap-5 min-w-0">
@@ -851,346 +1201,411 @@ const App = {
               </h1>
               <p class="text-white/90 text-xs sm:text-sm mt-0.5 leading-snug line-clamp-2">
                 ${isServicesMode 
-                  ? 'Centro de control de servicios & spa: Costea sesiones, protocolos de cabina, cotiza y gestiona a tus clientes en un solo lugar.'
-                  : 'Centro de control pastelero: Costea, presupuesta, cotiza y gestiona a tus clientes en un solo lugar.'}
+                  ? 'Centro de control de servicios & spa: Costea sesiones, protocolos de cabina, cotiza y gestiona a tus clientes.'
+                  : 'Centro de control pastelero: Costea, presupuesta, cotiza y gestiona tu taller artesanal en un solo lugar.'}
               </p>
             </div>
           </div>
 
-          <!-- Acceso Directo de Configuración del Negocio -->
-          <button 
-            type="button" 
-            onclick="App.switchTab('settings')" 
-            class="self-start md:self-center px-4 py-2 bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md border border-white/30 rounded-2xl text-xs font-bold transition flex items-center gap-2 text-white shadow-2xs cursor-pointer"
-          >
-            <span>⚙️</span> ${isServicesMode ? 'Personalizar Centro' : 'Personalizar Taller'}
-          </button>
-        </div>
-        <div class="absolute -right-4 -bottom-6 opacity-15 sm:opacity-20 text-7xl sm:text-9xl pointer-events-none select-none">
-          ${isServicesMode ? '💆' : '🧁'}
+          <div class="flex items-center gap-2 self-start md:self-center">
+            <button 
+              type="button" 
+              onclick="App.switchTab('settings')" 
+              class="px-4 py-2 bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md border border-white/30 rounded-2xl text-xs font-bold transition flex items-center gap-2 text-white shadow-2xs cursor-pointer"
+            >
+              <span>⚙️</span> ${isServicesMode ? 'Ajustes Centro' : 'Ajustes Taller'}
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Barra de Acciones Rápidas (⚡ Personalizable por el usuario) -->
-      <div class="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 mb-5 sm:mb-6 shadow-xs">
-        <div class="flex items-center justify-between gap-2 mb-2.5 px-1">
-          <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
-            <span>⚡</span> Acciones Rápidas
-          </span>
-          <button 
-            type="button" 
-            onclick="App.openQuickActionsConfigModal()" 
-            class="text-[11px] text-pink-600 dark:text-pink-400 font-bold hover:underline flex items-center gap-1 cursor-pointer bg-pink-50/70 dark:bg-pink-950/40 hover:bg-pink-100 dark:hover:bg-pink-900/50 px-2.5 py-1 rounded-xl border border-pink-200/80 dark:border-pink-800 transition shadow-2xs active:scale-95"
-            title="Elegir qué botones ver en acciones rápidas"
-          >
-            <span>⚙️</span> Personalizar
-          </button>
-        </div>
+      <!-- Fila de Tarjetas KPI Ejecutivas -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
         
-        ${enabledActions.length === 0 ? `
-          <div class="text-center py-4 text-xs text-gray-400">
-            No tienes acciones rápidas seleccionadas. 
-            <button onclick="App.openQuickActionsConfigModal()" class="text-pink-600 font-bold underline ml-1">Configurar atajos</button>
+        <!-- KPI 1: Ventas del Mes -->
+        <div class="kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ventas del Mes</span>
+            <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
+              💰
+            </div>
           </div>
-        ` : `
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-2.5">
-            ${enabledActions.map(action => `
+          <div>
+            <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
+              ${Calculator.formatCurrency(monthSalesTotal > 0 ? monthSalesTotal : allTimeSalesTotal)}
+            </span>
+            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold block mt-0.5">
+              ${monthSalesTotal > 0 ? 'En pedidos confirmados este mes' : 'En total histórico confirmado'}
+            </span>
+          </div>
+        </div>
+
+        <!-- KPI 2: Entregas / Citas Esta Semana -->
+        <div class="kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">${isServicesMode ? 'Citas Semana' : 'Entregas Semana'}</span>
+            <div class="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center text-base">
+              ${isServicesMode ? '💆' : '🚚'}
+            </div>
+          </div>
+          <div>
+            <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
+              ${deliveriesThisWeek}
+            </span>
+            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold block mt-0.5">
+              Próximos 7 días agendados
+            </span>
+          </div>
+        </div>
+
+        <!-- KPI 3: Cotizaciones por Confirmar -->
+        <div class="kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Por Confirmar</span>
+            <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-base">
+              ⏳
+            </div>
+          </div>
+          <div>
+            <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
+              ${pendingSentCount}
+            </span>
+            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold block mt-0.5">
+              Presupuestos enviados pendientes
+            </span>
+          </div>
+        </div>
+
+        <!-- KPI 4: Catálogo Activo -->
+        <div class="kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Catálogo Activo</span>
+            <div class="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-base">
+              📦
+            </div>
+          </div>
+          <div>
+            <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
+              ${recipes.length} <span class="text-xs font-normal text-gray-400">fichas</span> / ${ingredients.length} <span class="text-xs font-normal text-gray-400">insumos</span>
+            </span>
+            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold block mt-0.5">
+              ${customers.length} clientes registrados
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Contenedor Principal en Cuadrícula: Columna Ancha + Columna Operativa -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-6">
+        
+        <!-- ==========================================
+             COLUMNA IZQUIERDA (2/3 de ancho en PC): Gráficos, Acciones y Catálogo
+             ========================================== -->
+        <div class="lg:col-span-2 space-y-5 sm:space-y-6">
+
+          <!-- Tarjeta de Gráfico de Rendimiento -->
+          <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
+            <div class="flex items-center justify-between gap-2 mb-4 pb-2 border-b border-gray-100 dark:border-slate-700">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">📈</span>
+                <div>
+                  <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-gray-100">
+                    Rendimiento de Ventas & Facturación
+                  </h3>
+                  <p class="text-[11px] text-gray-400">Evolución de cotizaciones aprobadas de los últimos meses</p>
+                </div>
+              </div>
+              <button onclick="App.switchTab('finance')" class="text-xs font-bold text-pink-600 dark:text-pink-400 hover:underline">
+                Ver Finanzas Detalladas ↗
+              </button>
+            </div>
+            <div class="relative h-60 w-full">
+              <canvas id="dashboardRevenueChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Barra de Acciones Rápidas (Personalizable) -->
+          <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
+                <span>⚡</span> Acciones Rápidas del Taller
+              </span>
               <button 
                 type="button" 
-                onclick="${action.handler}"
-                class="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl ${action.colorClass} border text-xs font-bold transition flex items-center gap-2 group active:scale-95 cursor-pointer shadow-2xs text-left"
+                onclick="App.openQuickActionsConfigModal()" 
+                class="text-[11px] text-pink-600 dark:text-pink-400 font-bold hover:underline flex items-center gap-1 cursor-pointer bg-pink-50/70 dark:bg-pink-950/40 hover:bg-pink-100 dark:hover:bg-pink-900/50 px-2.5 py-1 rounded-xl border border-pink-200/80 dark:border-pink-800 transition shadow-2xs active:scale-95"
               >
-                <span class="text-base sm:text-lg group-hover:scale-110 transition shrink-0">${action.icon}</span>
-                <span class="truncate">${action.title}</span>
+                <span>⚙️</span> Personalizar
               </button>
-            `).join('')}
-          </div>
-        `}
-      </div>
-
-      <!-- Botonera Compacta de Módulos (Keypad de Navegación a los 8 módulos) -->
-      <div class="mb-5 sm:mb-6">
-        <div class="flex items-center justify-between gap-2 mb-2.5 px-1">
-          <h2 class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-            <span>✨</span> Módulos de ${isServicesMode ? 'Servikulator' : 'Cakekulator'}
-          </h2>
-          <span class="text-[11px] text-gray-400">Acceso rápido</span>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
-          
-          <!-- 1. Cotizaciones -->
-          <button 
-            type="button"
-            onclick="App.switchTab('quotes')" 
-            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-emerald-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-          >
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-              📋
             </div>
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Cotizaciones</span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${quotes.length} registradas</span>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              ${enabledActions.map(action => `
+                <button 
+                  type="button" 
+                  onclick="${action.handler}"
+                  class="p-3 rounded-2xl ${action.colorClass} border text-xs font-bold transition flex items-center gap-2.5 group active:scale-95 cursor-pointer shadow-2xs text-left"
+                >
+                  <span class="text-lg group-hover:scale-110 transition shrink-0">${action.icon}</span>
+                  <span class="truncate">${action.title}</span>
+                </button>
+              `).join('')}
             </div>
-          </button>
-
-          <!-- 2. Clientes -->
-          <button 
-            type="button"
-            onclick="App.switchTab('customers')" 
-            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-pink-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-          >
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-pink-50 dark:bg-pink-950/40 text-pink-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-              👥
-            </div>
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Clientes</span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${customers.length} perfiles</span>
-            </div>
-          </button>
-
-          <!-- 3. Servicios / Recetas -->
-          <button 
-            type="button"
-            onclick="App.switchTab('recipes')" 
-            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-purple-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-          >
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-              ${isServicesMode ? '💆' : '🎂'}
-            </div>
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">${isServicesMode ? 'Servicios' : 'Recetas'}</span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${recipes.length} ${isServicesMode ? 'servicios' : 'fichas'}</span>
-            </div>
-          </button>
-
-          <!-- 4. Insumos -->
-          <button 
-            type="button"
-            onclick="App.switchTab('ingredients')" 
-            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-amber-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-          >
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-              ${isServicesMode ? '🧴' : '📦'}
-            </div>
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">${isServicesMode ? 'Insumos Cabina' : 'Insumos'}</span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${ingredients.length} ${isServicesMode ? 'insumos' : 'materias'}</span>
-            </div>
-          </button>
-
-          <!-- 5. Simulador -->
-          <button 
-            type="button"
-            onclick="App.switchTab('simulator')" 
-            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-blue-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-          >
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-              🧮
-            </div>
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Simulador</span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">${isServicesMode ? 'Sesiones y paquetes' : 'Precios y márgenes'}</span>
-            </div>
-          </button>
-
-          <!-- 6. Ofertas -->
-          <button 
-            type="button"
-            onclick="App.switchTab('market-radar')" 
-            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-orange-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-          >
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-orange-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-              🛒
-            </div>
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Ofertas</span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">Supermercados</span>
-            </div>
-          </button>
-
-          <!-- 7. Finanzas -->
-          <button 
-            type="button"
-            onclick="App.switchTab('finance')" 
-            class="p-2.5 sm:p-3 rounded-2xl bg-white dark:bg-slate-800 hover:bg-teal-50/70 dark:hover:bg-slate-700/60 border border-gray-100 dark:border-slate-700/80 shadow-2xs hover:shadow-xs active:scale-95 transition duration-150 flex items-center gap-2.5 cursor-pointer group text-left"
-          >
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 flex items-center justify-center text-lg sm:text-xl shrink-0 group-hover:scale-110 transition duration-150">
-              📊
-            </div>
-            <div class="min-w-0 flex-1">
-              <span class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate block">Finanzas</span>
-              <span class="text-[10px] text-gray-400 dark:text-gray-400 block truncate">KPIs y costos</span>
-            </div>
-          </button>
-
-        </div>
-      </div>
-
-      <!-- Agenda de Fechas Importantes & Seguimiento -->
-      <div class="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 border border-gray-200/80 dark:border-slate-700 shadow-xs mb-5 sm:mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-gray-100 dark:border-slate-700">
-          <div>
-            <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-gray-100 flex items-center gap-2">
-              <span>📅</span> Agenda & Fechas Importantes
-            </h3>
-            <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-              ${isServicesMode 
-                ? 'Citas agendadas en cabina, cotizaciones sin respuesta y fechas de clientes.'
-                : 'Entregas de pedidos agendados, cotizaciones sin respuesta y cumpleaños de clientes.'}
-            </p>
           </div>
 
-          <!-- Píldoras de Conteo de Alertas -->
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 flex items-center gap-1">
-              <span>${isServicesMode ? '💆' : '🚚'}</span> ${deliveriesCount} ${isServicesMode ? 'Citas Agendadas' : 'Entregas'}
-            </span>
-            <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800/60 flex items-center gap-1">
-              <span>⏳</span> ${pendingSentCount} Por Confirmar
-            </span>
-            <span class="px-2.5 py-1 rounded-xl text-[10px] font-bold bg-pink-50 dark:bg-pink-950/50 text-pink-700 dark:text-pink-300 border border-pink-200/60 dark:border-pink-800/60 flex items-center gap-1">
-              <span>⭐</span> ${birthdaysCount} ${isServicesMode ? 'Clientes VIP' : 'Favoritos VIP'}
-            </span>
-          </div>
-        </div>
-
-        ${importantEvents.length === 0 ? `
-          <div class="text-center py-8 text-xs text-gray-400 dark:text-gray-500">
-            <span class="text-3xl block mb-2">🎉</span>
-            ¡Estás completamente al día! No tienes ${isServicesMode ? 'citas' : 'entregas'} pendientes ni fechas de clientes favoritos este mes.
-          </div>
-        ` : `
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            ${importantEvents.slice(0, 6).map(evt => {
-              const isDelivery = evt.type === 'delivery';
-              const isPending = evt.type === 'pending_quote';
-              const isBday = evt.type === 'birthday';
-
-              let cardBg = 'bg-gray-50/70 dark:bg-slate-900/60 border-gray-200/80 dark:border-slate-700/80';
-              let badgeBg = 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300';
-              let icon = '📅';
-
-              if (isDelivery) {
-                cardBg = 'bg-emerald-50/40 dark:bg-slate-900/60 border-emerald-200/70 dark:border-slate-700 hover:border-emerald-400';
-                badgeBg = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200/60';
-                icon = isServicesMode ? '💆' : '🚚';
-              } else if (isPending) {
-                cardBg = 'bg-amber-50/40 dark:bg-slate-900/60 border-amber-200/70 dark:border-slate-700 hover:border-amber-400';
-                badgeBg = 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-200/60';
-                icon = '⏳';
-              } else if (isBday) {
-                cardBg = 'bg-pink-50/40 dark:bg-slate-900/60 border-pink-200/70 dark:border-slate-700 hover:border-pink-400';
-                badgeBg = 'bg-pink-100 text-pink-800 dark:bg-pink-950/60 dark:text-pink-300 border border-pink-200/60';
-                icon = '⭐';
-              }
-
-              let daysBadgeHtml = '';
-              if (evt.daysLeft !== null && evt.daysLeft !== undefined) {
-                if (evt.daysLeft === 0) {
-                  daysBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white animate-pulse">${isServicesMode ? '¡Cita Hoy!' : '¡Entrega Hoy!'}</span>`;
-                } else if (evt.daysLeft === 1) {
-                  daysBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-500 text-white">¡Mañana!</span>`;
-                } else if (evt.daysLeft < 0) {
-                  daysBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 text-gray-700 dark:bg-slate-700 dark:text-gray-300">Hace ${Math.abs(evt.daysLeft)}d</span>`;
-                } else if (evt.daysLeft <= 3) {
-                  daysBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">En ${evt.daysLeft} días</span>`;
-                } else {
-                  daysBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300">En ${evt.daysLeft} días</span>`;
-                }
-              }
-
-              return `
-                <div class="p-3.5 rounded-2xl border ${cardBg} transition flex flex-col justify-between space-y-2.5 shadow-2xs">
-                  <div>
-                    <div class="flex items-center justify-between gap-1.5 mb-1.5">
-                      <span class="px-2 py-0.5 rounded-lg text-[10px] font-black ${badgeBg} flex items-center gap-1">
-                        <span>${icon}</span> ${evt.statusLabel}
-                      </span>
-                      ${daysBadgeHtml}
-                    </div>
-
-                    <div class="min-w-0">
-                      <h4 class="font-bold text-xs sm:text-sm text-gray-900 dark:text-gray-100 truncate flex items-center gap-1">
-                        ${evt.customerName} <span class="text-amber-500 text-xs">⭐</span>
-                      </h4>
-                      <p class="text-[11px] text-gray-600 dark:text-gray-400 truncate mt-0.5">
-                        ${evt.title}
-                      </p>
-                      ${evt.formattedDate ? `
-                        <span class="text-[10px] font-semibold text-gray-400 dark:text-gray-500 block mt-0.5">
-                          📅 Fecha: ${evt.formattedDate}
-                        </span>
-                      ` : ''}
-                    </div>
-                  </div>
-
-                  <!-- Footer con Acciones Directas -->
-                  <div class="pt-2 border-t border-gray-100 dark:border-slate-800/80 flex items-center justify-between gap-1 text-xs">
-                    ${isDelivery ? `
-                      <div>
-                        <span class="text-[10px] text-gray-400 block">Total: ${Calculator.formatCurrency(evt.amount)}</span>
-                        ${evt.balance > 0 ? `<span class="text-[10px] font-bold text-emerald-600 block">Saldo: ${Calculator.formatCurrency(evt.balance)}</span>` : ''}
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <button 
-                          type="button" 
-                          onclick="App.sendWhatsAppDeliveryCoordination('${evt.customerPhone}', '${evt.customerName}', '${evt.title}', '${evt.formattedDate}')"
-                          class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-[11px] transition shadow-2xs flex items-center gap-1 cursor-pointer"
-                          title="${isServicesMode ? 'Coordinar cita por WhatsApp' : 'Coordinar entrega por WhatsApp'}"
-                        >
-                          <span>💬</span> Coordinar
-                        </button>
-                        <button 
-                          type="button" 
-                          onclick="App.switchTab('quotes'); setTimeout(() => QuotesModule.openEditor('${evt.quoteId}'), 80);"
-                          class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-300 text-xs cursor-pointer"
-                          title="Ver cotización"
-                        >
-                          📋
-                        </button>
-                      </div>
-                    ` : isPending ? `
-                      <div>
-                        <span class="text-[10px] text-gray-400 block">${evt.code}</span>
-                        <span class="text-[11px] font-bold text-gray-800 dark:text-gray-200 block">${Calculator.formatCurrency(evt.amount)}</span>
-                      </div>
-                      <div class="flex items-center gap-1">
-                        <button 
-                          type="button" 
-                          onclick="App.sendWhatsAppFollowUp('${evt.customerPhone}', '${evt.customerName}', '${evt.code}', '${evt.title}')"
-                          class="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-[11px] transition shadow-2xs flex items-center gap-1 cursor-pointer"
-                          title="Enviar recordatorio por WhatsApp"
-                        >
-                          <span>💬</span> Recordar
-                        </button>
-                        <button 
-                          type="button" 
-                          onclick="App.switchTab('quotes'); setTimeout(() => QuotesModule.openEditor('${evt.quoteId}'), 80);"
-                          class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-300 text-xs cursor-pointer"
-                          title="Ver cotización"
-                        >
-                          📋
-                        </button>
-                      </div>
-                    ` : `
-                      <span class="text-[10px] text-pink-600 font-bold">⭐ Cliente VIP</span>
-                      <button 
-                        type="button" 
-                        onclick="App.switchTab('customers'); setTimeout(() => CustomersModule.openCustomerDetail('${evt.customerId}'), 80);"
-                        class="px-2.5 py-1 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl text-[11px] transition shadow-2xs flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>👥</span> Ver Perfil
-                      </button>
-                    `}
-                  </div>
+          <!-- Cuadrícula Doble: Top Recetas Rentables + Insumos de Mayor Costo -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Top Recetas -->
+            <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-slate-700">
+                  <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <span>🏆</span> ${isServicesMode ? 'Servicios Destacados' : 'Recetas Destacadas'}
+                  </h4>
+                  <button onclick="App.switchTab('recipes')" class="text-[10px] text-pink-600 dark:text-pink-400 font-bold hover:underline">Ver todas</button>
                 </div>
-              `;
-            }).join('')}
+                ${topRecipes.length === 0 ? `
+                  <p class="text-xs text-gray-400 py-4 text-center">No hay recetas creadas aún.</p>
+                ` : `
+                  <div class="space-y-2">
+                    ${topRecipes.map(r => `
+                      <div class="p-2 rounded-xl bg-gray-50 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                        <div class="min-w-0 pr-2">
+                          <span class="font-bold text-gray-900 dark:text-gray-100 truncate block">${this.escapeHtml(r.name)}</span>
+                          <span class="text-[10px] text-gray-400">${r.category || 'General'}</span>
+                        </div>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-pink-100 dark:bg-slate-800 text-pink-700 dark:text-pink-300 shrink-0">
+                          ${r.suggestedMargin || 40}% margen
+                        </span>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+            </div>
+
+            <!-- Insumos de Mayor Costo -->
+            <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-slate-700">
+                  <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <span>📦</span> Insumos de Mayor Costo
+                  </h4>
+                  <button onclick="App.switchTab('ingredients')" class="text-[10px] text-amber-600 dark:text-amber-400 font-bold hover:underline">Ver stock</button>
+                </div>
+                ${topCostIngredients.length === 0 ? `
+                  <p class="text-xs text-gray-400 py-4 text-center">No hay insumos creados aún.</p>
+                ` : `
+                  <div class="space-y-2">
+                    ${topCostIngredients.map(i => `
+                      <div class="p-2 rounded-xl bg-gray-50 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                        <div class="min-w-0 pr-2">
+                          <span class="font-bold text-gray-900 dark:text-gray-100 truncate block">${this.escapeHtml(i.name)}</span>
+                          <span class="text-[10px] text-gray-400">${i.packageQty} ${i.packageUnit}</span>
+                        </div>
+                        <span class="text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 shrink-0">
+                          ${Calculator.formatCurrency(i.packagePrice)}
+                        </span>
+                      </div>
+                    `).join('')}
+                  </div>
+                `}
+              </div>
+            </div>
+
           </div>
-        `}
+
+        </div>
+
+        <!-- ==========================================
+             COLUMNA DERECHA (1/3 de ancho en PC): Agenda Operativa y Pedidos
+             ========================================== -->
+        <div class="space-y-5 sm:space-y-6">
+
+          <!-- Agenda de Entregas & Citas -->
+          <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
+            <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-100 dark:border-slate-700">
+              <div>
+                <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                  <span>📅</span> Agenda de Entregas
+                </h3>
+                <p class="text-[10px] text-gray-400">Próximos pedidos y citas agendadas</p>
+              </div>
+              <button onclick="App.switchTab('quotes')" class="text-[10px] text-pink-600 dark:text-pink-400 font-bold hover:underline">
+                Ver todas ↗
+              </button>
+            </div>
+
+            ${importantEvents.length === 0 ? `
+              <div class="text-center py-8 text-xs text-gray-400 dark:text-gray-500">
+                <span class="text-3xl block mb-2">🎉</span>
+                ¡Estás al día! No hay pedidos pendientes para los próximos días.
+              </div>
+            ` : `
+              <div class="space-y-2.5 max-h-[480px] overflow-y-auto custom-scrollbar pr-1">
+                ${importantEvents.slice(0, 8).map(evt => {
+                  const isDelivery = evt.type === 'delivery';
+                  const isPending = evt.type === 'pending_quote';
+
+                  let badgeColor = 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300';
+                  let icon = '📅';
+
+                  if (isDelivery) {
+                    badgeColor = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300';
+                    icon = isServicesMode ? '💆' : '🚚';
+                  } else if (isPending) {
+                    badgeColor = 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300';
+                    icon = '⏳';
+                  } else {
+                    badgeColor = 'bg-pink-100 text-pink-800 dark:bg-pink-950/60 dark:text-pink-300';
+                    icon = '⭐';
+                  }
+
+                  return `
+                    <div class="p-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-900/60 hover:border-pink-300 transition space-y-2">
+                      <div class="flex items-center justify-between gap-1.5">
+                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${badgeColor} flex items-center gap-1">
+                          <span>${icon}</span> ${evt.statusLabel}
+                        </span>
+                        ${evt.daysLeft === 0 
+                          ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-500 text-white animate-pulse">¡HOY!</span>`
+                          : evt.daysLeft === 1
+                          ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-orange-500 text-white">Mañana</span>`
+                          : `<span class="text-[10px] text-gray-400 font-semibold">${evt.formattedDate || ''}</span>`
+                        }
+                      </div>
+
+                      <div class="min-w-0">
+                        <h5 class="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">${this.escapeHtml(evt.customerName)}</h5>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">${this.escapeHtml(evt.title)}</p>
+                      </div>
+
+                      <div class="pt-1.5 border-t border-gray-200/50 dark:border-slate-800 flex items-center justify-between gap-1 text-[11px]">
+                        <span class="font-bold font-mono text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(evt.amount || 0)}</span>
+                        
+                        <div class="flex items-center gap-1">
+                          ${evt.customerPhone ? `
+                            <button 
+                              type="button" 
+                              onclick="App.sendWhatsAppDeliveryCoordination('${evt.customerPhone}', '${evt.customerName}', '${evt.title}', '${evt.formattedDate}')"
+                              class="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition flex items-center gap-1"
+                            >
+                              <span>💬</span> WhatsApp
+                            </button>
+                          ` : ''}
+                          <button 
+                            type="button" 
+                            onclick="App.switchTab('quotes'); setTimeout(() => QuotesModule.openEditor('${evt.quoteId}'), 80);"
+                            class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 text-xs"
+                            title="Ver detalles"
+                          >
+                            📋
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+
+        </div>
+
       </div>
     `;
+
+    // Inicializar Gráfico de Rendimiento en el Dashboard
+    setTimeout(() => {
+      this.initDashboardChart(approvedQuotes, isServicesMode);
+    }, 50);
+  },
+
+  initDashboardChart(approvedQuotes, isServicesMode) {
+    const canvas = document.getElementById('dashboardRevenueChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    if (this.dashboardChartInstance) {
+      this.dashboardChartInstance.destroy();
+      this.dashboardChartInstance = null;
+    }
+
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const now = new Date();
+    const last6Months = [];
+    const monthlySales = [0, 0, 0, 0, 0, 0];
+
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      last6Months.push({
+        label: months[d.getMonth()] + ' ' + d.getFullYear().toString().slice(-2),
+        year: d.getFullYear(),
+        month: d.getMonth()
+      });
+    }
+
+    approvedQuotes.forEach(q => {
+      const dateStr = q.eventDate || q.createdAt;
+      if (!dateStr) return;
+      const d = new Date(dateStr);
+      last6Months.forEach((m, idx) => {
+        if (d.getFullYear() === m.year && d.getMonth() === m.month) {
+          monthlySales[idx] += Number(q.total) || 0;
+        }
+      });
+    });
+
+    const isDark = document.documentElement.classList.contains('dark');
+    const primaryColor = isServicesMode ? '#0d9488' : '#db2777';
+    const bgGradientColor = isServicesMode ? 'rgba(13, 148, 136, 0.15)' : 'rgba(219, 39, 119, 0.15)';
+
+    const ctx = canvas.getContext('2d');
+    this.dashboardChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: last6Months.map(m => m.label),
+        datasets: [{
+          label: 'Ventas Confirmadas ($)',
+          data: monthlySales,
+          borderColor: primaryColor,
+          backgroundColor: bgGradientColor,
+          borderWidth: 3,
+          fill: true,
+          tension: 0.35,
+          pointBackgroundColor: primaryColor,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (context) => 'Ventas: ' + Calculator.formatCurrency(context.parsed.y)
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { size: 10 } }
+          },
+          y: {
+            grid: { color: isDark ? '#334155' : '#f1f5f9' },
+            ticks: {
+              color: isDark ? '#94a3b8' : '#64748b',
+              font: { size: 10 },
+              callback: (val) => '$' + (val >= 1000 ? (val / 1000) + 'k' : val)
+            }
+          }
+        }
+      }
+    });
   },
 
   sendWhatsAppFollowUp(customerPhone, customerName, quoteCode, eventName) {

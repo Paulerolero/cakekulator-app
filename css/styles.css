@@ -801,3 +801,83 @@ header .nav-btn.nav-active {
   background-color: rgba(80, 7, 36, 0.5);
   border: 1px solid rgba(244, 114, 182, 0.3);
 }
+
+/* ==========================================
+   Desktop Sidebar - Estados y Animaciones
+   ========================================== */
+.sidebar-nav-item {
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-nav-item:hover {
+  transform: translateX(3px);
+}
+
+.sidebar-nav-item.sidebar-active {
+  background-color: #fdf2f8 !important;
+  color: #db2777 !important;
+  font-weight: 800 !important;
+  border-left: 3px solid #db2777;
+  padding-left: 0.65rem !important;
+  box-shadow: 0 2px 8px -2px rgba(219, 39, 119, 0.15);
+}
+
+.dark .sidebar-nav-item.sidebar-active {
+  background-color: rgba(131, 24, 67, 0.35) !important;
+  color: #f472b6 !important;
+  border-left-color: #f472b6;
+  box-shadow: 0 2px 10px -2px rgba(244, 114, 182, 0.2);
+}
+
+/* Ambiente de Servicios en Sidebar */
+body.mode-services .sidebar-nav-item.sidebar-active {
+  background-color: #f0fdfa !important;
+  color: #0d9488 !important;
+  border-left-color: #0d9488;
+}
+
+body.mode-services .dark .sidebar-nav-item.sidebar-active,
+.dark body.mode-services .sidebar-nav-item.sidebar-active {
+  background-color: rgba(15, 118, 110, 0.35) !important;
+  color: #2dd4bf !important;
+  border-left-color: #2dd4bf;
+}
+
+/* Scrollbar Personalizado */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 9999px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.4);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
+/* Tarjetas KPI de Dashboard */
+.kpi-card {
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.22s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+}
+
+.dark .kpi-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
