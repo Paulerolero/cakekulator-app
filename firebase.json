@@ -4,12 +4,13 @@
     "ignore": [
       "firebase.json",
       ".firebaserc",
+      ".*/**",
       "**/.*",
-      "**/node_modules/**",
-      "scraper.py",
-      "server.py",
+      "node_modules/**",
+      "*.py",
       "README.md",
       "package.json",
+      "package-lock.json",
       "vercel.json"
     ],
     "rewrites": [
