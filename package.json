@@ -4,7 +4,10 @@
   "private": true,
   "description": "Calculadora de costos y cotizaciones de pastelería",
   "scripts": {
-    "dev": "python -m http.server 8000"
+    "dev": "python -m http.server 8000",
+    "serve": "npx firebase-tools serve --only hosting",
+    "deploy": "npx firebase-tools deploy --only hosting",
+    "deploy:all": "npx firebase-tools deploy"
   },
   "keywords": ["pwa", "calculator", "pastry"],
   "author": "Paulerolero",
