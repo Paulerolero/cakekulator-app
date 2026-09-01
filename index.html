@@ -72,7 +72,7 @@
 </head>
 
 <body
-  class="text-gray-800 dark:text-gray-100 bg-[#faf5f8] dark:bg-[#0f172a] antialiased min-h-screen flex flex-col md:flex-row pb-24 md:pb-0 transition-colors duration-200 select-none sm:select-auto">
+  class="text-gray-800 dark:text-gray-100 bg-[#faf5f8] dark:bg-[#0f172a] antialiased min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row pb-24 md:pb-0 transition-colors duration-200 select-none sm:select-auto">
 
   <!-- ==========================================
        DESKTOP SIDEBAR (Visible en md y pantallas grandes)
@@ -235,11 +235,11 @@
   <!-- ==========================================
        MAIN APP WRAPPER (TOPBAR + CONTENIDO)
        ========================================== -->
-  <div class="flex-1 flex flex-col min-w-0">
+  <div class="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-hidden">
 
     <!-- Top Navigation Header (Desktop Topbar + Mobile Topbar) -->
     <header
-      class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/80 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 transition-colors duration-200">
+      class="shrink-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/80 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 transition-colors duration-200 sticky top-0 md:static">
       <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
 
         <!-- Mobile Brand Logo (Oculto en Desktop Sidebar) -->
@@ -362,8 +362,8 @@
       </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
+    <!-- Main Content Container (Solo el contenido interno tiene scroll en escritorio) -->
+    <main id="app-main-content" class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 md:overflow-y-auto custom-scrollbar">
       <!-- View Containers -->
       <section id="dashboard-view"></section>
       <section id="quotes-view" class="hidden"></section>

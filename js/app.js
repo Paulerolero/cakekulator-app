@@ -375,6 +375,10 @@ const App = {
 
     if (scrollToTop) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+      const mainContainer = document.getElementById('app-main-content');
+      if (mainContainer) {
+        mainContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   },
 
