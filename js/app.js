@@ -1776,6 +1776,37 @@ const App = {
                     </button>
                   </div>
                 ` : ''}
+
+                <!-- Configuración de Clave VAPID Web Push -->
+                <div class="pt-2 border-t border-gray-200 dark:border-slate-700 space-y-1.5">
+                  <div class="flex items-center justify-between">
+                    <label class="text-[11px] font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                      <span>🔑</span> Certificado Web Push (Clave Pública VAPID):
+                    </label>
+                    <a href="https://console.firebase.google.com/project/cakekulator-bd/settings/cloudmessaging" target="_blank" rel="noopener" class="text-[10px] text-pink-600 hover:underline">
+                      Obtener en Firebase ↗
+                    </a>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <input 
+                      type="text" 
+                      id="fcmVapidInput" 
+                      placeholder="Pega tu clave pública VAPID (ej. BD_... o BJ_...)" 
+                      value="${this.escapeHtml(typeof NotificationsModule !== 'undefined' ? NotificationsModule.getVapidKey() : '')}"
+                      class="flex-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-gray-900 dark:text-gray-100 font-mono focus:ring-2 focus:ring-pink-500"
+                    />
+                    <button 
+                      type="button" 
+                      onclick="NotificationsModule.saveVapidKey(document.getElementById('fcmVapidInput').value)"
+                      class="px-3 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl transition cursor-pointer shrink-0"
+                    >
+                      Guardar
+                    </button>
+                  </div>
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                    En Firebase Console > Configuración ⚙️ > Cloud Messaging > "Certificados Web Push" > "Generar par de claves".
+                  </p>
+                </div>
               </div>
 
               <!-- Preferencias de Alertas Automáticas -->

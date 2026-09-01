@@ -12,7 +12,8 @@ const DEFAULT_FIREBASE_CONFIG = {
   storageBucket: "cakekulator-bd.firebasestorage.app",
   messagingSenderId: "447811822569",
   appId: "1:447811822569:web:13ea8f3231a810053e2178",
-  measurementId: "G-WX1N2VG9QP"
+  measurementId: "G-WX1N2VG9QP",
+  vapidKey: ""
 };
 
 const FirebaseService = {

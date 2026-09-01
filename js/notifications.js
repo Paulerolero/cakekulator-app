@@ -98,31 +98,73 @@ const NotificationsModule = {
     }
   },
 
+  getVapidKey() {
+    const config = typeof FirebaseService !== 'undefined' ? FirebaseService.getConfig() : {};
+    return config.vapidKey || localStorage.getItem('cakekulator_vapid_key') || '';
+  },
+
+  async saveVapidKey(key) {
+    const trimmed = (key || '').trim();
+    if (trimmed) {
+      localStorage.setItem('cakekulator_vapid_key', trimmed);
+      if (typeof FirebaseService !== 'undefined') {
+        const cfg = FirebaseService.getConfig();
+        cfg.vapidKey = trimmed;
+      }
+      if (typeof App !== 'undefined' && App.showToast) {
+        App.showToast('🔑 Clave VAPID guardada. Sincronizando con FCM...');
+      }
+      await this.syncToken();
+      if (typeof App !== 'undefined' && App.currentTab === 'settings') {
+        App.renderSettings();
+      }
+    }
+  },
+
   async syncToken() {
     if (!this.isSupported() || Notification.permission !== 'granted') return null;
 
     try {
-      // Obtener registro del service worker
-      let registration = await navigator.serviceWorker.ready;
+      // Registrar el Service Worker de Firebase Messaging si aún no está activo
+      let registration = null;
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        registration = regs.find(r => r.active && r.active.scriptURL.includes('firebase-messaging-sw.js')) || null;
+        if (!registration) {
+          registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+        }
+      } catch (swErr) {
+        console.warn('Registro directo de firebase-messaging-sw.js:', swErr);
+      }
+
       if (!registration) {
-        registration = await navigator.serviceWorker.register('sw.js');
+        registration = await navigator.serviceWorker.ready;
       }
 
       if (typeof FirebaseService !== 'undefined' && FirebaseService.messaging) {
+        const vapidKey = this.getVapidKey();
+        const tokenParams = {
+          serviceWorkerRegistration: registration
+        };
+        if (vapidKey) {
+          tokenParams.vapidKey = vapidKey;
+        }
+
         try {
-          const token = await FirebaseService.messaging.getToken({
-            serviceWorkerRegistration: registration
-          });
+          const token = await FirebaseService.messaging.getToken(tokenParams);
 
           if (token) {
             this.currentToken = token;
             localStorage.setItem('cakekulator_fcm_token', token);
-            console.log('🔑 Token FCM obtenido:', token);
+            console.log('🔑 Token FCM obtenido con éxito:', token);
             await this.saveTokenToCloud(token);
             return token;
           }
         } catch (fcmError) {
-          console.info('ℹ️ FCM getToken en modo estándar (sin VAPID explícito o en local):', fcmError.message);
+          console.warn('ℹ️ Detalle de Firebase Messaging getToken:', fcmError);
+          if (fcmError.code === 'messaging/missing-app-config-values' || (fcmError.message && fcmError.message.includes('vapidKey'))) {
+            console.info('⚠️ Se necesita la clave VAPID pública de Firebase Console > Cloud Messaging > Certificados Web Push.');
+          }
         }
       }
     } catch (err) {
