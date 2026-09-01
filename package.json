@@ -1,0 +1,12 @@
+{
+  "name": "cakekulator-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Calculadora de costos y cotizaciones de pastelería",
+  "scripts": {
+    "dev": "python -m http.server 8000"
+  },
+  "keywords": ["pwa", "calculator", "pastry"],
+  "author": "Paulerolero",
+  "license": "MIT"
+}
