@@ -9,7 +9,8 @@ const DB_KEYS = {
   QUOTES: 'cakekulator_quotes',
   CUSTOMERS: 'cakekulator_customers',
   MARKET_STORES: 'cakekulator_market_stores',
-  PRICE_HISTORY: 'cakekulator_price_history'
+  PRICE_HISTORY: 'cakekulator_price_history',
+  SCRAPED_PRICES: 'cakekulator_scraped_prices'
 };
 
 const LEGACY_DB_KEYS = {
@@ -305,7 +306,8 @@ const DB = {
       { name: 'quotes', key: DB_KEYS.QUOTES },
       { name: 'customers', key: DB_KEYS.CUSTOMERS },
       { name: 'market_stores', key: DB_KEYS.MARKET_STORES },
-      { name: 'price_history', key: DB_KEYS.PRICE_HISTORY }
+      { name: 'price_history', key: DB_KEYS.PRICE_HISTORY },
+      { name: 'scraped_prices', key: DB_KEYS.SCRAPED_PRICES }
     ];
 
     const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
@@ -403,6 +405,7 @@ const DB = {
     const customers = this.getCustomers();
     const marketStores = this.getMarketStores();
     const priceHistory = this.getPriceHistory();
+    const scrapedPrices = this.getScrapedPrices();
     const now = Date.now();
 
     await Promise.all([
@@ -412,7 +415,8 @@ const DB = {
       userDocRef.doc('quotes').set({ data: quotes, updatedAt: now }),
       userDocRef.doc('customers').set({ data: customers, updatedAt: now }),
       userDocRef.doc('market_stores').set({ data: marketStores, updatedAt: now }),
-      userDocRef.doc('price_history').set({ data: priceHistory, updatedAt: now })
+      userDocRef.doc('price_history').set({ data: priceHistory, updatedAt: now }),
+      userDocRef.doc('scraped_prices').set({ data: scrapedPrices, updatedAt: now })
     ]);
     this.lastSyncTimestamp = now;
     console.log('✅ Todos los datos locales respaldados en Firestore.');
@@ -433,6 +437,8 @@ const DB = {
     localStorage.removeItem(DB_KEYS.QUOTES);
     localStorage.removeItem(DB_KEYS.CUSTOMERS);
     localStorage.removeItem(DB_KEYS.MARKET_STORES);
+    localStorage.removeItem(DB_KEYS.PRICE_HISTORY);
+    localStorage.removeItem(DB_KEYS.SCRAPED_PRICES);
     this.init();
   },
 
@@ -623,6 +629,75 @@ const DB = {
     // Limitar a los últimos 2000 registros
     if (history.length > 2000) history.splice(0, history.length - 2000);
     this.savePriceHistory(history);
+  },
+
+  // ==========================================
+  // Historial de Web Scraping y Precios de Mercado
+  // ==========================================
+  getScrapedPrices() {
+    try {
+      const data = localStorage.getItem(DB_KEYS.SCRAPED_PRICES);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error('Error al cargar historial de scraping:', e);
+      return [];
+    }
+  },
+
+  saveScrapedPrices(records) {
+    localStorage.setItem(DB_KEYS.SCRAPED_PRICES, JSON.stringify(records));
+    this.syncDocumentToCloud('scraped_prices', records);
+  },
+
+  addScrapedPriceRecord(record) {
+    const list = this.getScrapedPrices();
+    const newRecord = {
+      id: record.id || 'scrape_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      productName: record.productName || record.name || 'Producto',
+      category: record.category || 'General',
+      store: record.store || 'Supermercado',
+      storeLogo: record.storeLogo || '🛒',
+      normalPrice: Number(record.normalPrice) || Number(record.price) || 0,
+      offerPrice: Number(record.offerPrice) || Number(record.price) || 0,
+      discountPct: Number(record.discountPct) || (record.normalPrice && record.offerPrice && record.normalPrice > record.offerPrice ? Math.round(((record.normalPrice - record.offerPrice) / record.normalPrice) * 100) : 0),
+      packageQty: Number(record.packageQty) || 1,
+      packageUnit: record.packageUnit || 'un',
+      unitPrice: Number(record.unitPrice) || (record.packageQty ? (Number(record.offerPrice || record.price) / Number(record.packageQty)) : 0),
+      productUrl: record.productUrl || record.url || '',
+      matchedIngredientKeyword: record.matchedIngredientKeyword || record.keyword || '',
+      matchedIngredientId: record.matchedIngredientId || '',
+      source: record.source || 'webscraping',
+      timestamp: record.timestamp || Date.now(),
+      scrapedAt: record.scrapedAt || new Date().toISOString(),
+      dateFormatted: record.dateFormatted || new Date().toLocaleDateString('es-CL'),
+      notes: record.notes || ''
+    };
+
+    // Evitar duplicados exactos en el mismo minuto para el mismo producto y tienda
+    const isDuplicate = list.some(item => 
+      item.productName.toLowerCase() === newRecord.productName.toLowerCase() &&
+      item.store.toLowerCase() === newRecord.store.toLowerCase() &&
+      item.offerPrice === newRecord.offerPrice &&
+      Math.abs(item.timestamp - newRecord.timestamp) < 60000
+    );
+
+    if (!isDuplicate) {
+      list.unshift(newRecord);
+      if (list.length > 5000) list.splice(5000);
+      this.saveScrapedPrices(list);
+    }
+    return newRecord;
+  },
+
+  deleteScrapedPriceRecord(id) {
+    let list = this.getScrapedPrices();
+    list = list.filter(r => r.id !== id);
+    this.saveScrapedPrices(list);
+    return list;
+  },
+
+  clearAllScrapedPrices() {
+    this.saveScrapedPrices([]);
   },
 
   // Recetas / Fichas Técnicas

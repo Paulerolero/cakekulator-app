@@ -114,6 +114,9 @@ const IngredientsModule = {
                       <h4 class="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">${ing.name}</h4>
                     </div>
                     <div class="flex items-center gap-1">
+                      <button onclick="event.stopPropagation(); App.switchTab('market-radar'); MarketRadarModule.switchRadarTab('evolution'); MarketRadarModule.filterEvolutionKeyword('${ing.name.split(' ')[0]}');" title="Ver evolutivo de mercado de este insumo" class="p-1.5 text-purple-500 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-lg transition text-xs">
+                        📈
+                      </button>
                       <button onclick="event.stopPropagation(); IngredientsModule.deleteConfirm('${ing.id}', '${ing.name}')" title="Eliminar insumo" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                       </button>
