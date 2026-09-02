@@ -1,8 +1,10 @@
 {
-  "name": "Cakekulator - Gestión Pastelera",
-  "short_name": "Cakekulator App",
-  "description": "Calculadora de costos unitarios, porciones, radar de clientes y cotizador para pastelerías y servicios.",
+  "id": "cakekulator-seller-pwa-vendedor",
+  "name": "Cakekulator Vendedor",
+  "short_name": "Cake Vendedor",
+  "description": "Calculadora de costos, cotizaciones y radar de oportunidades para pastelerías y servicios.",
   "start_url": "./index-app.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ec4899",

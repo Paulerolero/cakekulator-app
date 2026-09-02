@@ -434,11 +434,45 @@ const UserDB = {
     return this.getFavorites().includes(bakeryId);
   },
 
-  // Pastelerías
+  // Pastelerías (Con integración dinámica del taller del vendedor local)
   getBakeries() {
     try {
       const data = localStorage.getItem(USER_DB_KEYS.BAKERIES);
-      return data ? JSON.parse(data) : DEFAULT_BAKERIES;
+      let list = data ? JSON.parse(data) : DEFAULT_BAKERIES;
+
+      // Integrar datos reales de la app de vendedor si están configurados
+      const rawSettings = localStorage.getItem('cakekulator_settings');
+      if (rawSettings) {
+        const settings = JSON.parse(rawSettings);
+        if (settings.businessName) {
+          const myBakery = {
+            id: 'bakery_1',
+            name: settings.businessName || 'Dulce Arte Pastelería',
+            chef: settings.chefName ? `Chef ${settings.chefName}` : 'Chef Pastelero',
+            rating: 5.0,
+            reviewsCount: 142,
+            category: settings.businessMode === 'services' ? 'Servicios & Estética' : 'Pastelería Artesanal & Fina',
+            specialties: ['Tortas de Diseño', 'Postres Gourmet', 'Pedidos Personalizados'],
+            address: settings.businessAddress || 'Av. Providencia 1450, Providencia',
+            commune: settings.businessCommune || 'Providencia',
+            lat: parseFloat(settings.businessLat) || -33.4265,
+            lng: parseFloat(settings.businessLng) || -70.6150,
+            phone: settings.phone || '+56912345678',
+            instagram: settings.instagram || '@' + (settings.businessName || 'mi_pasteleria').toLowerCase().replace(/\s+/g, '_'),
+            image: settings.logoUrl || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=60',
+            logo: settings.logoUrl ? '' : '🎂',
+            badges: ['⭐ Tu Local', 'Verificado', 'Catálogo Activo'],
+            deliveryAvailable: true,
+            minLeadTime: '2 horas en stock / 24 hrs a pedido',
+            isMyBakery: true
+          };
+
+          // Reemplazar o anteponer bakery_1
+          list = [myBakery, ...list.filter(b => b.id !== 'bakery_1')];
+        }
+      }
+
+      return list;
     } catch (_) {
       return DEFAULT_BAKERIES;
     }

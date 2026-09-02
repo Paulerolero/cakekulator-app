@@ -1,8 +1,10 @@
 {
-  "name": "Cakekulator - Pastelerías & Pedidos",
-  "short_name": "Cakekulator Clientes",
+  "id": "cakekulator-client-pwa-comprador",
+  "name": "Cakekulator Clientes",
+  "short_name": "Cake Clientes",
   "description": "Encuentra pastelerías cercanas, aprovecha ofertas flash y solicita pasteles a tu medida.",
   "start_url": "./index-user.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#faf5f8",
   "theme_color": "#ec4899",
