@@ -1223,88 +1223,129 @@ const App = {
         </div>
       </div>
 
-      <!-- Fila de Tarjetas KPI Ejecutivas -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
-        
-        <!-- KPI 1: Ventas del Mes -->
-        <div class="kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
-          <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ventas del Mes</span>
-            <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-base">
-              💰
-            </div>
-          </div>
-          <div>
-            <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
-              ${Calculator.formatCurrency(monthSalesTotal > 0 ? monthSalesTotal : allTimeSalesTotal)}
-            </span>
-            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold block mt-0.5">
-              ${monthSalesTotal > 0 ? 'En pedidos confirmados este mes' : 'En total histórico confirmado'}
-            </span>
-          </div>
+      <!-- ==========================================
+           MÓDULOS PRINCIPALES DE LA APLICACIÓN
+           ========================================== -->
+      <div class="space-y-2 mb-5">
+        <div class="flex items-center justify-between px-1">
+          <span class="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+            <span>✨</span> Módulos Principales
+          </span>
+          <span class="text-[10px] text-gray-400 font-semibold">Acceso rápido</span>
         </div>
 
-        <!-- KPI 2: Entregas / Citas Esta Semana -->
-        <div class="kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
-          <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">${isServicesMode ? 'Citas Semana' : 'Entregas Semana'}</span>
-            <div class="w-8 h-8 rounded-xl bg-pink-100 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center text-base">
-              ${isServicesMode ? '💆' : '🚚'}
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <!-- 1. Simulador -->
+          <button type="button" onclick="App.switchTab('simulator')"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-pink-200/80 dark:border-slate-700 hover:border-pink-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl p-2 rounded-xl bg-pink-50 dark:bg-slate-700 group-hover:scale-110 transition">🧮</span>
+              <span class="text-[10px] font-extrabold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950 px-2 py-0.5 rounded-full">Rápido</span>
             </div>
-          </div>
-          <div>
-            <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
-              ${deliveriesThisWeek}
-            </span>
-            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold block mt-0.5">
-              Próximos 7 días agendados
-            </span>
-          </div>
-        </div>
-
-        <!-- KPI 3: Cotizaciones por Confirmar -->
-        <div class="kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
-          <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Por Confirmar</span>
-            <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-base">
-              ⏳
+            <div>
+              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Simulador</span>
+              <span class="text-[10px] text-gray-400">Precios y porciones</span>
             </div>
-          </div>
-          <div>
-            <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
-              ${pendingSentCount}
-            </span>
-            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold block mt-0.5">
-              Presupuestos enviados pendientes
-            </span>
-          </div>
-        </div>
+          </button>
 
-        <!-- KPI 4: Catálogo Activo -->
-        <div class="kpi-card bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl sm:rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
-          <div class="flex items-center justify-between gap-2 mb-2">
-            <span class="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Catálogo Activo</span>
-            <div class="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center text-base">
-              📦
+          <!-- 2. Cotizaciones -->
+          <button type="button" onclick="App.switchTab('quotes')"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-emerald-200/80 dark:border-slate-700 hover:border-emerald-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl p-2 rounded-xl bg-emerald-50 dark:bg-slate-700 group-hover:scale-110 transition">📋</span>
+              <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full">${quotes.length}</span>
             </div>
-          </div>
-          <div>
-            <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white block tracking-tight">
-              ${recipes.length} <span class="text-xs font-normal text-gray-400">fichas</span> / ${ingredients.length} <span class="text-xs font-normal text-gray-400">insumos</span>
-            </span>
-            <span class="text-[10px] text-gray-400 dark:text-gray-500 font-semibold block mt-0.5">
-              ${customers.length} clientes registrados
-            </span>
-          </div>
-        </div>
+            <div>
+              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Cotizaciones</span>
+              <span class="text-[10px] text-gray-400">Presupuestos y pedidos</span>
+            </div>
+          </button>
 
+          <!-- 3. Recetas / Servicios -->
+          <button type="button" onclick="App.switchTab('recipes')"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-purple-200/80 dark:border-slate-700 hover:border-purple-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl p-2 rounded-xl bg-purple-50 dark:bg-slate-700 group-hover:scale-110 transition">${isServicesMode ? '💆' : '🎂'}</span>
+              <span class="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950 px-2 py-0.5 rounded-full">${recipes.length}</span>
+            </div>
+            <div>
+              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">${isServicesMode ? 'Servicios' : 'Recetas'}</span>
+              <span class="text-[10px] text-gray-400">Fichas y catálogo</span>
+            </div>
+          </button>
+
+          <!-- 4. Insumos -->
+          <button type="button" onclick="App.switchTab('ingredients')"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-amber-200/80 dark:border-slate-700 hover:border-amber-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl p-2 rounded-xl bg-amber-50 dark:bg-slate-700 group-hover:scale-110 transition">📦</span>
+              <span class="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded-full">${ingredients.length}</span>
+            </div>
+            <div>
+              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Insumos</span>
+              <span class="text-[10px] text-gray-400">Stock y costos</span>
+            </div>
+          </button>
+
+          <!-- 5. Radar de Ofertas -->
+          <button type="button" onclick="App.switchTab('market-radar')"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-cyan-200/80 dark:border-slate-700 hover:border-cyan-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl p-2 rounded-xl bg-cyan-50 dark:bg-slate-700 group-hover:scale-110 transition">🛒</span>
+              <span class="text-[10px] font-extrabold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950 px-2 py-0.5 rounded-full">Precios</span>
+            </div>
+            <div>
+              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Radar Ofertas</span>
+              <span class="text-[10px] text-gray-400">Supermercados</span>
+            </div>
+          </button>
+
+          <!-- 6. Clientes (CRM) -->
+          <button type="button" onclick="App.switchTab('customers')"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-indigo-200/80 dark:border-slate-700 hover:border-indigo-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl p-2 rounded-xl bg-indigo-50 dark:bg-slate-700 group-hover:scale-110 transition">👥</span>
+              <span class="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded-full">${customers.length}</span>
+            </div>
+            <div>
+              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Clientes CRM</span>
+              <span class="text-[10px] text-gray-400">Historial de compras</span>
+            </div>
+          </button>
+
+          <!-- 7. Finanzas & Métricas -->
+          <button type="button" onclick="App.switchTab('finance')"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-rose-200/80 dark:border-slate-700 hover:border-rose-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl p-2 rounded-xl bg-rose-50 dark:bg-slate-700 group-hover:scale-110 transition">📊</span>
+              <span class="text-[10px] font-extrabold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950 px-2 py-0.5 rounded-full">Caja</span>
+            </div>
+            <div>
+              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Finanzas</span>
+              <span class="text-[10px] text-gray-400">Balance y métricas</span>
+            </div>
+          </button>
+
+          <!-- 8. Ajustes del Taller -->
+          <button type="button" onclick="App.switchTab('settings')"
+            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-slate-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-2xl p-2 rounded-xl bg-slate-50 dark:bg-slate-700 group-hover:scale-110 transition">⚙️</span>
+              <span class="text-[10px] font-extrabold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">Config</span>
+            </div>
+            <div>
+              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Ajustes</span>
+              <span class="text-[10px] text-gray-400">Perfil y negocio</span>
+            </div>
+          </button>
+        </div>
       </div>
 
       <!-- Contenedor Principal en Cuadrícula: Columna Ancha + Columna Operativa -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-6">
         
         <!-- ==========================================
-             COLUMNA IZQUIERDA (2/3 de ancho en PC): Mapa Radar, Acciones y Métricas
+             COLUMNA IZQUIERDA (2/3 de ancho en PC): Mapa Radar y Acciones Rápidas
              ========================================== -->
         <div class="lg:col-span-2 space-y-5 sm:space-y-6">
 
@@ -1338,69 +1379,6 @@ const App = {
                 </button>
               `).join('')}
             </div>
-          </div>
-
-          <!-- Cuadrícula Doble: Top Recetas Rentables + Insumos de Mayor Costo -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            <!-- Top Recetas -->
-            <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-slate-700">
-                  <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                    <span>🏆</span> ${isServicesMode ? 'Servicios Destacados' : 'Recetas Destacadas'}
-                  </h4>
-                  <button onclick="App.switchTab('recipes')" class="text-[10px] text-pink-600 dark:text-pink-400 font-bold hover:underline">Ver todas</button>
-                </div>
-                ${topRecipes.length === 0 ? `
-                  <p class="text-xs text-gray-400 py-4 text-center">No hay recetas creadas aún.</p>
-                ` : `
-                  <div class="space-y-2">
-                    ${topRecipes.map(r => `
-                      <div class="p-2 rounded-xl bg-gray-50 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                        <div class="min-w-0 pr-2">
-                          <span class="font-bold text-gray-900 dark:text-gray-100 truncate block">${this.escapeHtml(r.name)}</span>
-                          <span class="text-[10px] text-gray-400">${r.category || 'General'}</span>
-                        </div>
-                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-pink-100 dark:bg-slate-800 text-pink-700 dark:text-pink-300 shrink-0">
-                          ${r.suggestedMargin || 40}% margen
-                        </span>
-                      </div>
-                    `).join('')}
-                  </div>
-                `}
-              </div>
-            </div>
-
-            <!-- Insumos de Mayor Costo -->
-            <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs flex flex-col justify-between">
-              <div>
-                <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-100 dark:border-slate-700">
-                  <h4 class="text-xs font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                    <span>📦</span> Insumos de Mayor Costo
-                  </h4>
-                  <button onclick="App.switchTab('ingredients')" class="text-[10px] text-amber-600 dark:text-amber-400 font-bold hover:underline">Ver stock</button>
-                </div>
-                ${topCostIngredients.length === 0 ? `
-                  <p class="text-xs text-gray-400 py-4 text-center">No hay insumos creados aún.</p>
-                ` : `
-                  <div class="space-y-2">
-                    ${topCostIngredients.map(i => `
-                      <div class="p-2 rounded-xl bg-gray-50 dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                        <div class="min-w-0 pr-2">
-                          <span class="font-bold text-gray-900 dark:text-gray-100 truncate block">${this.escapeHtml(i.name)}</span>
-                          <span class="text-[10px] text-gray-400">${i.packageQty} ${i.packageUnit}</span>
-                        </div>
-                        <span class="text-[11px] font-mono font-bold text-amber-600 dark:text-amber-400 shrink-0">
-                          ${Calculator.formatCurrency(i.packagePrice)}
-                        </span>
-                      </div>
-                    `).join('')}
-                  </div>
-                `}
-              </div>
-            </div>
-
           </div>
 
         </div>
