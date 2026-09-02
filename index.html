@@ -68,8 +68,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <!-- Leaflet Map CSS & JS for Seller Radar Map -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- Chart.js for Finance Panel -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
@@ -82,7 +84,7 @@
        ========================================== -->
   <aside id="desktop-sidebar"
     class="hidden md:flex flex-col w-64 lg:w-72 shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-pink-100/80 dark:border-slate-800 h-screen sticky top-0 z-30 transition-all duration-200 select-none">
-    
+
     <!-- Sidebar Brand Header -->
     <div class="p-4 lg:p-5 border-b border-pink-50 dark:border-slate-800/80 flex items-center justify-between gap-3">
       <div class="flex items-center gap-2.5 cursor-pointer group" onclick="App.switchTab('dashboard')">
@@ -101,7 +103,8 @@
       </div>
 
       <!-- Badge indicador de ambiente -->
-      <span id="sidebar-mode-badge" class="px-2 py-0.5 text-[10px] font-black rounded-lg bg-pink-100 dark:bg-slate-800 text-pink-700 dark:text-pink-300">
+      <span id="sidebar-mode-badge"
+        class="px-2 py-0.5 text-[10px] font-black rounded-lg bg-pink-100 dark:bg-slate-800 text-pink-700 dark:text-pink-300">
         🎂 Prod
       </span>
     </div>
@@ -141,7 +144,8 @@
             <span id="sidebar-icon-recipes" class="text-base">🎂</span>
             <span id="sidebar-text-recipes">Recetas & Fichas</span>
           </div>
-          <span id="sidebar-badge-recipes" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-pink-100/70 text-pink-700 dark:bg-slate-800 dark:text-pink-300">0</span>
+          <span id="sidebar-badge-recipes"
+            class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-pink-100/70 text-pink-700 dark:bg-slate-800 dark:text-pink-300">0</span>
         </button>
         <button onclick="App.switchTab('ingredients')" data-tab="ingredients" id="sidebar-nav-ingredients"
           class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-gray-600 dark:text-gray-300 hover:bg-pink-50/70 dark:hover:bg-slate-800/80 cursor-pointer">
@@ -149,7 +153,8 @@
             <span id="sidebar-icon-ingredients" class="text-base">📦</span>
             <span id="sidebar-text-ingredients">Insumos & Stock</span>
           </div>
-          <span id="sidebar-badge-ingredients" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100/70 text-amber-800 dark:bg-slate-800 dark:text-amber-300">0</span>
+          <span id="sidebar-badge-ingredients"
+            class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-100/70 text-amber-800 dark:bg-slate-800 dark:text-amber-300">0</span>
         </button>
         <button onclick="App.switchTab('simulator')" data-tab="simulator" id="sidebar-nav-simulator"
           class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-gray-600 dark:text-gray-300 hover:bg-pink-50/70 dark:hover:bg-slate-800/80 cursor-pointer">
@@ -171,7 +176,8 @@
             <span id="sidebar-icon-quotes" class="text-base">📋</span>
             <span id="sidebar-text-quotes">Cotizaciones & Pedidos</span>
           </div>
-          <span id="sidebar-badge-quotes" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 hidden">0</span>
+          <span id="sidebar-badge-quotes"
+            class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 hidden">0</span>
         </button>
         <button onclick="App.switchTab('customers')" data-tab="customers" id="sidebar-nav-customers"
           class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-gray-600 dark:text-gray-300 hover:bg-pink-50/70 dark:hover:bg-slate-800/80 cursor-pointer">
@@ -179,7 +185,8 @@
             <span class="text-base">👥</span>
             <span>Clientes (CRM)</span>
           </div>
-          <span id="sidebar-badge-customers" class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 dark:bg-slate-800 dark:text-purple-300">0</span>
+          <span id="sidebar-badge-customers"
+            class="text-[10px] px-2 py-0.5 rounded-full font-bold bg-purple-100 text-purple-800 dark:bg-slate-800 dark:text-purple-300">0</span>
         </button>
         <button onclick="App.switchTab('market-radar')" data-tab="market-radar" id="sidebar-nav-market"
           class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-gray-600 dark:text-gray-300 hover:bg-pink-50/70 dark:hover:bg-slate-800/80 cursor-pointer">
@@ -207,14 +214,17 @@
     </div>
 
     <!-- Sidebar Footer / Quick Status -->
-    <div class="p-3 lg:p-4 border-t border-pink-50 dark:border-slate-800/80 bg-pink-50/30 dark:bg-slate-900/50 space-y-2.5">
+    <div
+      class="p-3 lg:p-4 border-t border-pink-50 dark:border-slate-800/80 bg-pink-50/30 dark:bg-slate-900/50 space-y-2.5">
       <!-- Tarjeta rápida de ambiente / cambio -->
-      <div class="p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border border-pink-100 dark:border-slate-700/80 flex items-center justify-between">
+      <div
+        class="p-2.5 rounded-xl bg-white dark:bg-slate-800/90 border border-pink-100 dark:border-slate-700/80 flex items-center justify-between">
         <div class="flex items-center gap-2 min-w-0">
           <span id="sidebar-mode-icon" class="text-lg shrink-0">🎂</span>
           <div class="min-w-0">
             <span class="text-[10px] text-gray-400 dark:text-gray-400 block leading-tight">Ambiente Actual</span>
-            <span id="sidebar-mode-name" class="text-xs font-bold text-gray-800 dark:text-gray-100 truncate block">Venta Productos</span>
+            <span id="sidebar-mode-name" class="text-xs font-bold text-gray-800 dark:text-gray-100 truncate block">Venta
+              Productos</span>
           </div>
         </div>
         <button onclick="App.showModeSelectionModal()" title="Cambiar Ambiente"
@@ -266,7 +276,8 @@
         <div class="hidden md:flex items-center gap-2 shrink-0">
           <span id="desktop-view-icon" class="text-xl">🏠</span>
           <div>
-            <h2 id="desktop-view-title" class="font-black text-sm lg:text-base text-gray-900 dark:text-white tracking-tight leading-tight">
+            <h2 id="desktop-view-title"
+              class="font-black text-sm lg:text-base text-gray-900 dark:text-white tracking-tight leading-tight">
               Dashboard Principal
             </h2>
             <span id="desktop-view-subtitle" class="text-[10px] font-medium text-gray-400 dark:text-gray-400 block">
@@ -281,22 +292,19 @@
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-xs">
               🔍
             </span>
-            <input 
-              type="text" 
-              id="global-search-input" 
-              placeholder="Buscar recetas, insumos, clientes o cotizaciones... (Ctrl + K)" 
-              autocomplete="off"
-              oninput="App.handleGlobalSearch(this.value)"
-              onfocus="App.handleGlobalSearch(this.value)"
-              class="w-full pl-8 pr-12 py-1.5 text-xs bg-gray-50/80 dark:bg-slate-800/80 border border-gray-200/80 dark:border-slate-700 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:bg-white dark:focus:bg-slate-900 transition"
-            />
-            <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-[10px] text-gray-400 font-mono bg-gray-200/50 dark:bg-slate-700/50 my-1.5 px-1.5 rounded">
+            <input type="text" id="global-search-input"
+              placeholder="Buscar recetas, insumos, clientes o cotizaciones... (Ctrl + K)" autocomplete="off"
+              oninput="App.handleGlobalSearch(this.value)" onfocus="App.handleGlobalSearch(this.value)"
+              class="w-full pl-8 pr-12 py-1.5 text-xs bg-gray-50/80 dark:bg-slate-800/80 border border-gray-200/80 dark:border-slate-700 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:bg-white dark:focus:bg-slate-900 transition" />
+            <span
+              class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-[10px] text-gray-400 font-mono bg-gray-200/50 dark:bg-slate-700/50 my-1.5 px-1.5 rounded">
               ⌘K
             </span>
           </div>
 
           <!-- Dropdown con resultados de búsqueda global -->
-          <div id="global-search-results" class="hidden absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 max-h-96 overflow-y-auto custom-scrollbar animate-fade-in">
+          <div id="global-search-results"
+            class="hidden absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 overflow-hidden z-50 max-h-96 overflow-y-auto custom-scrollbar animate-fade-in">
           </div>
         </div>
 
@@ -304,38 +312,35 @@
         <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <!-- Botón de Creación Rápida '+' en Desktop -->
           <div class="relative hidden sm:block">
-            <button 
-              type="button" 
-              onclick="App.toggleQuickCreateDropdown()"
-              title="Creación Rápida"
-              class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-700 hover:to-rose-600 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer active:scale-95"
-            >
+            <button type="button" onclick="App.toggleQuickCreateDropdown()" title="Creación Rápida"
+              class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-700 hover:to-rose-600 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer active:scale-95">
               <span>✨</span>
               <span>+ Nuevo</span>
             </button>
-            <div id="quick-create-dropdown" class="hidden absolute right-0 mt-1.5 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 py-1 z-50 animate-scale-up">
-              <button onclick="App.quickCreateAction('quote')" class="w-full text-left px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
+            <div id="quick-create-dropdown"
+              class="hidden absolute right-0 mt-1.5 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-slate-700 py-1 z-50 animate-scale-up">
+              <button onclick="App.quickCreateAction('quote')"
+                class="w-full text-left px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
                 <span>📋</span> Nueva Cotización
               </button>
-              <button onclick="App.quickCreateAction('recipe')" class="w-full text-left px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
+              <button onclick="App.quickCreateAction('recipe')"
+                class="w-full text-left px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
                 <span>🎂</span> Nueva Receta / Ficha
               </button>
-              <button onclick="App.quickCreateAction('ingredient')" class="w-full text-left px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
+              <button onclick="App.quickCreateAction('ingredient')"
+                class="w-full text-left px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
                 <span>📦</span> Nuevo Insumo
               </button>
-              <button onclick="App.quickCreateAction('customer')" class="w-full text-left px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
+              <button onclick="App.quickCreateAction('customer')"
+                class="w-full text-left px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
                 <span>👥</span> Nuevo Cliente
               </button>
               <div class="border-t border-gray-100 dark:border-slate-800 my-1"></div>
-              <button onclick="App.quickCreateAction('scan_receipt')" class="w-full text-left px-3.5 py-2 text-xs font-semibold text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
+              <button onclick="App.quickCreateAction('scan_receipt')"
+                class="w-full text-left px-3.5 py-2 text-xs font-semibold text-pink-600 dark:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 flex items-center gap-2 transition cursor-pointer">
                 <span>🧾</span> Escanear Boleta OCR
               </button>
             </div>
-          </div>
-
-            <span class="text-[10px] text-gray-400 dark:text-gray-500">⇄</span>
-          </button>
-
           <!-- Contenedor de Autenticación con Google -->
           <div id="auth-header-container"></div>
 
@@ -361,7 +366,8 @@
     </header>
 
     <!-- Main Content Container (Solo el contenido interno tiene scroll en escritorio) -->
-    <main id="app-main-content" class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 md:overflow-y-auto custom-scrollbar">
+    <main id="app-main-content"
+      class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 md:overflow-y-auto custom-scrollbar">
       <!-- View Containers -->
       <section id="dashboard-view"></section>
       <section id="quotes-view" class="hidden"></section>
@@ -379,33 +385,32 @@
   <!-- Contenedor Portal para Modales Globales (Fuera de las vistas para centrado perfecto) -->
   <div id="modals-root">
     <!-- Modal de Selección de Ambiente (Productos vs Servicios) -->
-    <div id="mode-selection-modal" class="hidden fixed inset-0 z-70 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
-      <div class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 max-w-xs w-full shadow-2xl border border-gray-100 dark:border-slate-800 space-y-4 modal-animate-in">
+    <div id="mode-selection-modal"
+      class="hidden fixed inset-0 z-70 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+      <div
+        class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 max-w-xs w-full shadow-2xl border border-gray-100 dark:border-slate-800 space-y-4 modal-animate-in">
 
         <div class="grid grid-cols-2 gap-3">
           <!-- Tarjeta Productos -->
-          <button 
-            type="button"
+          <button type="button"
             onclick="this.classList.add('mode-card-selected'); setTimeout(() => App.setAppMode('products'), 350);"
-            class="mode-card group relative p-5 sm:p-6 rounded-2xl border-2 border-pink-200 dark:border-pink-800 bg-pink-50/70 dark:bg-slate-800 hover:bg-pink-100/70 dark:hover:bg-slate-700/80 hover:border-pink-400 dark:hover:border-pink-500 transition-all duration-200 cursor-pointer flex flex-col items-center gap-3 text-center overflow-hidden focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2"
-          >
+            class="mode-card group relative p-5 sm:p-6 rounded-2xl border-2 border-pink-200 dark:border-pink-800 bg-pink-50/70 dark:bg-slate-800 hover:bg-pink-100/70 dark:hover:bg-slate-700/80 hover:border-pink-400 dark:hover:border-pink-500 transition-all duration-200 cursor-pointer flex flex-col items-center gap-3 text-center overflow-hidden focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2">
             <span class="text-4xl sm:text-5xl group-hover:scale-110 transition-transform duration-300">🎂</span>
             <span class="font-black text-sm sm:text-base text-pink-700 dark:text-pink-300">Productos</span>
           </button>
 
           <!-- Tarjeta Servicios -->
-          <button 
-            type="button"
+          <button type="button"
             onclick="this.classList.add('mode-card-selected'); setTimeout(() => App.setAppMode('services'), 350);"
-            class="mode-card group relative p-5 sm:p-6 rounded-2xl border-2 border-teal-200 dark:border-teal-800 bg-teal-50/70 dark:bg-slate-800 hover:bg-teal-100/70 dark:hover:bg-slate-700/80 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 cursor-pointer flex flex-col items-center gap-3 text-center overflow-hidden focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2"
-          >
+            class="mode-card group relative p-5 sm:p-6 rounded-2xl border-2 border-teal-200 dark:border-teal-800 bg-teal-50/70 dark:bg-slate-800 hover:bg-teal-100/70 dark:hover:bg-slate-700/80 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 cursor-pointer flex flex-col items-center gap-3 text-center overflow-hidden focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2">
             <span class="text-4xl sm:text-5xl group-hover:scale-110 transition-transform duration-300">💆</span>
             <span class="font-black text-sm sm:text-base text-teal-700 dark:text-teal-300">Servicios</span>
           </button>
         </div>
 
         <div class="text-center">
-          <button type="button" onclick="App.closeModeSelectionModal()" class="text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold transition">
+          <button type="button" onclick="App.closeModeSelectionModal()"
+            class="text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold transition">
             Cerrar
           </button>
         </div>
@@ -414,8 +419,7 @@
   </div>
 
   <!-- Mobile Bottom Navigation Bar -->
-  <nav
-    id="mobile-bottom-nav"
+  <nav id="mobile-bottom-nav"
     class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-1 py-1.5 flex items-center justify-around shadow-lg transition-all duration-300 transform"
     style="padding-bottom: calc(0.45rem + env(safe-area-inset-bottom, 0px));">
     <!-- 1. Inicio -->
@@ -434,19 +438,22 @@
     <button onclick="App.switchTab('quotes')" data-tab="quotes" id="nav-btn-quotes-mob"
       class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
       <span id="nav-icon-quotes-mob" class="nav-icon text-xl leading-none pointer-events-none">📋</span>
-      <span id="nav-text-quotes-mob" class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Cotizar</span>
+      <span id="nav-text-quotes-mob"
+        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Cotizar</span>
     </button>
     <!-- 4. Recetas / Servicios -->
     <button onclick="App.switchTab('recipes')" data-tab="recipes" id="nav-btn-recipes-mob"
       class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
       <span id="nav-icon-recipes-mob" class="nav-icon text-xl leading-none pointer-events-none">🎂</span>
-      <span id="nav-text-recipes-mob" class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Recetas</span>
+      <span id="nav-text-recipes-mob"
+        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Recetas</span>
     </button>
     <!-- 5. Insumos -->
     <button onclick="App.switchTab('ingredients')" data-tab="ingredients" id="nav-btn-ingredients-mob"
       class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
       <span id="nav-icon-ingredients-mob" class="nav-icon text-xl leading-none pointer-events-none">📦</span>
-      <span id="nav-text-ingredients-mob" class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Insumos</span>
+      <span id="nav-text-ingredients-mob"
+        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Insumos</span>
     </button>
     <!-- 6. Ofertas -->
     <button onclick="App.switchTab('market-radar')" data-tab="market-radar" id="nav-btn-market-mob"
@@ -469,6 +476,24 @@
   </nav>
 
   <!-- Scripts -->
+  <script src="js/firebase-config.js?v=4.0"></script>
+  <script src="js/config.local.js?v=4.0"></script>
+  <script src="js/auth.js?v=4.0"></script>
+  <script src="js/notifications.js?v=4.0"></script>
+  <script src="js/templates.js?v=4.0"></script>
+  <script src="js/db.js?v=4.0"></script>
+  <script src="js/gemini-service.js?v=4.0"></script>
+  <script src="js/ingredients.js?v=4.0"></script>
+  <script src="js/receipt-scanner.js?v=4.0"></script>
+  <script src="js/recipe-scanner.js?v=4.0"></script>
+  <script src="js/market-radar.js?v=4.0"></script>
+  <script src="js/finance.js?v=4.0"></script>
+  <script src="js/recipes.js?v=4.0"></script>
+  <script src="js/simulator.js?v=4.0"></script>
+  <script src="js/quotes.js?v=4.0"></script>
+  <script src="js/customers.js?v=4.0"></script>
+  <script src="js/receipts.js?v=4.0"></script>
+  <script src="js/app.js?v=4.0"></script>
   <script src="js/firebase-config.js?v=4.0"></script>
   <script src="js/config.local.js?v=4.0"></script>
   <script src="js/auth.js?v=4.0"></script>
