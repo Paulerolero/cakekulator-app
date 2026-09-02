@@ -1,23 +1,23 @@
 {
-  "id": "cakekulator-seller-pwa-vendedor",
+  "id": "/app",
   "name": "Cakekulator Vendedor",
   "short_name": "Cake Vendedor",
   "description": "Calculadora de costos, cotizaciones y radar de oportunidades para pastelerías y servicios.",
-  "start_url": "./index-app.html",
-  "scope": "./",
+  "start_url": "/app",
+  "scope": "/app",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ec4899",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "assets/icons/icon-192.png",
+      "src": "/assets/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/icons/icon-512.png",
+      "src": "/assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
