@@ -396,6 +396,9 @@ const UserDB = {
 
   saveProfile(profile) {
     localStorage.setItem(USER_DB_KEYS.PROFILE, JSON.stringify(profile));
+    if (typeof UserAuthModule !== 'undefined' && UserAuthModule.currentUser) {
+      UserAuthModule.pushToCloud();
+    }
   },
 
   // Favoritos
@@ -410,6 +413,9 @@ const UserDB = {
 
   saveFavorites(favorites) {
     localStorage.setItem(USER_DB_KEYS.FAVORITES, JSON.stringify(favorites));
+    if (typeof UserAuthModule !== 'undefined' && UserAuthModule.currentUser) {
+      UserAuthModule.pushToCloud();
+    }
   },
 
   toggleFavorite(bakeryId) {
@@ -472,6 +478,9 @@ const UserDB = {
 
   saveRequests(requests) {
     localStorage.setItem(USER_DB_KEYS.REQUESTS, JSON.stringify(requests));
+    if (typeof UserAuthModule !== 'undefined' && UserAuthModule.currentUser) {
+      UserAuthModule.pushToCloud();
+    }
   },
 
   addRequest(newRequest) {

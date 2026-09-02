@@ -11,8 +11,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Cakekulator Clientes">
   <link rel="manifest" href="manifest-user.json">
-  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="icon" type="image/png" href="assets/icons/favicon-user.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-user-192.png">
 
   <!-- Google Fonts: Plus Jakarta Sans & Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,6 +48,11 @@
     }
   </script>
 
+  <!-- Firebase App, Auth & Firestore SDKs (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
   <!-- Leaflet Map CSS & JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -66,9 +71,7 @@
       
       <!-- Brand Logo & App Name -->
       <div class="flex items-center gap-2 cursor-pointer" onclick="UserApp.switchTab('explore')">
-        <span class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center text-lg shadow-md shadow-pink-500/20 ring-2 ring-pink-200 dark:ring-slate-700">
-          🧁
-        </span>
+        <img src="assets/icons/favicon-user.png" alt="Cakekulator Clientes" class="w-9 h-9 rounded-2xl object-cover ring-2 ring-pink-200 dark:ring-slate-700 shadow-md shadow-pink-500/20" />
         <div>
           <span class="font-extrabold text-base tracking-tight text-gray-900 dark:text-white leading-none block">
             Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
@@ -80,10 +83,10 @@
       </div>
 
       <!-- Client Profile & Notifications -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 sm:gap-2">
         <!-- Botón Instalar PWA Clientes -->
         <button id="user-pwa-install-btn" onclick="UserApp.installPWA()" title="Instalar App en el Celular"
-           class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-500 text-white text-xs font-bold shadow-xs hover:from-pink-700 flex items-center gap-1 transition active:scale-95 cursor-pointer">
+           class="hidden px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-500 text-white text-xs font-bold shadow-xs hover:from-pink-700 flex items-center gap-1 transition active:scale-95 cursor-pointer">
           <span>📲</span>
           <span>Instalar</span>
         </button>
@@ -93,9 +96,9 @@
           <span>🔔</span>
           <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 animate-pulse"></span>
         </button>
-        <button onclick="UserApp.switchTab('profile')" title="Mi Perfil" class="p-1.5 rounded-2xl ring-2 ring-pink-300 dark:ring-slate-700 text-base bg-white dark:bg-slate-800 shadow-xs hover:scale-105 transition cursor-pointer">
-          👩‍🦰
-        </button>
+
+        <!-- Contenedor de Autenticación de Google para Clientes -->
+        <div id="user-header-auth-container"></div>
       </div>
 
     </div>
@@ -311,6 +314,9 @@
         </div>
       </div>
 
+      <!-- Tarjeta de Autenticación y Sincronización en la Nube -->
+      <div id="user-profile-auth-card"></div>
+
       <!-- Datos de Contacto y Ubicación -->
       <form onsubmit="UserProfileModule.saveContactInfo(event)" class="bg-white dark:bg-slate-900 rounded-3xl border border-pink-100 dark:border-slate-800 p-4 space-y-3 shadow-sm">
         <h4 class="font-black text-xs text-gray-900 dark:text-white uppercase tracking-wider">📍 Datos de Entrega</h4>
@@ -516,6 +522,8 @@
   </nav>
 
   <!-- Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/user-auth.js"></script>
   <script src="js/user-db.js"></script>
   <script src="js/user-map.js"></script>
   <script src="js/user-offers.js"></script>

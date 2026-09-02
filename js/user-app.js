@@ -10,6 +10,11 @@ const UserApp = {
     // Inicializar base de datos del cliente
     UserDB.init();
 
+    // Inicializar autenticación con Google y sincronización en la nube para clientes
+    if (typeof UserAuthModule !== 'undefined') {
+      UserAuthModule.init();
+    }
+
     // Inicializar sub-módulos
     UserOffersModule.init();
     UserRequestsModule.init();

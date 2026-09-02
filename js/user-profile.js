@@ -23,6 +23,10 @@ const UserProfileModule = {
   },
 
   renderProfileView() {
+    if (typeof UserAuthModule !== 'undefined') {
+      UserAuthModule.renderAuthUI();
+    }
+
     const profile = UserDB.getProfile();
     const favorites = UserDB.getFavorites();
     const bakeries = UserDB.getBakeries();

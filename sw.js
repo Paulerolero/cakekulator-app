@@ -2,7 +2,7 @@
 // Cakekulator - Service Worker para Soporte Offline & Push
 // ==========================================
 
-const CACHE_NAME = 'cakekulator-v4.0';
+const CACHE_NAME = 'cakekulator-v4.1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -35,8 +35,11 @@ const ASSETS_TO_CACHE = [
   './js/app.js',
   './assets/icons/logo.png',
   './assets/icons/favicon.png',
+  './assets/icons/favicon-user.png',
   './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png'
+  './assets/icons/icon-512.png',
+  './assets/icons/icon-user-192.png',
+  './assets/icons/icon-user-512.png'
 ];
 
 // Instalación y almacenamiento en caché de archivos estáticos
