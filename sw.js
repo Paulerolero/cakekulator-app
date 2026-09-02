@@ -10,6 +10,7 @@ const ASSETS_TO_CACHE = [
   './index-web.html',
   './index-user.html',
   './manifest.json',
+  './manifest-app.json',
   './manifest-user.json',
   './css/styles.css',
   './css/user-styles.css',
