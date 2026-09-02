@@ -15,6 +15,14 @@
     ],
     "rewrites": [
       {
+        "source": "/app",
+        "destination": "/index-app.html"
+      },
+      {
+        "source": "/web",
+        "destination": "/index-web.html"
+      },
+      {
         "source": "/cliente",
         "destination": "/index-user.html"
       },

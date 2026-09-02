@@ -5,16 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Cakekulator - Costos, Porciones y Precios para Pastelería</title>
+  <title>Cakekulator Web - Suite Profesional de Gestión Pastelera</title>
 
-  <!-- PWA & Mobile Meta Tags -->
+  <!-- Web App Meta Tags -->
   <meta name="theme-color" content="#ec4899">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Cakekulator">
-  <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
-  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -77,13 +72,13 @@
 </head>
 
 <body
-  class="text-gray-800 dark:text-gray-100 bg-[#faf5f8] dark:bg-[#0f172a] antialiased min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row pb-24 md:pb-0 transition-colors duration-200 select-none sm:select-auto">
+  class="text-gray-800 dark:text-gray-100 bg-[#faf5f8] dark:bg-[#0f172a] antialiased min-h-screen md:h-screen md:overflow-hidden flex flex-col md:flex-row transition-colors duration-200 select-none sm:select-auto">
 
   <!-- ==========================================
-       DESKTOP SIDEBAR (Visible en md y pantallas grandes)
+       DESKTOP SIDEBAR (Visible en Web / Escritorio)
        ========================================== -->
   <aside id="desktop-sidebar"
-    class="hidden md:flex flex-col w-64 lg:w-72 shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-pink-100/80 dark:border-slate-800 h-screen sticky top-0 z-30 transition-all duration-200 select-none">
+    class="flex flex-col w-64 lg:w-72 shrink-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-r border-pink-100/80 dark:border-slate-800 h-screen sticky top-0 z-30 transition-all duration-200 select-none">
 
     <!-- Sidebar Brand Header -->
     <div class="p-4 lg:p-5 border-b border-pink-50 dark:border-slate-800/80 flex items-center justify-between gap-3">
@@ -97,7 +92,7 @@
           </span>
           <span id="sidebar-brand-name"
             class="text-[10px] font-bold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[140px] block">
-            Gestión Pastelera
+            Suite Web Vendedor
           </span>
         </div>
       </div>
@@ -237,43 +232,26 @@
       <div class="flex items-center justify-between px-1 text-[11px] text-gray-500 dark:text-gray-400">
         <span class="flex items-center gap-1.5">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Sincronización PWA</span>
+          <span>Sincronizado</span>
         </span>
-        <span class="text-[10px] font-mono text-gray-400">v3.6</span>
+        <span class="text-[10px] font-mono text-gray-400">Web v4.1</span>
       </div>
     </div>
 
   </aside>
 
   <!-- ==========================================
-       MAIN APP WRAPPER (TOPBAR + CONTENIDO)
+       MAIN APP WRAPPER (DESKTOP TOPBAR + CONTENIDO)
        ========================================== -->
-  <div class="flex-1 flex flex-col min-w-0 md:h-screen md:overflow-hidden">
+  <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 
-    <!-- Top Navigation Header (Desktop Topbar + Mobile Topbar) -->
+    <!-- Top Navigation Header (Desktop Topbar) -->
     <header
-      class="shrink-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/80 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 transition-colors duration-200 sticky top-0 md:static">
-      <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
-
-        <!-- Mobile Brand Logo (Oculto en Desktop Sidebar) -->
-        <div class="flex md:hidden items-center gap-2 cursor-pointer select-none group shrink-0"
-          onclick="App.switchTab('dashboard')">
-          <img id="header-brand-logo" src="assets/icons/logo.png" alt="Cakekulator Logo"
-            class="w-8 h-8 rounded-xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700">
-          <div>
-            <span id="header-brand-title"
-              class="font-extrabold text-base text-gray-900 dark:text-white tracking-tight block leading-none">
-              Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
-            </span>
-            <span id="header-brand-name"
-              class="text-[9px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[110px] block">
-              Gestión Pastelera
-            </span>
-          </div>
-        </div>
+      class="shrink-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/80 dark:border-slate-800 px-6 py-3 transition-colors duration-200">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
 
         <!-- Desktop Current View Title / Breadcrumb -->
-        <div class="hidden md:flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-2 shrink-0">
           <span id="desktop-view-icon" class="text-xl">🏠</span>
           <div>
             <h2 id="desktop-view-title"
@@ -287,7 +265,7 @@
         </div>
 
         <!-- Desktop Universal Search Bar (Command Quick Finder) -->
-        <div class="relative flex-1 max-w-md hidden md:block mx-2">
+        <div class="relative flex-1 max-w-md mx-4">
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-xs">
               🔍
@@ -308,10 +286,10 @@
           </div>
         </div>
 
-        <!-- Right Header Actions (Quick Action '+', Switcher, Google Auth, Install PWA, Settings) -->
-        <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <!-- Right Header Actions (Quick Action '+', Google Auth) -->
+        <div class="flex items-center gap-2 shrink-0">
           <!-- Botón de Creación Rápida '+' en Desktop -->
-          <div class="relative hidden sm:block">
+          <div class="relative">
             <button type="button" onclick="App.toggleQuickCreateDropdown()" title="Creación Rápida"
               class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-700 hover:to-rose-600 text-white text-xs font-bold rounded-xl shadow-xs transition cursor-pointer active:scale-95">
               <span>✨</span>
@@ -341,25 +319,10 @@
                 <span>🧾</span> Escanear Boleta OCR
               </button>
             </div>
+          </div>
+
           <!-- Contenedor de Autenticación con Google -->
           <div id="auth-header-container"></div>
-
-          <!-- Botón Instalar PWA -->
-          <button id="pwa-install-btn" onclick="App.installPWA()"
-            class="hidden bg-pink-100 dark:bg-slate-800 hover:bg-pink-200 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1">
-            <span>📲</span> <span class="hidden sm:inline">Instalar App</span>
-          </button>
-
-          <!-- Ajustes en móvil -->
-          <button onclick="App.switchTab('settings')" data-tab="settings" title="Configuración"
-            class="nav-btn md:hidden p-1.5 sm:p-2 text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 rounded-xl transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
         </div>
 
       </div>
@@ -367,7 +330,7 @@
 
     <!-- Main Content Container (Solo el contenido interno tiene scroll en escritorio) -->
     <main id="app-main-content"
-      class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 md:overflow-y-auto custom-scrollbar">
+      class="flex-1 max-w-7xl w-full mx-auto p-6 lg:p-8 overflow-y-auto custom-scrollbar">
       <!-- View Containers -->
       <section id="dashboard-view"></section>
       <section id="quotes-view" class="hidden"></section>
@@ -382,98 +345,41 @@
 
   </div>
 
-  <!-- Contenedor Portal para Modales Globales (Fuera de las vistas para centrado perfecto) -->
+  <!-- Contenedor Portal para Modales Globales -->
   <div id="modals-root">
     <!-- Modal de Selección de Ambiente (Productos vs Servicios) -->
     <div id="mode-selection-modal"
-      class="hidden fixed inset-0 z-70 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+      class="hidden fixed inset-0 z-70 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
       <div
-        class="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 max-w-xs w-full shadow-2xl border border-gray-100 dark:border-slate-800 space-y-4 modal-animate-in">
+        class="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-xs w-full shadow-2xl border border-gray-100 dark:border-slate-800 space-y-4 modal-animate-in">
 
         <div class="grid grid-cols-2 gap-3">
           <!-- Tarjeta Productos -->
           <button type="button"
             onclick="this.classList.add('mode-card-selected'); setTimeout(() => App.setAppMode('products'), 350);"
-            class="mode-card group relative p-5 sm:p-6 rounded-2xl border-2 border-pink-200 dark:border-pink-800 bg-pink-50/70 dark:bg-slate-800 hover:bg-pink-100/70 dark:hover:bg-slate-700/80 hover:border-pink-400 dark:hover:border-pink-500 transition-all duration-200 cursor-pointer flex flex-col items-center gap-3 text-center overflow-hidden focus:outline-none focus:ring-2 focus:ring-pink-400 focus:ring-offset-2">
-            <span class="text-4xl sm:text-5xl group-hover:scale-110 transition-transform duration-300">🎂</span>
-            <span class="font-black text-sm sm:text-base text-pink-700 dark:text-pink-300">Productos</span>
+            class="mode-card group relative p-6 rounded-2xl border-2 border-pink-200 dark:border-pink-800 bg-pink-50/70 dark:bg-slate-800 hover:bg-pink-100/70 hover:border-pink-400 transition-all duration-200 cursor-pointer flex flex-col items-center gap-3 text-center">
+            <span class="text-5xl group-hover:scale-110 transition-transform duration-300">🎂</span>
+            <span class="font-black text-sm text-pink-700 dark:text-pink-300">Productos</span>
           </button>
 
           <!-- Tarjeta Servicios -->
           <button type="button"
             onclick="this.classList.add('mode-card-selected'); setTimeout(() => App.setAppMode('services'), 350);"
-            class="mode-card group relative p-5 sm:p-6 rounded-2xl border-2 border-teal-200 dark:border-teal-800 bg-teal-50/70 dark:bg-slate-800 hover:bg-teal-100/70 dark:hover:bg-slate-700/80 hover:border-teal-400 dark:hover:border-teal-500 transition-all duration-200 cursor-pointer flex flex-col items-center gap-3 text-center overflow-hidden focus:outline-none focus:ring-2 focus:ring-teal-400 focus:ring-offset-2">
-            <span class="text-4xl sm:text-5xl group-hover:scale-110 transition-transform duration-300">💆</span>
-            <span class="font-black text-sm sm:text-base text-teal-700 dark:text-teal-300">Servicios</span>
+            class="mode-card group relative p-6 rounded-2xl border-2 border-teal-200 dark:border-teal-800 bg-teal-50/70 dark:bg-slate-800 hover:bg-teal-100/70 hover:border-teal-400 transition-all duration-200 cursor-pointer flex flex-col items-center gap-3 text-center">
+            <span class="text-5xl group-hover:scale-110 transition-transform duration-300">💆</span>
+            <span class="font-black text-sm text-teal-700 dark:text-teal-300">Servicios</span>
           </button>
         </div>
 
         <div class="text-center">
           <button type="button" onclick="App.closeModeSelectionModal()"
-            class="text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-semibold transition">
+            class="text-[11px] text-gray-400 hover:text-gray-600 font-semibold transition">
             Cerrar
           </button>
         </div>
       </div>
     </div>
   </div>
-
-  <!-- Mobile Bottom Navigation Bar -->
-  <nav id="mobile-bottom-nav"
-    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-1 py-1.5 flex items-center justify-around shadow-lg transition-all duration-300 transform"
-    style="padding-bottom: calc(0.45rem + env(safe-area-inset-bottom, 0px));">
-    <!-- 1. Inicio -->
-    <button onclick="App.switchTab('dashboard')" data-tab="dashboard" id="nav-btn-home-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">🏠</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Inicio</span>
-    </button>
-    <!-- 2. Simular -->
-    <button onclick="App.switchTab('simulator')" data-tab="simulator" id="nav-btn-simulator-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">🧮</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Simular</span>
-    </button>
-    <!-- 3. Cotizar -->
-    <button onclick="App.switchTab('quotes')" data-tab="quotes" id="nav-btn-quotes-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span id="nav-icon-quotes-mob" class="nav-icon text-xl leading-none pointer-events-none">📋</span>
-      <span id="nav-text-quotes-mob"
-        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Cotizar</span>
-    </button>
-    <!-- 4. Recetas / Servicios -->
-    <button onclick="App.switchTab('recipes')" data-tab="recipes" id="nav-btn-recipes-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span id="nav-icon-recipes-mob" class="nav-icon text-xl leading-none pointer-events-none">🎂</span>
-      <span id="nav-text-recipes-mob"
-        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Recetas</span>
-    </button>
-    <!-- 5. Insumos -->
-    <button onclick="App.switchTab('ingredients')" data-tab="ingredients" id="nav-btn-ingredients-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span id="nav-icon-ingredients-mob" class="nav-icon text-xl leading-none pointer-events-none">📦</span>
-      <span id="nav-text-ingredients-mob"
-        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Insumos</span>
-    </button>
-    <!-- 6. Ofertas -->
-    <button onclick="App.switchTab('market-radar')" data-tab="market-radar" id="nav-btn-market-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">🛒</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Ofertas</span>
-    </button>
-    <!-- 7. Clientes -->
-    <button onclick="App.switchTab('customers')" data-tab="customers" id="nav-btn-customers-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">👥</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Clientes</span>
-    </button>
-    <!-- 8. Finanzas -->
-    <button onclick="App.switchTab('finance')" data-tab="finance" id="nav-btn-finance-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">📊</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Finanzas</span>
-    </button>
-  </nav>
 
   <!-- Scripts -->
   <script src="js/firebase-config.js?v=4.1"></script>
