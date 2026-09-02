@@ -316,9 +316,10 @@ const SellerRequestsModule = {
       attributionControl: false
     }).setView([sellerLat, sellerLng], 13);
 
-    // Tiles limpios CartoDB Voyager
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19
+    // Tiles limpios OpenStreetMap (100% gratuitos y sin clave requerida)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      subdomains: ['a', 'b', 'c']
     }).addTo(this.mapInstance);
 
     // 1. Marcador del Taller / Local del Vendedor

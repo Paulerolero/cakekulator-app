@@ -29,10 +29,10 @@ const UserMapModule = {
       attributionControl: false
     }).setView([defaultLat, defaultLng], 14);
 
-    // Agregar capa de OpenStreetMap CartoDB Positron (estilo limpio y moderno)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    // Agregar capa de OpenStreetMap (estilo limpio, gratuito y sin clave requerida)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      subdomains: 'abcd'
+      subdomains: ['a', 'b', 'c']
     }).addTo(this.map);
 
     // Control de zoom en esquina superior derecha

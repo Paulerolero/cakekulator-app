@@ -522,19 +522,19 @@
   </nav>
 
   <!-- Scripts -->
-  <script src="js/firebase-config.js"></script>
-  <script src="js/user-auth.js"></script>
-  <script src="js/user-db.js"></script>
-  <script src="js/user-map.js"></script>
-  <script src="js/user-offers.js"></script>
-  <script src="js/user-requests.js"></script>
-  <script src="js/user-profile.js"></script>
-  <script src="js/user-app.js"></script>
+  <script src="js/firebase-config.js?v=6.0"></script>
+  <script src="js/user-auth.js?v=6.0"></script>
+  <script src="js/user-db.js?v=6.0"></script>
+  <script src="js/user-map.js?v=6.0"></script>
+  <script src="js/user-offers.js?v=6.0"></script>
+  <script src="js/user-requests.js?v=6.0"></script>
+  <script src="js/user-profile.js?v=6.0"></script>
+  <script src="js/user-app.js?v=6.0"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       UserApp.init();
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js?v=4.0').catch(err => {
+        navigator.serviceWorker.register('./sw.js?v=6.0').catch(err => {
           console.warn('[SW User] Error al registrar:', err);
         });
       }

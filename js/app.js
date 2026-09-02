@@ -1183,300 +1183,241 @@ const App = {
     const topRecipes = [...recipes].slice(0, 4);
 
     container.innerHTML = `
-      <!-- Hero Banner Ejecutivo Dinámico -->
-      <div class="${isServicesMode ? 'services-hero-banner' : 'products-hero-banner'} rounded-3xl p-5 sm:p-7 text-white shadow-lg mb-5 sm:mb-6 relative overflow-hidden">
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div class="flex items-center gap-3.5 sm:gap-5 min-w-0">
+      <!-- Hero Banner Compacto Móvil -->
+      <div class="${isServicesMode ? 'services-hero-banner' : 'products-hero-banner'} rounded-3xl p-4 text-white shadow-md mb-3.5 relative overflow-hidden">
+        <div class="relative z-10 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
             ${settings.logoUrl ? `
-              <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-white/60 shrink-0 flex items-center justify-center overflow-hidden">
-                <img src="${this.escapeHtml(settings.logoUrl)}" alt="Logo ${safeBusinessTitle}" class="w-full h-full object-contain">
+              <div class="w-11 h-11 rounded-2xl bg-white p-1 shadow-sm shrink-0 flex items-center justify-center overflow-hidden">
+                <img src="${this.escapeHtml(settings.logoUrl)}" alt="Logo" class="w-full h-full object-contain">
               </div>
             ` : `
-              <div class="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/30 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-inner">
+              <div class="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-inner">
                 ${isServicesMode ? '💆' : '🎂'}
               </div>
             `}
             <div class="min-w-0">
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-xs text-[10px] sm:text-xs font-semibold text-white mb-1 capitalize">
-                <span>📅</span> ${formattedToday}
-              </div>
-              <h1 class="text-xl sm:text-3xl font-black leading-tight truncate">
+              <span class="text-[10px] font-semibold text-white/80 block uppercase tracking-wider">
+                📅 ${formattedToday}
+              </span>
+              <h1 class="text-base sm:text-lg font-black leading-tight text-white truncate">
                 ${safeBusinessTitle}
               </h1>
-              <p class="text-white/90 text-xs sm:text-sm mt-0.5 leading-snug line-clamp-2">
-                ${isServicesMode 
-                  ? 'Centro de control de servicios & spa: Costea sesiones, protocolos de cabina, cotiza y gestiona a tus clientes.'
-                  : 'Centro de control pastelero: Costea, presupuesta, cotiza y gestiona tu taller artesanal en un solo lugar.'}
+              <p class="text-[10px] text-white/90 truncate">
+                ${isServicesMode ? 'Centro de estética & servicios' : 'Taller pastelero & cotizaciones'}
               </p>
             </div>
           </div>
 
-          <div class="flex items-center gap-2 self-start md:self-center">
-            <button 
-              type="button" 
-              onclick="App.switchTab('settings')" 
-              class="px-4 py-2 bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md border border-white/30 rounded-2xl text-xs font-bold transition flex items-center gap-2 text-white shadow-2xs cursor-pointer"
-            >
-              <span>⚙️</span> ${isServicesMode ? 'Ajustes Centro' : 'Ajustes Taller'}
-            </button>
-          </div>
+          <button 
+            type="button" 
+            onclick="App.switchTab('settings')" 
+            class="p-2 bg-white/20 hover:bg-white/30 active:scale-95 backdrop-blur-md border border-white/40 rounded-xl text-xs font-bold transition flex items-center gap-1 text-white shrink-0 cursor-pointer"
+            title="Ajustes"
+          >
+            <span>⚙️</span>
+          </button>
         </div>
       </div>
 
       <!-- ==========================================
-           MÓDULOS PRINCIPALES DE LA APLICACIÓN
+           MÓDULOS DE LA APLICACIÓN (Botonera Estilo App Nativa)
            ========================================== -->
-      <div class="space-y-2 mb-5">
-        <div class="flex items-center justify-between px-1">
-          <span class="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-            <span>✨</span> Módulos Principales
+      <div class="bg-white dark:bg-slate-800 p-3.5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs mb-3.5">
+        <div class="flex items-center justify-between px-1 mb-2.5">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+            <span>✨</span> Módulos del Sistema
           </span>
-          <span class="text-[10px] text-gray-400 font-semibold">Acceso rápido</span>
+          <span class="text-[10px] text-gray-400 font-semibold">Toca para abrir</span>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div class="grid grid-cols-4 gap-2">
           <!-- 1. Simulador -->
           <button type="button" onclick="App.switchTab('simulator')"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-pink-200/80 dark:border-slate-700 hover:border-pink-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl p-2 rounded-xl bg-pink-50 dark:bg-slate-700 group-hover:scale-110 transition">🧮</span>
-              <span class="text-[10px] font-extrabold text-pink-600 dark:text-pink-400 bg-pink-50 dark:bg-pink-950 px-2 py-0.5 rounded-full">Rápido</span>
-            </div>
-            <div>
-              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Simulador</span>
-              <span class="text-[10px] text-gray-400">Precios y porciones</span>
-            </div>
+            class="p-2 rounded-2xl bg-pink-50/70 dark:bg-slate-900/60 border border-pink-100 dark:border-slate-700/80 hover:border-pink-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
+            <span class="text-2xl p-1.5 rounded-xl bg-pink-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">🧮</span>
+            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Simular</span>
           </button>
 
           <!-- 2. Cotizaciones -->
           <button type="button" onclick="App.switchTab('quotes')"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-emerald-200/80 dark:border-slate-700 hover:border-emerald-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl p-2 rounded-xl bg-emerald-50 dark:bg-slate-700 group-hover:scale-110 transition">📋</span>
-              <span class="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full">${quotes.length}</span>
-            </div>
-            <div>
-              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Cotizaciones</span>
-              <span class="text-[10px] text-gray-400">Presupuestos y pedidos</span>
-            </div>
+            class="relative p-2 rounded-2xl bg-emerald-50/70 dark:bg-slate-900/60 border border-emerald-100 dark:border-slate-700/80 hover:border-emerald-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
+            <span class="text-2xl p-1.5 rounded-xl bg-emerald-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">📋</span>
+            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Cotizar</span>
+            ${quotes.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-500 text-white shadow-xs">${quotes.length}</span>` : ''}
           </button>
 
           <!-- 3. Recetas / Servicios -->
           <button type="button" onclick="App.switchTab('recipes')"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-purple-200/80 dark:border-slate-700 hover:border-purple-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl p-2 rounded-xl bg-purple-50 dark:bg-slate-700 group-hover:scale-110 transition">${isServicesMode ? '💆' : '🎂'}</span>
-              <span class="text-[10px] font-extrabold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950 px-2 py-0.5 rounded-full">${recipes.length}</span>
-            </div>
-            <div>
-              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">${isServicesMode ? 'Servicios' : 'Recetas'}</span>
-              <span class="text-[10px] text-gray-400">Fichas y catálogo</span>
-            </div>
+            class="relative p-2 rounded-2xl bg-purple-50/70 dark:bg-slate-900/60 border border-purple-100 dark:border-slate-700/80 hover:border-purple-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
+            <span class="text-2xl p-1.5 rounded-xl bg-purple-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">${isServicesMode ? '💆' : '🎂'}</span>
+            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">${isServicesMode ? 'Servicios' : 'Recetas'}</span>
+            ${recipes.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-purple-500 text-white shadow-xs">${recipes.length}</span>` : ''}
           </button>
 
           <!-- 4. Insumos -->
           <button type="button" onclick="App.switchTab('ingredients')"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-amber-200/80 dark:border-slate-700 hover:border-amber-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl p-2 rounded-xl bg-amber-50 dark:bg-slate-700 group-hover:scale-110 transition">📦</span>
-              <span class="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950 px-2 py-0.5 rounded-full">${ingredients.length}</span>
-            </div>
-            <div>
-              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Insumos</span>
-              <span class="text-[10px] text-gray-400">Stock y costos</span>
-            </div>
+            class="relative p-2 rounded-2xl bg-amber-50/70 dark:bg-slate-900/60 border border-amber-100 dark:border-slate-700/80 hover:border-amber-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
+            <span class="text-2xl p-1.5 rounded-xl bg-amber-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">📦</span>
+            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Insumos</span>
+            ${ingredients.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-amber-500 text-white shadow-xs">${ingredients.length}</span>` : ''}
           </button>
 
-          <!-- 5. Radar de Ofertas -->
+          <!-- 5. Radar Ofertas -->
           <button type="button" onclick="App.switchTab('market-radar')"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-cyan-200/80 dark:border-slate-700 hover:border-cyan-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl p-2 rounded-xl bg-cyan-50 dark:bg-slate-700 group-hover:scale-110 transition">🛒</span>
-              <span class="text-[10px] font-extrabold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950 px-2 py-0.5 rounded-full">Precios</span>
-            </div>
-            <div>
-              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Radar Ofertas</span>
-              <span class="text-[10px] text-gray-400">Supermercados</span>
-            </div>
+            class="p-2 rounded-2xl bg-cyan-50/70 dark:bg-slate-900/60 border border-cyan-100 dark:border-slate-700/80 hover:border-cyan-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
+            <span class="text-2xl p-1.5 rounded-xl bg-cyan-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">🛒</span>
+            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Ofertas</span>
           </button>
 
-          <!-- 6. Clientes (CRM) -->
+          <!-- 6. Clientes CRM -->
           <button type="button" onclick="App.switchTab('customers')"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-indigo-200/80 dark:border-slate-700 hover:border-indigo-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl p-2 rounded-xl bg-indigo-50 dark:bg-slate-700 group-hover:scale-110 transition">👥</span>
-              <span class="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded-full">${customers.length}</span>
-            </div>
-            <div>
-              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Clientes CRM</span>
-              <span class="text-[10px] text-gray-400">Historial de compras</span>
-            </div>
+            class="relative p-2 rounded-2xl bg-indigo-50/70 dark:bg-slate-900/60 border border-indigo-100 dark:border-slate-700/80 hover:border-indigo-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
+            <span class="text-2xl p-1.5 rounded-xl bg-indigo-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">👥</span>
+            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Clientes</span>
+            ${customers.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-indigo-500 text-white shadow-xs">${customers.length}</span>` : ''}
           </button>
 
-          <!-- 7. Finanzas & Métricas -->
+          <!-- 7. Finanzas -->
           <button type="button" onclick="App.switchTab('finance')"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-rose-200/80 dark:border-slate-700 hover:border-rose-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl p-2 rounded-xl bg-rose-50 dark:bg-slate-700 group-hover:scale-110 transition">📊</span>
-              <span class="text-[10px] font-extrabold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950 px-2 py-0.5 rounded-full">Caja</span>
-            </div>
-            <div>
-              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Finanzas</span>
-              <span class="text-[10px] text-gray-400">Balance y métricas</span>
-            </div>
+            class="p-2 rounded-2xl bg-rose-50/70 dark:bg-slate-900/60 border border-rose-100 dark:border-slate-700/80 hover:border-rose-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
+            <span class="text-2xl p-1.5 rounded-xl bg-rose-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">📊</span>
+            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Finanzas</span>
           </button>
 
-          <!-- 8. Ajustes del Taller -->
+          <!-- 8. Ajustes -->
           <button type="button" onclick="App.switchTab('settings')"
-            class="p-3 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 hover:border-slate-400 flex flex-col justify-between shadow-2xs hover:shadow-xs transition active:scale-95 cursor-pointer text-left group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-2xl p-2 rounded-xl bg-slate-50 dark:bg-slate-700 group-hover:scale-110 transition">⚙️</span>
-              <span class="text-[10px] font-extrabold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">Config</span>
-            </div>
-            <div>
-              <span class="font-extrabold text-xs text-gray-900 dark:text-white block leading-tight">Ajustes</span>
-              <span class="text-[10px] text-gray-400">Perfil y negocio</span>
-            </div>
+            class="p-2 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 hover:border-slate-400 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
+            <span class="text-2xl p-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">⚙️</span>
+            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Ajustes</span>
           </button>
         </div>
       </div>
 
-      <!-- Contenedor Principal en Cuadrícula: Columna Ancha + Columna Operativa -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-6">
+      <!-- Contenedor Principal: Radar Map + Agenda Apilados -->
+      <div class="space-y-4 mb-6">
         
-        <!-- ==========================================
-             COLUMNA IZQUIERDA (2/3 de ancho en PC): Mapa Radar y Acciones Rápidas
-             ========================================== -->
-        <div class="lg:col-span-2 space-y-5 sm:space-y-6">
+        <!-- Radar & Mapa de Oportunidades de Clientes -->
+        ${typeof SellerRequestsModule !== 'undefined' ? SellerRequestsModule.renderSellerMapCard() : ''}
 
-          <!-- Radar & Mapa de Oportunidades de Clientes -->
-          ${typeof SellerRequestsModule !== 'undefined' ? SellerRequestsModule.renderSellerMapCard() : ''}
-
-          <!-- Barra de Acciones Rápidas (Personalizable) -->
-          <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
-                <span>⚡</span> Acciones Rápidas del Taller
-              </span>
+        <!-- Barra de Acciones Rápidas (Personalizable) -->
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
+              <span>⚡</span> Acciones Rápidas
+            </span>
+            <button 
+              type="button" 
+              onclick="App.openQuickActionsConfigModal()" 
+              class="text-[10px] text-pink-600 dark:text-pink-400 font-bold hover:underline flex items-center gap-1 cursor-pointer bg-pink-50/70 dark:bg-pink-950/40 px-2 py-0.5 rounded-lg border border-pink-200/80 dark:border-pink-800 transition"
+            >
+              <span>⚙️</span> Personalizar
+            </button>
+          </div>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            ${enabledActions.map(action => `
               <button 
                 type="button" 
-                onclick="App.openQuickActionsConfigModal()" 
-                class="text-[11px] text-pink-600 dark:text-pink-400 font-bold hover:underline flex items-center gap-1 cursor-pointer bg-pink-50/70 dark:bg-pink-950/40 hover:bg-pink-100 dark:hover:bg-pink-900/50 px-2.5 py-1 rounded-xl border border-pink-200/80 dark:border-pink-800 transition shadow-2xs active:scale-95"
+                onclick="${action.handler}"
+                class="p-2.5 rounded-2xl ${action.colorClass} border text-xs font-bold transition flex items-center gap-2 group active:scale-95 cursor-pointer shadow-2xs text-left"
               >
-                <span>⚙️</span> Personalizar
+                <span class="text-base group-hover:scale-110 transition shrink-0">${action.icon}</span>
+                <span class="truncate text-[11px]">${action.title}</span>
               </button>
-            </div>
-            
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              ${enabledActions.map(action => `
-                <button 
-                  type="button" 
-                  onclick="${action.handler}"
-                  class="p-3 rounded-2xl ${action.colorClass} border text-xs font-bold transition flex items-center gap-2.5 group active:scale-95 cursor-pointer shadow-2xs text-left"
-                >
-                  <span class="text-lg group-hover:scale-110 transition shrink-0">${action.icon}</span>
-                  <span class="truncate">${action.title}</span>
-                </button>
-              `).join('')}
-            </div>
+            `).join('')}
           </div>
-
         </div>
 
-        <!-- ==========================================
-             COLUMNA DERECHA (1/3 de ancho en PC): Agenda Operativa y Pedidos
-             ========================================== -->
-        <div class="space-y-5 sm:space-y-6">
-
-          <!-- Agenda de Entregas & Citas -->
-          <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
-            <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-100 dark:border-slate-700">
-              <div>
-                <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
-                  <span>📅</span> Agenda de Entregas
-                </h3>
-                <p class="text-[10px] text-gray-400">Próximos pedidos y citas agendadas</p>
-              </div>
-              <button onclick="App.switchTab('quotes')" class="text-[10px] text-pink-600 dark:text-pink-400 font-bold hover:underline">
-                Ver todas ↗
-              </button>
+        <!-- Agenda de Entregas & Citas -->
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
+          <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-100 dark:border-slate-700">
+            <div>
+              <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                <span>📅</span> Agenda de Entregas
+              </h3>
+              <p class="text-[10px] text-gray-400">Próximos pedidos y citas agendadas</p>
             </div>
+            <button onclick="App.switchTab('quotes')" class="text-[10px] text-pink-600 dark:text-pink-400 font-bold hover:underline">
+              Ver todas ↗
+            </button>
+          </div>
 
-            ${importantEvents.length === 0 ? `
-              <div class="text-center py-8 text-xs text-gray-400 dark:text-gray-500">
-                <span class="text-3xl block mb-2">🎉</span>
-                ¡Estás al día! No hay pedidos pendientes para los próximos días.
-              </div>
-            ` : `
-              <div class="space-y-2.5 max-h-[480px] overflow-y-auto custom-scrollbar pr-1">
-                ${importantEvents.slice(0, 8).map(evt => {
-                  const isDelivery = evt.type === 'delivery';
-                  const isPending = evt.type === 'pending_quote';
+          ${importantEvents.length === 0 ? `
+            <div class="text-center py-6 text-xs text-gray-400 dark:text-gray-500">
+              <span class="text-3xl block mb-2">🎉</span>
+              ¡Estás al día! No hay pedidos pendientes para los próximos días.
+            </div>
+          ` : `
+            <div class="space-y-2.5 max-h-[480px] overflow-y-auto custom-scrollbar pr-1">
+              ${importantEvents.slice(0, 8).map(evt => {
+                const isDelivery = evt.type === 'delivery';
+                const isPending = evt.type === 'pending_quote';
 
-                  let badgeColor = 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300';
-                  let icon = '📅';
+                let badgeColor = 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300';
+                let icon = '📅';
 
-                  if (isDelivery) {
-                    badgeColor = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300';
-                    icon = isServicesMode ? '💆' : '🚚';
-                  } else if (isPending) {
-                    badgeColor = 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300';
-                    icon = '⏳';
-                  } else {
-                    badgeColor = 'bg-pink-100 text-pink-800 dark:bg-pink-950/60 dark:text-pink-300';
-                    icon = '⭐';
-                  }
+                if (isDelivery) {
+                  badgeColor = 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300';
+                  icon = isServicesMode ? '💆' : '🚚';
+                } else if (isPending) {
+                  badgeColor = 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300';
+                  icon = '⏳';
+                } else {
+                  badgeColor = 'bg-pink-100 text-pink-800 dark:bg-pink-950/60 dark:text-pink-300';
+                  icon = '⭐';
+                }
 
-                  return `
-                    <div class="p-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-900/60 hover:border-pink-300 transition space-y-2">
-                      <div class="flex items-center justify-between gap-1.5">
-                        <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${badgeColor} flex items-center gap-1">
-                          <span>${icon}</span> ${evt.statusLabel}
-                        </span>
-                        ${evt.daysLeft === 0 
-                          ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-500 text-white animate-pulse">¡HOY!</span>`
-                          : evt.daysLeft === 1
-                          ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-orange-500 text-white">Mañana</span>`
-                          : `<span class="text-[10px] text-gray-400 font-semibold">${evt.formattedDate || ''}</span>`
-                        }
-                      </div>
+                return `
+                  <div class="p-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-900/60 hover:border-pink-300 transition space-y-2">
+                    <div class="flex items-center justify-between gap-1.5">
+                      <span class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${badgeColor} flex items-center gap-1">
+                        <span>${icon}</span> ${evt.statusLabel}
+                      </span>
+                      ${evt.daysLeft === 0 
+                        ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-rose-500 text-white animate-pulse">¡HOY!</span>`
+                        : evt.daysLeft === 1
+                        ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-orange-500 text-white">Mañana</span>`
+                        : `<span class="text-[10px] text-gray-400 font-semibold">${evt.formattedDate || ''}</span>`
+                      }
+                    </div>
 
-                      <div class="min-w-0">
-                        <h5 class="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">${this.escapeHtml(evt.customerName)}</h5>
-                        <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">${this.escapeHtml(evt.title)}</p>
-                      </div>
+                    <div class="min-w-0">
+                      <h5 class="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">${this.escapeHtml(evt.customerName)}</h5>
+                      <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate">${this.escapeHtml(evt.title)}</p>
+                    </div>
 
-                      <div class="pt-1.5 border-t border-gray-200/50 dark:border-slate-800 flex items-center justify-between gap-1 text-[11px]">
-                        <span class="font-bold font-mono text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(evt.amount || 0)}</span>
-                        
-                        <div class="flex items-center gap-1">
-                          ${evt.customerPhone ? `
-                            <button 
-                              type="button" 
-                              onclick="App.sendWhatsAppDeliveryCoordination('${evt.customerPhone}', '${evt.customerName}', '${evt.title}', '${evt.formattedDate}')"
-                              class="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition flex items-center gap-1"
-                            >
-                              <span>💬</span> WhatsApp
-                            </button>
-                          ` : ''}
+                    <div class="pt-1.5 border-t border-gray-200/50 dark:border-slate-800 flex items-center justify-between gap-1 text-[11px]">
+                      <span class="font-bold font-mono text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(evt.amount || 0)}</span>
+                      
+                      <div class="flex items-center gap-1">
+                        ${evt.customerPhone ? `
                           <button 
                             type="button" 
-                            onclick="App.switchTab('quotes'); setTimeout(() => QuotesModule.openEditor('${evt.quoteId}'), 80);"
-                            class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 text-xs"
-                            title="Ver detalles"
+                            onclick="App.sendWhatsAppDeliveryCoordination('${evt.customerPhone}', '${evt.customerName}', '${evt.title}', '${evt.formattedDate}')"
+                            class="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition flex items-center gap-1"
                           >
-                            📋
+                            <span>💬</span> WhatsApp
                           </button>
-                        </div>
+                        ` : ''}
+                        <button 
+                          type="button" 
+                          onclick="App.switchTab('quotes'); setTimeout(() => QuotesModule.openEditor('${evt.quoteId}'), 80);"
+                          class="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 text-xs"
+                          title="Ver detalles"
+                        >
+                          📋
+                        </button>
                       </div>
                     </div>
-                  `;
-                }).join('')}
-              </div>
-            `}
-          </div>
-
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `}
         </div>
+
+      </div>
 
       </div>
     `;
