@@ -1,0 +1,158 @@
+/* ==========================================
+   Cakekulator Cliente - Estilos Visuales & Animaciones
+   ========================================== */
+
+:root {
+  --primary-pink: #ec4899;
+  --primary-pink-dark: #be185d;
+  --cream-bg: #faf5f8;
+  --gold-amber: #f59e0b;
+  --emerald-profit: #10b981;
+  --coral-accent: #f43f5e;
+}
+
+/* Scrollbar personalizado suave */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.2);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.4);
+}
+
+/* Animaciones suaves */
+@keyframes pulseSubtle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
+}
+
+@keyframes flashCountdown {
+  0%, 100% {
+    background-color: #fee2e2;
+    color: #b91c1c;
+  }
+  50% {
+    background-color: #fecaca;
+    color: #991b1b;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulseSubtle 3s infinite ease-in-out;
+}
+
+.flash-timer-badge {
+  animation: flashCountdown 2.5s infinite ease-in-out;
+}
+
+/* Transición suave para pestañas y modales */
+.tab-pane {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Leaflet Map Customization */
+.leaflet-container {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  border-radius: 1.5rem;
+  z-index: 10;
+}
+
+.custom-map-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: white;
+  border-radius: 50%;
+  border: 3px solid #ec4899;
+  box-shadow: 0 8px 16px -4px rgba(236, 72, 153, 0.45);
+  font-size: 22px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+
+.custom-map-pin:hover, .custom-map-pin.active {
+  transform: scale(1.2) translateY(-4px);
+  border-color: #be185d;
+  box-shadow: 0 12px 20px -4px rgba(190, 24, 93, 0.55);
+}
+
+.custom-map-pin-user {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #3b82f6;
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.35);
+  font-size: 18px;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 1.25rem !important;
+  padding: 0 !important;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+}
+
+/* Bottom Navigation Buttons */
+.user-nav-btn {
+  color: #64748b;
+  transition: all 0.2s ease-in-out;
+}
+
+.user-nav-btn.active {
+  color: #ec4899;
+  transform: translateY(-2px);
+}
+
+.user-nav-btn.active .user-nav-icon-wrapper {
+  background: #fdf2f8;
+  color: #ec4899;
+}
+
+.dark .user-nav-btn.active .user-nav-icon-wrapper {
+  background: #831843;
+  color: #fbcfe8;
+}
+
+/* Card hover and touch effects */
+.touch-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.touch-card:active {
+  transform: scale(0.98);
+}
