@@ -120,10 +120,20 @@ const RecipesModule = {
                         <span class="px-2 py-0.5 text-[10px] font-medium rounded-md ${isServ ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300' : 'bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300'}">
                           ${isServ ? `💆 Sesión (${recipe.durationMinutes || 60} min)` : (isCake ? `🎂 Torta (${recipe.yieldPortions} porciones)` : `📦 Lote de ${recipe.yieldUnits} ${recipe.unitName || 'un'}`)}
                         </span>
+                        ${!isServ ? `
+                          <span class="px-2 py-0.5 text-[10px] font-bold rounded-md ${recipe.showInCatalog !== false ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300' : 'bg-gray-100 dark:bg-slate-800 text-gray-500'}">
+                            ${recipe.showInCatalog !== false ? '🛍️ Catálogo' : '🔒 Solo Taller'}
+                          </span>
+                        ` : ''}
                       </div>
                       <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base leading-tight group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">${recipe.name}</h3>
                     </div>
                     <div class="flex items-center gap-1">
+                      ${!isServ ? `
+                        <button onclick="event.stopPropagation(); RecipesModule.toggleCatalogStatus('${recipe.id}')" title="${recipe.showInCatalog !== false ? 'Publicado en catálogo de clientes (Clic para ocultar)' : 'Oculto (Clic para publicar en catálogo)'}" class="p-1.5 rounded-lg transition ${recipe.showInCatalog !== false ? 'text-emerald-600 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40' : 'text-gray-400 hover:text-emerald-600 hover:bg-emerald-50'}">
+                          <span class="text-xs">${recipe.showInCatalog !== false ? '🛍️' : '👁️'}</span>
+                        </button>
+                      ` : ''}
                       <button onclick="event.stopPropagation(); RecipesModule.duplicateRecipe('${recipe.id}')" title="Duplicar" class="p-1.5 text-gray-400 hover:text-pink-600 hover:bg-pink-50 dark:hover:bg-pink-950/40 rounded-lg transition">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
                       </button>
@@ -407,6 +417,33 @@ const RecipesModule = {
               </div>
             </div>
 
+            <!-- Sección: Catálogo Público para Clientes -->
+            <div id="rec-catalog-section" class="bg-pink-50/60 dark:bg-slate-800/80 p-4 rounded-2xl border border-pink-200/80 dark:border-slate-700 space-y-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-1.5">
+                    <span>🛍️</span> Catálogo Público de Clientes
+                  </h4>
+                  <p class="text-[11px] text-gray-500 dark:text-gray-400">Mostrar este producto en el menú público de tu pastelería para que los clientes puedan pedirlo</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input type="checkbox" id="rec-show-in-catalog" class="sr-only peer" checked>
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                </label>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Precio Fijo para Catálogo ($ CLP - Opcional)</label>
+                  <input type="number" id="rec-catalog-price" placeholder="Automático según margen" class="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">URL de Foto para Clientes (Opcional)</label>
+                  <input type="url" id="rec-catalog-image" placeholder="https://ejemplo.com/torta.jpg" class="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs">
+                </div>
+              </div>
+            </div>
+
             <!-- Notas de preparación -->
             <div>
               <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Notas / Instrucciones de Horneado</label>
@@ -616,6 +653,14 @@ const RecipesModule = {
       const cabinInput = document.getElementById('serv-cabin-cost');
       if (cabinInput) cabinInput.value = rec.cabinCost || 0;
 
+      // Campos de catálogo público para clientes
+      const catCheck = document.getElementById('rec-show-in-catalog');
+      if (catCheck) catCheck.checked = rec.showInCatalog !== false;
+      const catPrice = document.getElementById('rec-catalog-price');
+      if (catPrice) catPrice.value = rec.catalogPrice || '';
+      const catImg = document.getElementById('rec-catalog-image');
+      if (catImg) catImg.value = rec.imageUrl || '';
+
       // Cargar filas de ingredientes / insumos de cabina
       (rec.ingredients || []).forEach(item => {
         this.addIngredientRow(item.ingredientId, item.quantity, item.unit);
@@ -637,6 +682,13 @@ const RecipesModule = {
       document.getElementById('rec-overhead').value = isServicesMode ? 2500 : 1000;
       document.getElementById('rec-yield-units').value = isServicesMode ? 1 : 24;
       document.getElementById('rec-yield-portions').value = isServicesMode ? 1 : 24;
+
+      const catCheck = document.getElementById('rec-show-in-catalog');
+      if (catCheck) catCheck.checked = true;
+      const catPrice = document.getElementById('rec-catalog-price');
+      if (catPrice) catPrice.value = '';
+      const catImg = document.getElementById('rec-catalog-image');
+      if (catImg) catImg.value = '';
 
       const durInput = document.getElementById('serv-duration');
       if (durInput) durInput.value = 60;
@@ -1015,6 +1067,10 @@ const RecipesModule = {
       return;
     }
 
+    const showInCatalog = document.getElementById('rec-show-in-catalog') ? document.getElementById('rec-show-in-catalog').checked : true;
+    const catalogPrice = parseFloat(document.getElementById('rec-catalog-price')?.value) || 0;
+    const imageUrl = document.getElementById('rec-catalog-image')?.value.trim() || '';
+
     const data = {
       name,
       category,
@@ -1028,6 +1084,9 @@ const RecipesModule = {
       laborRatePerHour,
       overheadCost,
       suggestedMargin,
+      showInCatalog,
+      catalogPrice,
+      imageUrl,
       ingredients,
       packaging,
       notes
@@ -1042,6 +1101,18 @@ const RecipesModule = {
     this.closeEditor();
     this.render();
     App.showToast(id ? 'Ficha técnica actualizada' : 'Nueva ficha técnica creada');
+  },
+
+  // Alternar publicación rápida en el Catálogo de Clientes
+  toggleCatalogStatus(id) {
+    const rec = DB.getRecipeById(id);
+    if (!rec) return;
+    const newStatus = rec.showInCatalog === false ? true : false;
+    DB.updateRecipe(id, { showInCatalog: newStatus });
+    this.render();
+    if (typeof App !== 'undefined' && App.showToast) {
+      App.showToast(newStatus ? '🛍️ Producto publicado en tu Catálogo de Clientes' : '🔒 Producto ocultado del Catálogo de Clientes');
+    }
   },
 
   duplicateRecipe(id) {

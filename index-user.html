@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Cakekulator Clientes - Pastelerías Cercanas, Ofertas Flash y Pedidos</title>
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#ec4899">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Cakekulator Clientes">
+  <link rel="manifest" href="manifest-user.json">
+  <link rel="icon" type="image/png" href="assets/icons/favicon.png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            pink: {
+              50: '#fdf2f8',
+              100: '#fce7f3',
+              200: '#fbcfe8',
+              300: '#f9a8d4',
+              400: '#f472b6',
+              500: '#ec4899',
+              600: '#db2777',
+              700: '#be185d',
+              800: '#9d174d',
+              900: '#831843',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Custom User Styles -->
+  <link rel="stylesheet" href="css/user-styles.css">
+</head>
+
+<body class="bg-[#faf5f8] dark:bg-[#0f172a] text-gray-800 dark:text-gray-100 font-sans min-h-screen pb-24 transition-colors select-none sm:select-auto">
+
+  <!-- ==========================================
+       TOP APP HEADER
+       ========================================== -->
+  <header class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100 dark:border-slate-800 px-4 py-3">
+    <div class="max-w-md mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Brand Logo & App Name -->
+      <div class="flex items-center gap-2 cursor-pointer" onclick="UserApp.switchTab('explore')">
+        <span class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center text-lg shadow-md shadow-pink-500/20 ring-2 ring-pink-200 dark:ring-slate-700">
+          🧁
+        </span>
+        <div>
+          <span class="font-extrabold text-base tracking-tight text-gray-900 dark:text-white leading-none block">
+            Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
+          </span>
+          <span class="text-[9px] font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider block">
+            App Clientes & Pedidos
+          </span>
+        </div>
+      </div>
+
+      <!-- Client Profile & Notifications -->
+      <div class="flex items-center gap-2">
+        <!-- Botón Instalar PWA Clientes -->
+        <button id="user-pwa-install-btn" onclick="UserApp.installPWA()" title="Instalar App en el Celular"
+           class="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-600 to-rose-500 text-white text-xs font-bold shadow-xs hover:from-pink-700 flex items-center gap-1 transition active:scale-95 cursor-pointer">
+          <span>📲</span>
+          <span>Instalar</span>
+        </button>
+
+        <button onclick="UserApp.switchTab('offers')" title="Notificaciones de Ofertas Flash" 
+           class="p-2 rounded-xl bg-pink-50 dark:bg-slate-800 hover:bg-pink-100 text-pink-600 dark:text-pink-300 text-xs font-bold border border-pink-100 dark:border-slate-700 flex items-center justify-center transition active:scale-95 relative">
+          <span>🔔</span>
+          <span class="w-2 h-2 rounded-full bg-rose-500 absolute top-1.5 right-1.5 animate-pulse"></span>
+        </button>
+        <button onclick="UserApp.switchTab('profile')" title="Mi Perfil" class="p-1.5 rounded-2xl ring-2 ring-pink-300 dark:ring-slate-700 text-base bg-white dark:bg-slate-800 shadow-xs hover:scale-105 transition cursor-pointer">
+          👩‍🦰
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Universal Search Bar for Clients -->
+    <div class="max-w-md mx-auto mt-2.5">
+      <div class="relative">
+        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 text-xs">
+          🔍
+        </span>
+        <input 
+          type="text" 
+          id="user-global-search" 
+          placeholder="Buscar pastelerías, tortas, pies, veganas..." 
+          class="w-full pl-8 pr-4 py-2 text-xs bg-gray-50 dark:bg-slate-800 border border-pink-100 dark:border-slate-700 rounded-2xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 transition shadow-2xs"
+        />
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN VIEW CONTAINER (PWA Mobile Frame)
+       ========================================== -->
+  <main class="max-w-md mx-auto p-4 space-y-4">
+
+    <!-- 1. VISTA EXPLORAR / INICIO -->
+    <section id="explore-view" class="tab-pane space-y-4">
+      
+      <!-- Banner Promocional / Solicitud Rápida -->
+      <div class="p-4 rounded-3xl bg-gradient-to-br from-pink-600 via-rose-500 to-amber-500 text-white shadow-xl shadow-pink-600/20 relative overflow-hidden">
+        <div class="relative z-10 space-y-2">
+          <span class="px-2.5 py-0.5 rounded-full bg-white/20 backdrop-blur-md text-[10px] font-extrabold tracking-wider uppercase inline-block">
+            ⚡ Marketplace Pastelero
+          </span>
+          <h2 class="text-lg font-black leading-tight drop-shadow-sm">
+            ¿Buscas un pastel o postre especial?
+          </h2>
+          <p class="text-xs text-pink-100 leading-relaxed">
+            Publica lo que necesitas con tu presupuesto y recibe ofertas de pastelerías cercanas en minutos.
+          </p>
+          <button onclick="UserRequestsModule.showNewRequestModal()" class="mt-1 px-4 py-2 bg-white text-pink-700 font-extrabold text-xs rounded-2xl shadow-md hover:bg-pink-50 active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+            <span>📢</span>
+            <span>Publicar Solicitud Flash</span>
+          </button>
+        </div>
+        <span class="absolute -bottom-4 -right-4 text-7xl opacity-20 pointer-events-none select-none">🎂</span>
+      </div>
+
+      <!-- Accesos Rápidos de Categorías -->
+      <div class="grid grid-cols-4 gap-2 text-center">
+        <button onclick="UserApp.switchTab('map'); setTimeout(() => UserMapModule.setFilter('cakes'), 200);" class="p-2.5 bg-white dark:bg-slate-900 rounded-2xl border border-pink-100 dark:border-slate-800 shadow-2xs hover:border-pink-300 transition flex flex-col items-center gap-1">
+          <span class="text-2xl">🎂</span>
+          <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Tortas</span>
+        </button>
+        <button onclick="UserApp.switchTab('map'); setTimeout(() => UserMapModule.setFilter('pastries'), 200);" class="p-2.5 bg-white dark:bg-slate-900 rounded-2xl border border-pink-100 dark:border-slate-800 shadow-2xs hover:border-pink-300 transition flex flex-col items-center gap-1">
+          <span class="text-2xl">🥐</span>
+          <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Pies & Masas</span>
+        </button>
+        <button onclick="UserApp.switchTab('offers');" class="p-2.5 bg-white dark:bg-slate-900 rounded-2xl border border-pink-100 dark:border-slate-800 shadow-2xs hover:border-pink-300 transition flex flex-col items-center gap-1 relative">
+          <span class="text-2xl">⚡</span>
+          <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Ofertas</span>
+          <span class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+        </button>
+        <button onclick="UserApp.switchTab('map'); setTimeout(() => UserMapModule.setFilter('healthy'), 200);" class="p-2.5 bg-white dark:bg-slate-900 rounded-2xl border border-pink-100 dark:border-slate-800 shadow-2xs hover:border-pink-300 transition flex flex-col items-center gap-1">
+          <span class="text-2xl">🥑</span>
+          <span class="text-[10px] font-bold text-gray-700 dark:text-gray-300">Saludable</span>
+        </button>
+      </div>
+
+      <!-- Feed de Pastelerías Destacadas -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="font-extrabold text-sm text-gray-900 dark:text-white flex items-center gap-1.5">
+            <span>🏪</span>
+            <span>Pastelerías & Reposteros Cercanos</span>
+          </h3>
+          <button onclick="UserApp.switchTab('map')" class="text-pink-600 dark:text-pink-400 font-bold text-xs hover:underline">
+            Ver Mapa 🗺️
+          </button>
+        </div>
+
+        <div id="explore-bakeries-grid" class="space-y-3.5">
+          <!-- Renderizado dinámicamente por UserApp.renderExploreTab() -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 2. VISTA MAPA INTERACTIVO -->
+    <section id="map-view" class="tab-pane hidden space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-black text-base text-gray-900 dark:text-white leading-tight">Mapa de Pastelerías</h2>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">Descubre reposteros y locales con entrega en tu zona</p>
+        </div>
+        <button onclick="UserMapModule.locateUser()" title="Ubicarme" class="p-2 rounded-xl bg-white dark:bg-slate-800 border border-pink-200 text-pink-600 text-xs shadow-xs">
+          🎯 Ubicarme
+        </button>
+      </div>
+
+      <!-- Chips de Filtros para el Mapa -->
+      <div class="flex gap-1.5 overflow-x-auto custom-scrollbar pb-1">
+        <button onclick="UserMapModule.setFilter('all')" data-filter="all" class="map-filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-pink-600 text-white shadow-xs transition">
+          Todos
+        </button>
+        <button onclick="UserMapModule.setFilter('cakes')" data-filter="cakes" class="map-filter-chip px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:border-pink-300 transition">
+          🎂 Tortas
+        </button>
+        <button onclick="UserMapModule.setFilter('pastries')" data-filter="pastries" class="map-filter-chip px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:border-pink-300 transition">
+          🥐 Pies & Bollería
+        </button>
+        <button onclick="UserMapModule.setFilter('healthy')" data-filter="healthy" class="map-filter-chip px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:border-pink-300 transition">
+          🥑 Sin Azúcar / Vegana
+        </button>
+      </div>
+
+      <!-- Contenedor del Mapa Leaflet -->
+      <div class="relative w-full h-[400px] rounded-3xl overflow-hidden border border-pink-200 dark:border-slate-800 shadow-md">
+        <div id="user-map-container" class="w-full h-full"></div>
+      </div>
+    </section>
+
+    <!-- 3. VISTA SOLICITUDES DE COMPRADORES (MARKETPLACE) -->
+    <section id="requests-view" class="tab-pane hidden space-y-4">
+      
+      <!-- Cabecera de Solicitudes -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-black text-base text-gray-900 dark:text-white leading-tight">Mis Solicitudes Flash</h2>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">Pide lo que necesitas y recibe ofertas de pasteleros</p>
+        </div>
+        <button onclick="UserRequestsModule.showNewRequestModal()" class="px-3.5 py-2 bg-gradient-to-r from-pink-600 to-rose-500 text-white font-extrabold text-xs rounded-2xl shadow-md hover:from-pink-700 active:scale-95 transition flex items-center gap-1">
+          <span>+</span>
+          <span>Nueva Solicitud</span>
+        </button>
+      </div>
+
+      <!-- Plantillas Rápidas de Ejemplo -->
+      <div class="space-y-1.5">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Plantillas Rápidas</span>
+        <div class="flex gap-2 overflow-x-auto custom-scrollbar pb-1">
+          <button onclick="UserRequestsModule.showNewRequestModal(); UserRequestsModule.applyTemplate('pie_limon');" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 shrink-0 hover:border-pink-300 transition">
+            🍋 Pie de Limón ($12k)
+          </button>
+          <button onclick="UserRequestsModule.showNewRequestModal(); UserRequestsModule.applyTemplate('torta_urgente');" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 shrink-0 hover:border-pink-300 transition">
+            🎂 Torta Urgente ($25k)
+          </button>
+          <button onclick="UserRequestsModule.showNewRequestModal(); UserRequestsModule.applyTemplate('corte_barba');" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 shrink-0 hover:border-pink-300 transition">
+            💈 Corte & Barba ($18k)
+          </button>
+          <button onclick="UserRequestsModule.showNewRequestModal(); UserRequestsModule.applyTemplate('manicure_permanente');" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 shrink-0 hover:border-pink-300 transition">
+            💅 Manicure Foil ($22k)
+          </button>
+          <button onclick="UserRequestsModule.showNewRequestModal(); UserRequestsModule.applyTemplate('masaje_relax');" class="px-3 py-1.5 bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-300 shrink-0 hover:border-pink-300 transition">
+            💆 Masaje 60 min ($30k)
+          </button>
+        </div>
+      </div>
+
+      <!-- Lista de Solicitudes -->
+      <div id="user-requests-list" class="space-y-3.5">
+        <!-- Renderizado dinámicamente por UserRequestsModule.renderRequests() -->
+      </div>
+
+    </section>
+
+    <!-- 4. VISTA OFERTAS FLASH -->
+    <section id="offers-view" class="tab-pane hidden space-y-4">
+      
+      <!-- Cabecera de Ofertas -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-black text-base text-gray-900 dark:text-white leading-tight flex items-center gap-1.5">
+            <span>⚡</span>
+            <span>Ofertas Flash del Día</span>
+          </h2>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">Excedentes frescos y promos de tus locales favoritos</p>
+        </div>
+      </div>
+
+      <!-- Chips de Filtros para Ofertas -->
+      <div class="flex gap-1.5 overflow-x-auto custom-scrollbar pb-1">
+        <button onclick="UserOffersModule.setFilter('all')" data-filter="all" class="offer-filter-chip px-3 py-1.5 rounded-full text-xs font-bold bg-pink-600 text-white shadow-xs transition">
+          Todas
+        </button>
+        <button onclick="UserOffersModule.setFilter('favorites')" data-filter="favorites" class="offer-filter-chip px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:border-pink-300 transition">
+          ❤️ Solo Favoritos
+        </button>
+        <button onclick="UserOffersModule.setFilter('healthy')" data-filter="healthy" class="offer-filter-chip px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:border-pink-300 transition">
+          🥑 Saludables
+        </button>
+        <button onclick="UserOffersModule.setFilter('cheap')" data-filter="cheap" class="offer-filter-chip px-3 py-1.5 rounded-full text-xs font-medium bg-white dark:bg-slate-800 border border-pink-100 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:border-pink-300 transition">
+          💰 Menos de $12.000
+        </button>
+      </div>
+
+      <!-- Feed de Ofertas -->
+      <div id="user-offers-container" class="space-y-4">
+        <!-- Renderizado dinámicamente por UserOffersModule.renderOffers() -->
+      </div>
+
+    </section>
+
+    <!-- 5. VISTA PERFIL & PREFERENCIAS -->
+    <section id="profile-view" class="tab-pane hidden space-y-4">
+      
+      <!-- Cabecera de Perfil -->
+      <div class="p-4 bg-white dark:bg-slate-900 rounded-3xl border border-pink-100 dark:border-slate-800 shadow-sm flex items-center gap-3">
+        <span class="text-4xl p-2 bg-pink-50 dark:bg-slate-800 rounded-2xl ring-2 ring-pink-200">👩‍🦰</span>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-extrabold text-base text-gray-900 dark:text-white truncate">Mi Perfil Dulce</h3>
+          <p class="text-xs text-pink-600">Preferencias gastronómicas y favoritos</p>
+        </div>
+      </div>
+
+      <!-- Datos de Contacto y Ubicación -->
+      <form onsubmit="UserProfileModule.saveContactInfo(event)" class="bg-white dark:bg-slate-900 rounded-3xl border border-pink-100 dark:border-slate-800 p-4 space-y-3 shadow-sm">
+        <h4 class="font-black text-xs text-gray-900 dark:text-white uppercase tracking-wider">📍 Datos de Entrega</h4>
+        
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Nombre</label>
+            <input type="text" id="prof-name" class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-0.5">WhatsApp / Celular</label>
+            <input type="tel" id="prof-phone" class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Comuna</label>
+            <select id="prof-commune" class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl">
+              <option value="Providencia">Providencia</option>
+              <option value="Las Condes">Las Condes</option>
+              <option value="Ñuñoa">Ñuñoa</option>
+              <option value="Vitacura">Vitacura</option>
+              <option value="Santiago Centro">Santiago Centro</option>
+              <option value="La Reina">La Reina</option>
+              <option value="Lo Barnechea">Lo Barnechea</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Dirección</label>
+            <input type="text" id="prof-address" class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl" />
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-2 bg-pink-600 hover:bg-pink-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition">
+          Guardar Cambios de Contacto
+        </button>
+      </form>
+
+      <!-- Preferencias Dietarias / Alergias -->
+      <div class="bg-white dark:bg-slate-900 rounded-3xl border border-pink-100 dark:border-slate-800 p-4 space-y-2.5 shadow-sm">
+        <h4 class="font-black text-xs text-gray-900 dark:text-white uppercase tracking-wider">🥑 Restricciones & Preferencias Dietarias</h4>
+        <p class="text-[11px] text-gray-500">Toca para activar o desactivar lo que buscas en tus pedidos:</p>
+        <div id="prof-dietary-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <!-- Renderizado por UserProfileModule -->
+        </div>
+      </div>
+
+      <!-- Sabores Favoritos -->
+      <div class="bg-white dark:bg-slate-900 rounded-3xl border border-pink-100 dark:border-slate-800 p-4 space-y-2.5 shadow-sm">
+        <h4 class="font-black text-xs text-gray-900 dark:text-white uppercase tracking-wider">🍫 Mis Sabores Favoritos</h4>
+        <div id="prof-flavors-container" class="flex flex-wrap gap-1.5">
+          <!-- Renderizado por UserProfileModule -->
+        </div>
+      </div>
+
+      <!-- Recordatorio de Fechas Especiales -->
+      <div class="bg-white dark:bg-slate-900 rounded-3xl border border-pink-100 dark:border-slate-800 p-4 space-y-2.5 shadow-sm">
+        <h4 class="font-black text-xs text-gray-900 dark:text-white uppercase tracking-wider">🎉 Fechas Especiales & Cumpleaños</h4>
+        <div id="prof-dates-container" class="space-y-2">
+          <!-- Renderizado por UserProfileModule -->
+        </div>
+      </div>
+
+      <!-- Locales Guardados como Favoritos -->
+      <div class="bg-white dark:bg-slate-900 rounded-3xl border border-pink-100 dark:border-slate-800 p-4 space-y-2.5 shadow-sm">
+        <h4 class="font-black text-xs text-gray-900 dark:text-white uppercase tracking-wider">❤️ Mis Pastelerías Favoritas</h4>
+        <div id="prof-favorites-container" class="space-y-2">
+          <!-- Renderizado por UserProfileModule -->
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       MODAL DE NUEVA SOLICITUD FLASH
+       ========================================== -->
+  <div id="user-request-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-4 border border-pink-100 dark:border-slate-800 shadow-2xl space-y-3 animate-fade-in max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-2">
+        <h3 class="font-black text-sm text-gray-900 dark:text-white flex items-center gap-1.5">
+          <span>📢</span> Publicar Solicitud Flash
+        </h3>
+        <button onclick="UserRequestsModule.closeNewRequestModal()" class="text-gray-400 hover:text-gray-600 text-sm font-bold">
+          ✕
+        </button>
+      </div>
+
+      <form onsubmit="UserRequestsModule.submitNewRequest(event)" class="space-y-2.5">
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Tipo de Negocio / Rubro</label>
+          <select id="req-business-type" onchange="UserRequestsModule.onBusinessTypeChange(this.value)" class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl font-bold text-pink-600 dark:text-pink-400">
+            <option value="product">🍰 Pastelería & Repostería Artesanal</option>
+            <option value="service">💆 Estética, Barbería, Spa & Belleza</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-0.5">¿Qué necesitas? (Título)</label>
+          <input type="text" id="req-title" placeholder="ej. Necesito un pie de limón para 10 personas" required class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Presupuesto ($ CLP)</label>
+            <input type="number" id="req-budget" placeholder="12000" required class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl font-bold text-emerald-600" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Categoría / Especialidad</label>
+            <select id="req-category" class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl">
+              <option value="Tartas / Pies">Tartas & Pies</option>
+              <option value="Tortas Personalizadas">Tortas y Pasteles</option>
+              <option value="Alfajores & Bocaditos">Alfajores & Bocaditos</option>
+              <option value="Galletas & Cupcakes">Galletas & Cupcakes</option>
+              <option value="Saludable / Vegano">Saludable / Vegano</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Comuna / Ubicación</label>
+            <input type="text" id="req-commune" placeholder="Providencia" required class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl" />
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-gray-400 block mb-0.5">¿Para cuándo lo necesitas?</label>
+            <input type="text" id="req-deadline" placeholder="Hoy antes de las 18:00" required class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl" />
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Detalles adicionales</label>
+          <textarea id="req-description" rows="2" placeholder="ej. Es para una once familiar, pago en efectivo o transferencia..." required class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl"></textarea>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold text-gray-400 block mb-0.5">Notas dietarias o alérgenos (Opcional)</label>
+          <input type="text" id="req-dietary" placeholder="ej. Sin azúcar, con harto merengue..." class="w-full text-xs p-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl" />
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="UserRequestsModule.closeNewRequestModal()" class="flex-1 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 font-bold text-xs rounded-xl">
+            Cancelar
+          </button>
+          <button type="submit" class="flex-1 py-2 bg-gradient-to-r from-pink-600 to-rose-500 text-white font-extrabold text-xs rounded-xl shadow-md hover:from-pink-700">
+            Publicar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL DE DETALLE DE PASTELERÍA
+       ========================================== -->
+  <div id="bakery-detail-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full border border-pink-100 dark:border-slate-800 shadow-2xl overflow-hidden animate-fade-in max-h-[92vh] overflow-y-auto custom-scrollbar">
+      <div id="bakery-detail-content">
+        <!-- Renderizado dinámicamente por UserApp.showBakeryDetail() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MOBILE BOTTOM NAVIGATION BAR
+       ========================================== -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-2 py-1.5 flex items-center justify-around shadow-lg"
+       style="padding-bottom: calc(0.45rem + env(safe-area-inset-bottom, 0px));">
+    
+    <!-- 1. Explorar -->
+    <button onclick="UserApp.switchTab('explore')" data-tab="explore" class="user-nav-btn active flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl transition cursor-pointer">
+      <span class="user-nav-icon-wrapper p-1 rounded-xl text-lg leading-none">🏠</span>
+      <span class="text-[9px] font-bold truncate">Explorar</span>
+    </button>
+
+    <!-- 2. Mapa -->
+    <button onclick="UserApp.switchTab('map')" data-tab="map" class="user-nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl transition cursor-pointer">
+      <span class="user-nav-icon-wrapper p-1 rounded-xl text-lg leading-none">🗺️</span>
+      <span class="text-[9px] font-bold truncate">Mapa</span>
+    </button>
+
+    <!-- 3. Solicitudes -->
+    <button onclick="UserApp.switchTab('requests')" data-tab="requests" class="user-nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl transition cursor-pointer">
+      <span class="user-nav-icon-wrapper p-1 rounded-xl text-lg leading-none">📢</span>
+      <span class="text-[9px] font-bold truncate">Solicitudes</span>
+    </button>
+
+    <!-- 4. Ofertas Flash -->
+    <button onclick="UserApp.switchTab('offers')" data-tab="offers" class="user-nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl transition cursor-pointer relative">
+      <span class="user-nav-icon-wrapper p-1 rounded-xl text-lg leading-none">⚡</span>
+      <span class="text-[9px] font-bold truncate">Ofertas</span>
+      <span id="nav-offers-badge" class="hidden absolute top-1 right-3 px-1.5 py-0.2 bg-rose-500 text-white font-extrabold text-[8px] rounded-full">0</span>
+    </button>
+
+    <!-- 5. Mi Perfil -->
+    <button onclick="UserApp.switchTab('profile')" data-tab="profile" class="user-nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl transition cursor-pointer">
+      <span class="user-nav-icon-wrapper p-1 rounded-xl text-lg leading-none">👤</span>
+      <span class="text-[9px] font-bold truncate">Perfil</span>
+    </button>
+
+  </nav>
+
+  <!-- Scripts -->
+  <script src="js/user-db.js"></script>
+  <script src="js/user-map.js"></script>
+  <script src="js/user-offers.js"></script>
+  <script src="js/user-requests.js"></script>
+  <script src="js/user-profile.js"></script>
+  <script src="js/user-app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      UserApp.init();
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js?v=4.0').catch(err => {
+          console.warn('[SW User] Error al registrar:', err);
+        });
+      }
+    });
+  </script>
+</body>
+
+</html>

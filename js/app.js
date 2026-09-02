@@ -1304,30 +1304,12 @@ const App = {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 mb-6">
         
         <!-- ==========================================
-             COLUMNA IZQUIERDA (2/3 de ancho en PC): Gráficos, Acciones y Catálogo
+             COLUMNA IZQUIERDA (2/3 de ancho en PC): Mapa Radar, Acciones y Métricas
              ========================================== -->
         <div class="lg:col-span-2 space-y-5 sm:space-y-6">
 
-          <!-- Tarjeta de Gráfico de Rendimiento -->
-          <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
-            <div class="flex items-center justify-between gap-2 mb-4 pb-2 border-b border-gray-100 dark:border-slate-700">
-              <div class="flex items-center gap-2">
-                <span class="text-lg">📈</span>
-                <div>
-                  <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-gray-100">
-                    Rendimiento de Ventas & Facturación
-                  </h3>
-                  <p class="text-[11px] text-gray-400">Evolución de cotizaciones aprobadas de los últimos meses</p>
-                </div>
-              </div>
-              <button onclick="App.switchTab('finance')" class="text-xs font-bold text-pink-600 dark:text-pink-400 hover:underline">
-                Ver Finanzas Detalladas ↗
-              </button>
-            </div>
-            <div class="relative h-60 w-full">
-              <canvas id="dashboardRevenueChart"></canvas>
-            </div>
-          </div>
+          <!-- Radar & Mapa de Oportunidades de Clientes -->
+          ${typeof SellerRequestsModule !== 'undefined' ? SellerRequestsModule.renderSellerMapCard() : ''}
 
           <!-- Barra de Acciones Rápidas (Personalizable) -->
           <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
@@ -1521,10 +1503,12 @@ const App = {
       </div>
     `;
 
-    // Inicializar Gráfico de Rendimiento en el Dashboard
+    // Inicializar Mapa Radar de Oportunidades en el Dashboard
     setTimeout(() => {
-      this.initDashboardChart(approvedQuotes, isServicesMode);
-    }, 50);
+      if (typeof SellerRequestsModule !== 'undefined') {
+        SellerRequestsModule.initSellerMap();
+      }
+    }, 60);
   },
 
   initDashboardChart(approvedQuotes, isServicesMode) {
@@ -1835,6 +1819,72 @@ const App = {
                   </p>
                 </div>
               </div>
+            </div>
+
+            <!-- Ubicación y Presencia en el Mapa de Cakekulator Clientes -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-100 dark:border-slate-800 shadow-sm space-y-4">
+              <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-2">
+                <h3 class="font-bold text-gray-800 dark:text-gray-200 text-sm flex items-center gap-2">
+                  <span>📍</span> Ubicación & Registro en el Mapa de Clientes
+                </h3>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 dark:bg-slate-800 dark:text-pink-300">
+                  🗺️ Mapa Activo
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Dirección del Taller / Local</label>
+                  <input type="text" id="set-business-address" value="${this.escapeHtml(settings.businessAddress || 'Av. Providencia 1450')}" placeholder="Ej. Av. Providencia 1450" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Comuna / Ciudad</label>
+                  <input type="text" id="set-business-commune" value="${this.escapeHtml(settings.businessCommune || 'Providencia')}" placeholder="Ej. Providencia" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Especialidades para el Mapa de Clientes</label>
+                <input type="text" id="set-business-specialties" value="${this.escapeHtml(settings.businessSpecialties || 'Tortas de Novios, Red Velvet, Macarons')}" placeholder="Ej. Tortas de Novios, Red Velvet, Macarons, Vegana" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                <span class="text-[10px] text-gray-400">Separa con comas. Aparecen en tu ficha de pastelería visible para los compradores.</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Tiempos de Preparación / Entrega</label>
+                  <input type="text" id="set-business-lead-time" value="${this.escapeHtml(settings.businessLeadTime || '2 horas (en stock) / 24 hrs a pedido')}" placeholder="Ej. 24 hrs a pedido" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Coordenadas GPS (Lat / Lng)</label>
+                  <div class="flex gap-2">
+                    <input type="number" step="any" id="set-business-lat" value="${settings.businessLat || -33.4265}" placeholder="Latitud" class="w-1/2 px-2.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                    <input type="number" step="any" id="set-business-lng" value="${settings.businessLng || -70.6150}" placeholder="Longitud" class="w-1/2 px-2.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 text-xs text-gray-800 dark:text-gray-100">
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-3 bg-pink-50/70 dark:bg-slate-800 rounded-2xl border border-pink-200/80 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span class="text-xs font-bold text-gray-900 dark:text-white block">📍 Detectar ubicación con GPS</span>
+                  <span class="text-[11px] text-gray-500 dark:text-gray-400">Obtén tus coordenadas exactas automáticamente desde tu dispositivo</span>
+                </div>
+                <button type="button" onclick="App.getSellerCoordinates()" class="px-3.5 py-2 bg-gradient-to-r from-pink-600 to-rose-500 text-white font-extrabold text-xs rounded-xl shadow-xs hover:from-pink-700 active:scale-95 transition flex items-center gap-1.5 shrink-0 cursor-pointer">
+                  <span>🎯</span>
+                  <span>Usar Mi Ubicación GPS</span>
+                </button>
+              </div>
+
+              <div class="pt-2 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <span class="font-bold text-xs text-gray-800 dark:text-gray-200 block">Mostrar mi pastelería en el Mapa de Cakekulator Clientes</span>
+                  <span class="text-[11px] text-gray-400">Permite que los compradores cercanos descubran tu local y te contacten por WhatsApp.</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                  <input type="checkbox" id="set-publish-on-map" class="sr-only peer" ${settings.publishOnMap !== false ? 'checked' : ''}>
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pink-600"></div>
+                </label>
+              </div>
+
             </div>
 
           </div>
@@ -2345,6 +2395,14 @@ const App = {
     const logoProducts = this.sanitizePlainText(document.getElementById('set-business-logo-products')?.value || currentSettings.logoUrlProducts || currentSettings.logoUrl || '');
     const logoServices = this.sanitizePlainText(document.getElementById('set-business-logo-services')?.value || currentSettings.logoUrlServices || '');
 
+    const businessAddress = this.sanitizePlainText(document.getElementById('set-business-address')?.value || currentSettings.businessAddress || 'Av. Providencia 1450');
+    const businessCommune = this.sanitizePlainText(document.getElementById('set-business-commune')?.value || currentSettings.businessCommune || 'Providencia');
+    const businessSpecialties = this.sanitizePlainText(document.getElementById('set-business-specialties')?.value || currentSettings.businessSpecialties || 'Tortas de Novios, Red Velvet, Macarons');
+    const businessLeadTime = this.sanitizePlainText(document.getElementById('set-business-lead-time')?.value || currentSettings.businessLeadTime || '2 horas (en stock) / 24 hrs a pedido');
+    const businessLat = parseFloat(document.getElementById('set-business-lat')?.value) || currentSettings.businessLat || -33.4265;
+    const businessLng = parseFloat(document.getElementById('set-business-lng')?.value) || currentSettings.businessLng || -70.6150;
+    const publishOnMap = document.getElementById('set-publish-on-map') ? document.getElementById('set-publish-on-map').checked : true;
+
     const newSettings = {
       ...currentSettings,
       currencySymbol: this.sanitizePlainText(document.getElementById('set-currency-symbol')?.value || '$') || '$',
@@ -2364,6 +2422,13 @@ const App = {
       businessPhone: this.sanitizePlainText(document.getElementById('set-business-phone')?.value || ''),
       businessInstagram: this.sanitizePlainText(document.getElementById('set-business-ig')?.value || ''),
       businessEmail: this.sanitizePlainText(document.getElementById('set-business-email')?.value || ''),
+      businessAddress,
+      businessCommune,
+      businessSpecialties,
+      businessLeadTime,
+      businessLat,
+      businessLng,
+      publishOnMap,
       quoteNote: this.sanitizePlainText(document.getElementById('set-quote-note')?.value || ''),
       logoUrlProducts: logoProducts,
       logoUrlServices: logoServices,
@@ -2372,8 +2437,91 @@ const App = {
     };
 
     DB.saveSettings(newSettings);
+    this.syncSellerBakeryToMap(newSettings);
     this.updateHeaderBrand();
-    this.showToast('✅ Configuración guardada correctamente');
+    this.showToast('✅ Configuración y ubicación guardadas correctamente');
+  },
+
+  // Sincronizar pastelería del vendedor con el mapa de clientes
+  syncSellerBakeryToMap(settings) {
+    try {
+      const bakeriesKey = 'cakekulator_nearby_bakeries';
+      let bakeries = [];
+      const saved = localStorage.getItem(bakeriesKey);
+      if (saved) {
+        bakeries = JSON.parse(saved);
+      } else if (typeof DEFAULT_BAKERIES !== 'undefined') {
+        bakeries = [...DEFAULT_BAKERIES];
+      }
+
+      const sellerBakeryId = 'bakery_1'; // Sincroniza con la pastelería principal del vendedor
+      const specialtiesArr = (settings.businessSpecialties || 'Tortas Artesanales, Pastelería Fina')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const bakeryData = {
+        id: sellerBakeryId,
+        name: settings.businessNameProducts || settings.businessName || 'Mi Pastelería Artesanal',
+        chef: 'Chef Valentina Morales',
+        rating: 4.9,
+        reviewsCount: 128,
+        category: 'Tortas de Diseño & Fina',
+        specialties: specialtiesArr.length > 0 ? specialtiesArr : ['Tortas de Novios', 'Red Velvet', 'Macarons Franceses'],
+        address: settings.businessAddress || 'Av. Providencia 1450, Providencia',
+        commune: settings.businessCommune || 'Providencia',
+        lat: parseFloat(settings.businessLat) || -33.4265,
+        lng: parseFloat(settings.businessLng) || -70.6150,
+        phone: settings.businessPhone || '+56912345678',
+        instagram: settings.businessInstagram || '@dulcearte_pasteleria',
+        image: settings.logoUrlProducts || settings.logoUrl || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=60',
+        logo: '🎂',
+        badges: ['Verificada', 'Taller Local', 'Entrega Hoy'],
+        deliveryAvailable: true,
+        minLeadTime: settings.businessLeadTime || '2 horas (en stock) / 24 hrs a pedido',
+        isMyBakery: true
+      };
+
+      const existingIndex = bakeries.findIndex(b => b.id === sellerBakeryId || b.isMyBakery);
+      if (settings.publishOnMap !== false) {
+        if (existingIndex > -1) {
+          bakeries[existingIndex] = { ...bakeries[existingIndex], ...bakeryData };
+        } else {
+          bakeries.unshift(bakeryData);
+        }
+      } else if (existingIndex > -1) {
+        bakeries.splice(existingIndex, 1);
+      }
+
+      localStorage.setItem(bakeriesKey, JSON.stringify(bakeries));
+    } catch (err) {
+      console.warn('Error al sincronizar pastelería en el mapa:', err);
+    }
+  },
+
+  // Obtener ubicación GPS actual del vendedor
+  getSellerCoordinates() {
+    if (!('geolocation' in navigator)) {
+      this.showToast('⚠️ Tu navegador no soporta geolocalización GPS.');
+      return;
+    }
+
+    this.showToast('📍 Detectando coordenadas GPS de tu taller...');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        const latInput = document.getElementById('set-business-lat');
+        const lngInput = document.getElementById('set-business-lng');
+        if (latInput) latInput.value = lat.toFixed(6);
+        if (lngInput) lngInput.value = lng.toFixed(6);
+        this.showToast(`✅ Ubicación GPS fijada: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      },
+      (err) => {
+        this.showToast('⚠️ No se pudo obtener la ubicación GPS automáticamente. Puedes ingresarla manualmente.');
+      },
+      { timeout: 7000, enableHighAccuracy: true }
+    );
   },
 
   // Manejo de carga de Logo por Ambiente (productos / servicios)

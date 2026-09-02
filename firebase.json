@@ -15,6 +15,18 @@
     ],
     "rewrites": [
       {
+        "source": "/cliente",
+        "destination": "/index-user.html"
+      },
+      {
+        "source": "/pedidos",
+        "destination": "/index-user.html"
+      },
+      {
+        "source": "/user",
+        "destination": "/index-user.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
