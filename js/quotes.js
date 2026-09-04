@@ -91,7 +91,7 @@ const QuotesModule = {
           </button>
         </div>
       ` : `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="quote-card-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           ${filtered.map(q => {
         const statusInfo = this.getStatusBadge(q.status);
         const total = q.total || q.subtotal || 0;
@@ -99,7 +99,7 @@ const QuotesModule = {
         const balance = q.remainingBalance || (total - deposit);
 
         return `
-              <div onclick="QuotesModule.openEditor('${q.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
+              <div onclick="QuotesModule.openEditor('${q.id}')" class="quote-card bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div class="p-4">
                   <!-- Top Bar -->
                   <div class="flex items-start justify-between gap-2 mb-2">
@@ -120,7 +120,7 @@ const QuotesModule = {
 
                   <!-- Detalle Evento / Cita -->
                   <div class="bg-gray-50/80 dark:bg-slate-800/60 rounded-xl p-2.5 text-xs text-gray-600 dark:text-gray-300 space-y-1 mb-3">
-                    ${q.eventName ? `<div class="font-medium text-gray-800 dark:text-gray-200">✨ ${q.eventName}</div>` : ''}
+                    ${q.eventName ? `<div class="font-medium text-gray-800 dark:text-gray-200 truncate">✨ ${q.eventName}</div>` : ''}
                     ${q.eventDate ? `<div class="text-gray-500 dark:text-gray-400">📅 Fecha: <span class="font-semibold text-gray-700 dark:text-gray-300">${q.eventDate}</span></div>` : ''}
                     <div class="text-[11px] text-gray-500 dark:text-gray-400">🛒 ${(q.items || []).length} ${isServicesMode ? 'servicios cotizados' : 'productos en el pedido'}</div>
                   </div>
@@ -143,12 +143,12 @@ const QuotesModule = {
                 </div>
 
                 <!-- Footer Botones de Exportar -->
-                <div class="p-3 bg-gray-50/80 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-800 grid grid-cols-2 gap-2">
-                  <button onclick="event.stopPropagation(); QuotesModule.openWhatsAppModal('${q.id}')" class="py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-200/80 transition active:scale-95 cursor-pointer">
-                    <span>💬</span> WhatsApp & Imagen
+                <div class="p-3 bg-gray-50/80 dark:bg-slate-800/50 border-t border-gray-100 dark:border-slate-800 grid grid-cols-2 gap-2 quote-card-footer-grid">
+                  <button onclick="event.stopPropagation(); QuotesModule.openWhatsAppModal('${q.id}')" class="py-2 px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-2xs transition active:scale-95 cursor-pointer min-w-0">
+                    <span class="shrink-0">💬</span> <span class="truncate">WhatsApp</span>
                   </button>
-                  <button onclick="event.stopPropagation(); QuotesModule.viewPrintModal('${q.id}')" class="py-2 px-2.5 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-800 dark:text-gray-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer">
-                    <span>🖼️</span> Ver / Imagen
+                  <button onclick="event.stopPropagation(); QuotesModule.viewPrintModal('${q.id}')" class="py-2 px-2 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-800 dark:text-gray-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer min-w-0">
+                    <span class="shrink-0">🖼️</span> <span class="truncate">Ver Imagen</span>
                   </button>
                 </div>
               </div>
@@ -853,10 +853,18 @@ const QuotesModule = {
           notes: notes || ''
         });
       }
+      if (status === 'approved' && typeof App !== 'undefined' && typeof App.triggerCelebration === 'function') {
+        App.triggerCelebration();
+      }
+
       this.closeEditor();
       this.render();
-      App.showToast(id ? 'Presupuesto actualizado' : `Cotización vinculada a ${existingCustomer.name} 📋`);
+      App.showToast(id ? 'Presupuesto actualizado ✨' : `Cotización vinculada a ${existingCustomer.name} 📋`);
     } else if (customerName && customerName.length > 1) {
+      if (status === 'approved' && typeof App !== 'undefined' && typeof App.triggerCelebration === 'function') {
+        App.triggerCelebration();
+      }
+
       // Cliente NUEVO: guardar cotización y preguntar si desea crear el perfil de cliente
       this.closeEditor();
       this.render();
@@ -874,9 +882,13 @@ const QuotesModule = {
         notes
       });
     } else {
+      if (status === 'approved' && typeof App !== 'undefined' && typeof App.triggerCelebration === 'function') {
+        App.triggerCelebration();
+      }
+
       this.closeEditor();
       this.render();
-      App.showToast(id ? 'Presupuesto actualizado' : 'Cotización generada con éxito');
+      App.showToast(id ? 'Presupuesto actualizado ✨' : 'Cotización generada con éxito ✨');
     }
   },
 

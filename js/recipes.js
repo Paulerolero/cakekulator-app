@@ -102,13 +102,13 @@ const RecipesModule = {
           </button>
         </div>
       ` : `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-12 sm:pb-0">
+        <div class="recipe-card-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-12 sm:pb-0">
           ${filtered.map(recipe => {
             const costs = Calculator.calculateRecipeFullCosts(recipe, ingredientsMap);
             const isServ = costs.isService;
             const isCake = recipe.type === 'cake';
             return `
-              <div onclick="RecipesModule.openEditor('${recipe.id}')" class="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServ ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
+              <div onclick="RecipesModule.openEditor('${recipe.id}')" class="recipe-card bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServ ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div class="p-4">
                   <!-- Header Card -->
                   <div class="flex items-start justify-between gap-2 mb-2">
@@ -1098,9 +1098,13 @@ const RecipesModule = {
       DB.addRecipe(data);
     }
 
+    if (typeof App !== 'undefined' && typeof App.triggerCelebration === 'function') {
+      App.triggerCelebration();
+    }
+
     this.closeEditor();
     this.render();
-    App.showToast(id ? 'Ficha técnica actualizada' : 'Nueva ficha técnica creada');
+    App.showToast(id ? 'Ficha técnica actualizada ✨' : '🎉 ¡Nueva ficha técnica creada!');
   },
 
   // Alternar publicación rápida en el Catálogo de Clientes

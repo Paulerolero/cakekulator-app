@@ -124,6 +124,14 @@
        ========================================== -->
   <main class="max-w-md mx-auto p-4 space-y-4">
 
+    <!-- Indicador Táctil Pull-to-Refresh en Clientes -->
+    <div id="pull-to-refresh-container">
+      <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-md border border-pink-200/80 dark:border-slate-700 text-xs font-bold text-pink-600 dark:text-pink-400 select-none">
+        <span class="pull-refresh-spinner">🧁</span>
+        <span id="pull-refresh-text">Tira para actualizar...</span>
+      </div>
+    </div>
+
     <!-- 1. VISTA EXPLORAR / INICIO -->
     <section id="explore-view" class="tab-pane space-y-4">
       
@@ -540,6 +548,8 @@
       }
     });
   </script>
+  <!-- Contenedor Dinámico para Confeti Festivo -->
+  <div id="confetti-container"></div>
 </body>
 
 </html>

@@ -202,6 +202,7 @@ const App = {
     let startY = 0;
     let startTime = 0;
     let isTracking = false;
+    let isPulling = false;
 
     const getTabsOrder = () => {
       return ['dashboard', 'simulator', 'quotes', 'recipes', 'ingredients', 'market-radar', 'customers', 'finance'];
@@ -214,16 +215,15 @@ const App = {
       if (target.closest('input[type="range"], .accent-pink-500')) return true;
       if (target.closest('input, textarea, select, option, [contenteditable="true"]')) return true;
 
-      // Modales activos abiertos
-      const openModal = document.querySelector('#recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #customer-detail-modal, #customer-editor-modal, #customer-whatsapp-modal, #ingredient-modal:not(.hidden), #quote-whatsapp-modal:not(.hidden), #quote-print-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #custom-search-modal:not(.hidden), #store-manager-modal:not(.hidden), #firebase-config-modal:not(.hidden)');
-      if (openModal) return true;
-
       // Tablas o contenedores con scroll horizontal propio
       const scrollableX = target.closest('.overflow-x-auto, [style*="overflow-x: auto"]');
       if (scrollableX && scrollableX.scrollWidth > scrollableX.clientWidth) return true;
 
       return false;
     };
+
+    const ptrContainer = document.getElementById('pull-to-refresh-container');
+    const ptrText = document.getElementById('pull-refresh-text');
 
     window.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return;
@@ -236,6 +236,33 @@ const App = {
       startY = e.touches[0].clientY;
       startTime = Date.now();
       isTracking = true;
+
+      // Verificar si estamos al tope del scroll para pull-to-refresh
+      const scrollContent = document.getElementById('app-main-content');
+      const scrollTop = scrollContent ? scrollContent.scrollTop : window.scrollY;
+      isPulling = (scrollTop <= 5);
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isTracking || !isPulling || !ptrContainer) return;
+      const currentY = e.touches[0].clientY;
+      const diffY = currentY - startY;
+      const diffX = e.touches[0].clientX - startX;
+
+      // Pull down gesture
+      if (diffY > 15 && Math.abs(diffX) < 45) {
+        ptrContainer.classList.add('ptr-active');
+        const spinner = ptrContainer.querySelector('.pull-refresh-spinner');
+        if (spinner) {
+          const deg = Math.min(diffY * 2.5, 360);
+          spinner.style.transform = `rotate(${deg}deg)`;
+        }
+        if (ptrText) {
+          ptrText.textContent = diffY > 60 ? '¡Suelta para hornear datos!' : 'Tira para actualizar...';
+        }
+      } else if (diffY <= 0) {
+        ptrContainer.classList.remove('ptr-active');
+      }
     }, { passive: true });
 
     window.addEventListener('touchend', (e) => {
@@ -248,7 +275,38 @@ const App = {
       const diffY = endY - startY;
       const elapsedTime = Date.now() - startTime;
 
-      // Umbrales para gesto de swipe horizontal
+      // 1. Pull-to-refresh confirm
+      if (isPulling && diffY >= 60 && Math.abs(diffX) < 50 && ptrContainer) {
+        isPulling = false;
+        ptrContainer.classList.add('ptr-active', 'ptr-refreshing');
+        if (ptrText) ptrText.textContent = '🧁 Horneando datos frescos...';
+        if ('vibrate' in navigator) navigator.vibrate(25);
+
+        setTimeout(() => {
+          App.switchTab(App.currentTab, false);
+          App.showToast('✨ Datos actualizados con éxito');
+          ptrContainer.classList.remove('ptr-active', 'ptr-refreshing');
+        }, 600);
+        return;
+      }
+      isPulling = false;
+      if (ptrContainer) ptrContainer.classList.remove('ptr-active');
+
+      // 2. Swipe-down para cerrar modales abiertos
+      const openModal = document.querySelector('#recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #customer-detail-modal, #customer-editor-modal, #customer-whatsapp-modal, #ingredient-modal:not(.hidden), #quote-whatsapp-modal:not(.hidden), #quote-print-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #mode-selection-modal:not(.hidden)');
+      if (openModal && diffY >= 75 && Math.abs(diffX) <= 45 && elapsedTime <= 450) {
+        const closeBtn = openModal.querySelector('button[onclick*="close"], button[title="Cerrar"], .btn-close');
+        if (closeBtn) {
+          if ('vibrate' in navigator) navigator.vibrate(15);
+          closeBtn.click();
+          return;
+        }
+      }
+
+      // Si hay un modal abierto, no hacer swipe de pestañas
+      if (openModal) return;
+
+      // 3. Umbrales para gesto de swipe horizontal entre pestañas
       const minDistance = 60;
       const maxPerpendicular = 50;
       const maxDuration = 400;
@@ -262,17 +320,82 @@ const App = {
           // Deslizar hacia la izquierda (avanza a la siguiente pestaña)
           if (currentIndex < tabsOrder.length - 1) {
             const nextTab = tabsOrder[currentIndex + 1];
+            if ('vibrate' in navigator) navigator.vibrate(12);
             this.switchTab(nextTab, true, 'slide-left');
           }
         } else {
           // Deslizar hacia la derecha (retrocede a la pestaña anterior)
           if (currentIndex > 0) {
             const prevTab = tabsOrder[currentIndex - 1];
+            if ('vibrate' in navigator) navigator.vibrate(12);
             this.switchTab(prevTab, true, 'slide-right');
           }
         }
       }
     }, { passive: true });
+  },
+
+  triggerCelebration(type = 'confetti') {
+    const container = document.getElementById('confetti-container');
+    if (!container) return;
+
+    if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
+
+    const emojis = ['🧁', '✨', '🍰', '⭐', '🎈', '🍓', '🎉', '🍫'];
+    const colors = ['#ec4899', '#db2777', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6', '#3b82f6'];
+    const count = 35;
+
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-particle';
+      const isEmoji = Math.random() > 0.45;
+
+      if (isEmoji) {
+        piece.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        piece.style.fontSize = `${14 + Math.random() * 16}px`;
+      } else {
+        piece.style.width = `${8 + Math.random() * 8}px`;
+        piece.style.height = `${12 + Math.random() * 14}px`;
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.borderRadius = '3px';
+      }
+
+      piece.style.left = `${Math.random() * 100}vw`;
+      const duration = 1.8 + Math.random() * 1.6;
+      piece.style.animationDuration = `${duration}s`;
+      piece.style.animationDelay = `${Math.random() * 0.4}s`;
+
+      container.appendChild(piece);
+    }
+
+    setTimeout(() => {
+      container.innerHTML = '';
+    }, 3800);
+  },
+
+  animateNumber(elementOrId, targetValue, duration = 650, prefix = '', suffix = '') {
+    const el = typeof elementOrId === 'string' ? document.getElementById(elementOrId) : elementOrId;
+    if (!el) return;
+
+    const start = 0;
+    const end = Number(targetValue) || 0;
+    const startTime = performance.now();
+
+    const update = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const easeOutQuad = 1 - (1 - progress) * (1 - progress);
+      const current = Math.round(start + (end - start) * easeOutQuad);
+      el.textContent = `${prefix}${current.toLocaleString('es-CL')}${suffix}`;
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+        el.classList.add('number-pop');
+        setTimeout(() => el.classList.remove('number-pop'), 400);
+      }
+    };
+
+    requestAnimationFrame(update);
   },
 
   switchTab(tabName, scrollToTop = true, direction = 'none') {
@@ -296,18 +419,11 @@ const App = {
       }
     }
 
-    // Ocultar barra de navegación móvil en el Inicio (dashboard) y mostrarla en las demás pantallas
+    // Mantener la barra de navegación móvil visible en todas las pantallas
     const mobileNav = document.getElementById('mobile-bottom-nav') || document.querySelector('nav.md\\:hidden');
     if (mobileNav) {
-      if (tabName === 'dashboard') {
-        mobileNav.classList.add('translate-y-full', 'opacity-0', 'pointer-events-none');
-        mobileNav.classList.remove('translate-y-0', 'opacity-100');
-        document.body.classList.add('is-dashboard-active');
-      } else {
-        mobileNav.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
-        mobileNav.classList.add('translate-y-0', 'opacity-100');
-        document.body.classList.remove('is-dashboard-active');
-      }
+      mobileNav.classList.remove('translate-y-full', 'opacity-0', 'pointer-events-none');
+      mobileNav.classList.add('translate-y-0', 'opacity-100');
     }
 
     // Actualizar estilos de los botones de navegación (desktop sidebar y móvil)

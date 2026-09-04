@@ -98,40 +98,42 @@ const CustomersModule = {
                 Próximas Fechas Especiales (Próximos 30 Días)
               </h3>
             </div>
-            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-200 text-pink-800 dark:bg-pink-900/60 dark:text-pink-200">
+            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-200 text-pink-800 dark:bg-pink-900/60 dark:text-pink-200 shrink-0">
               ${upcomingEvents.length} recordatorio(s)
             </span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+          <div class="upcoming-events-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             ${upcomingEvents.map(evt => `
               <div 
                 onclick="CustomersModule.openCustomerDetail('${evt.customerId}')"
-                class="bg-white dark:bg-slate-900 p-3 rounded-xl border border-pink-100 dark:border-slate-700 flex items-center justify-between gap-2 shadow-2xs hover:border-pink-300 hover:scale-[1.01] transition cursor-pointer"
+                class="bg-white dark:bg-slate-900 p-3.5 rounded-2xl border border-pink-100 dark:border-slate-700 shadow-2xs hover:border-pink-300 hover:shadow-xs transition cursor-pointer overflow-hidden flex flex-col justify-between gap-2.5"
                 title="Click para ver perfil del cliente"
               >
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5">
-                    <span class="text-base">${this.getDateTypeIcon(evt.type)}</span>
-                    <span class="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">${evt.customerName}</span>
-                    ${evt.isFavorite ? '<span class="text-amber-500 text-xs shrink-0" title="Cliente VIP">⭐</span>' : ''}
+                <div class="flex items-start justify-between gap-2">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-base shrink-0">${this.getDateTypeIcon(evt.type)}</span>
+                      <span class="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">${evt.customerName}</span>
+                      ${evt.isFavorite ? '<span class="text-amber-500 text-xs shrink-0" title="Cliente VIP">⭐</span>' : ''}
+                    </div>
+                    <p class="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5 truncate font-medium">
+                      ${evt.title} • <span class="text-pink-600 dark:text-pink-400 font-semibold">${evt.formattedDate}</span>
+                    </p>
                   </div>
-                  <p class="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5 truncate font-medium">
-                    ${evt.title} (${evt.formattedDate})
-                  </p>
-                  <div class="mt-1">
+                  <div class="shrink-0">
                     ${this.renderDaysLeftBadge(evt.daysLeft)}
                   </div>
                 </div>
 
-                <div class="flex items-center shrink-0">
+                <div class="pt-2 border-t border-pink-50 dark:border-slate-800 flex items-center justify-end">
                   <button 
                     type="button"
                     onclick="event.stopPropagation(); CustomersModule.openWhatsAppModal('${evt.customerId}', '${evt.id}')"
-                    class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow-2xs active:scale-95 cursor-pointer"
+                    class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
                     title="Enviar mensaje por WhatsApp anticipando esta fecha"
                   >
-                    <span>💬</span> <span class="hidden sm:inline">WhatsApp</span>
+                    <span>💬</span> <span>WhatsApp</span>
                   </button>
                 </div>
               </div>
@@ -142,9 +144,9 @@ const CustomersModule = {
 
       <!-- Buscador y Filtros Rápidos -->
       <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 dark:border-slate-700 mb-4 sm:mb-6 shadow-xs space-y-3">
-        <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between">
+        <div class="customer-filter-bar flex flex-col gap-2.5 items-stretch">
           <!-- Input de Búsqueda -->
-          <div class="relative flex-1">
+          <div class="relative w-full">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🔍</span>
             <input 
               type="text" 
@@ -163,11 +165,11 @@ const CustomersModule = {
           </div>
 
           <!-- Filtros por Píldoras -->
-          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none w-full">
             <button 
               type="button" 
               onclick="CustomersModule.setFilter('all')" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer ${this.activeFilter === 'all' ? 'bg-pink-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer shrink-0 ${this.activeFilter === 'all' ? 'bg-pink-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
             >
               Todos (${totalCustomers})
             </button>
@@ -175,7 +177,7 @@ const CustomersModule = {
             <button 
               type="button" 
               onclick="CustomersModule.setFilter('favorites')" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 ${this.activeFilter === 'favorites' ? 'bg-amber-500 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'favorites' ? 'bg-amber-500 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
             >
               <span>⭐</span> Favoritos (${favoriteCount})
             </button>
@@ -183,7 +185,7 @@ const CustomersModule = {
             <button 
               type="button" 
               onclick="CustomersModule.setFilter('upcoming')" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 ${this.activeFilter === 'upcoming' ? 'bg-rose-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'upcoming' ? 'bg-rose-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
             >
               <span>🎂</span> Próximas Fechas (${upcomingCount})
             </button>
@@ -191,7 +193,7 @@ const CustomersModule = {
             <button 
               type="button" 
               onclick="CustomersModule.setFilter('this_month')" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 ${this.activeFilter === 'this_month' ? 'bg-purple-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'this_month' ? 'bg-purple-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
             >
               <span>📅</span> Este Mes
             </button>
@@ -218,7 +220,7 @@ const CustomersModule = {
           </button>
         </div>
       ` : `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div class="customer-card-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           ${filteredCustomers.map(cust => this.renderCustomerCard(cust, upcomingEvents)).join('')}
         </div>
       `}
@@ -246,29 +248,27 @@ const CustomersModule = {
     return `
       <div 
         onclick="CustomersModule.openCustomerDetail('${customer.id}')"
-        class="bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-700 shadow-2xs hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500/50 hover:scale-[1.01] transition-all flex flex-col justify-between group cursor-pointer active:scale-[0.99]"
+        class="customer-card bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-700 shadow-2xs hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500/50 hover:scale-[1.008] transition-all flex flex-col justify-between group cursor-pointer active:scale-[0.99] overflow-hidden"
         title="Click para ver perfil completo"
       >
         <!-- Parte Superior: Avatar, Nombre, Favorito -->
-        <div>
-          <div class="flex items-start justify-between gap-2.5 mb-3">
-            <div class="flex items-center gap-3 min-w-0">
+        <div class="space-y-3">
+          <div class="flex items-start justify-between gap-2.5">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
               <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-white font-black flex items-center justify-center text-sm sm:text-base shrink-0 shadow-2xs">
                 ${initials}
               </div>
-              <div class="min-w-0">
-                <div class="flex items-center gap-1.5">
-                  <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base leading-tight truncate group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">
-                    ${customer.name}
-                  </h3>
-                </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base leading-tight truncate group-hover:text-pink-600 dark:group-hover:text-pink-400 transition">
+                  ${customer.name}
+                </h3>
                 ${customer.phone ? `
                   <a 
                     href="tel:${customer.phone}" 
                     onclick="event.stopPropagation()"
                     class="text-xs text-gray-500 dark:text-gray-400 hover:text-pink-600 flex items-center gap-1 mt-0.5 truncate"
                   >
-                    📞 ${customer.phone}
+                    📞 <span class="truncate">${customer.phone}</span>
                   </a>
                 ` : `
                   <span class="text-[11px] text-gray-400 italic">Sin teléfono</span>
@@ -289,37 +289,40 @@ const CustomersModule = {
 
           <!-- Alerta de Evento Próximo Destacado -->
           ${nextEvent ? `
-            <div class="bg-rose-50/80 dark:bg-rose-950/30 p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/50 mb-3 flex items-center justify-between gap-2">
-              <div class="min-w-0">
-                <span class="text-[10px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 block">Próxima fecha:</span>
-                <span class="text-xs font-bold text-gray-900 dark:text-gray-100 truncate block">
-                  ${this.getDateTypeIcon(nextEvent.type)} ${nextEvent.title}
+            <div class="bg-rose-50/90 dark:bg-rose-950/40 p-3 rounded-xl border border-rose-200 dark:border-rose-900/50 space-y-1.5 overflow-hidden">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-300 flex items-center gap-1 shrink-0">
+                  <span>🔔</span> Próxima fecha
                 </span>
+                <div class="shrink-0">
+                  ${this.renderDaysLeftBadge(nextEvent.daysLeft)}
+                </div>
               </div>
-              <div class="shrink-0">
-                ${this.renderDaysLeftBadge(nextEvent.daysLeft)}
+              <div class="text-xs font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5 min-w-0">
+                <span class="shrink-0">${this.getDateTypeIcon(nextEvent.type)}</span>
+                <span class="truncate font-medium">${nextEvent.title} <span class="text-pink-600 dark:text-pink-400 font-bold">(${nextEvent.formattedDate})</span></span>
               </div>
             </div>
           ` : ''}
 
           <!-- Fechas Especiales Registradas (Badges) -->
-          <div class="space-y-1.5 mb-3">
+          <div class="space-y-1.5">
             <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-400">
               Fechas Clave (${specialDates.length})
             </div>
             ${specialDates.length === 0 ? `
-              <p class="text-[11px] text-gray-400 italic">Sin fechas especiales registradas</p>
+              <p class="text-[11px] text-gray-400 italic">Sin fechas registradas</p>
             ` : `
-              <div class="flex flex-wrap gap-1">
+              <div class="flex flex-wrap gap-1.5 overflow-hidden">
                 ${specialDates.slice(0, 2).map(sd => `
-                  <span class="inline-flex items-center gap-1 text-[11px] bg-pink-50 dark:bg-slate-700/80 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded-lg font-medium border border-pink-100/80 dark:border-slate-600">
-                    <span>${this.getDateTypeIcon(sd.type)}</span>
-                    <span class="truncate max-w-[120px]">${sd.title}</span>
-                    <span class="text-[10px] text-gray-500 dark:text-gray-400">(${this.formatDayMonth(sd.day, sd.month)})</span>
+                  <span class="inline-flex items-center gap-1.5 max-w-full text-[11px] bg-pink-50 dark:bg-slate-700/80 text-pink-700 dark:text-pink-300 px-2.5 py-1 rounded-lg font-medium border border-pink-100/80 dark:border-slate-600 overflow-hidden">
+                    <span class="shrink-0">${this.getDateTypeIcon(sd.type)}</span>
+                    <span class="truncate max-w-[130px] sm:max-w-[180px]">${sd.title}</span>
+                    <span class="text-[10px] text-gray-500 dark:text-gray-400 shrink-0 font-semibold">(${this.formatDayMonth(sd.day, sd.month)})</span>
                   </span>
                 `).join('')}
                 ${specialDates.length > 2 ? `
-                  <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded bg-gray-100 dark:bg-slate-700">
+                  <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 px-2 py-1 rounded-lg bg-gray-100 dark:bg-slate-700 shrink-0">
                     +${specialDates.length - 2} más
                   </span>
                 ` : ''}
@@ -329,14 +332,14 @@ const CustomersModule = {
 
           <!-- Notas / Alergias rápidas -->
           ${customer.notes ? `
-            <div class="bg-gray-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-gray-100 dark:border-slate-700/80 mb-3 text-xs text-gray-600 dark:text-gray-300 line-clamp-2">
+            <div class="bg-gray-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-gray-100 dark:border-slate-700/80 text-xs text-gray-600 dark:text-gray-300 line-clamp-2 break-words">
               <span class="font-semibold text-gray-800 dark:text-gray-200">📝 Gustos/Alergias:</span> ${customer.notes}
             </div>
           ` : ''}
         </div>
 
         <!-- Parte Inferior: Métricas de compras y Botones de Acción Rápida -->
-        <div class="pt-3 border-t border-gray-100 dark:border-slate-700 space-y-3">
+        <div class="pt-3 mt-3 border-t border-gray-100 dark:border-slate-700 space-y-2.5">
           <!-- Resumen de Pedidos y Total Gastado -->
           <div class="flex items-center justify-between text-xs">
             <span class="text-gray-500 dark:text-gray-400">
@@ -353,20 +356,20 @@ const CustomersModule = {
             <button 
               type="button" 
               onclick="event.stopPropagation(); CustomersModule.openWhatsAppModal('${customer.id}')"
-              class="py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
+              class="py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer min-w-0"
               title="Generar mensaje personalizado de WhatsApp"
             >
-              <span>💬</span> <span class="truncate">WhatsApp</span>
+              <span class="shrink-0">💬</span> <span class="truncate">WhatsApp</span>
             </button>
 
             <!-- Botón Cotizar -->
             <button 
               type="button" 
               onclick="event.stopPropagation(); CustomersModule.createQuoteForCustomer('${customer.id}')"
-              class="py-2 px-2.5 bg-pink-50 dark:bg-slate-700 hover:bg-pink-100 dark:hover:bg-slate-600 text-pink-700 dark:text-pink-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+              class="py-2 px-2.5 bg-pink-50 dark:bg-slate-700 hover:bg-pink-100 dark:hover:bg-slate-600 text-pink-700 dark:text-pink-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer min-w-0"
               title="Crear nueva cotización para este cliente"
             >
-              <span>📋</span> <span class="truncate">Cotizar</span>
+              <span class="shrink-0">📋</span> <span class="truncate">Cotizar</span>
             </button>
           </div>
         </div>

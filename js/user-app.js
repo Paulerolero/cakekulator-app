@@ -23,6 +23,9 @@ const UserApp = {
     // Manejador de instalación PWA
     this.initPWAInstall();
 
+    // Inicializar gestos táctiles móviles
+    this.initGestures();
+
     // Renderizar pestaña inicial
     this.renderExploreTab();
     this.updateBadges();
@@ -32,6 +35,165 @@ const UserApp = {
     if (searchInput) {
       searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
     }
+  },
+
+  initGestures() {
+    let startX = 0;
+    let startY = 0;
+    let startTime = 0;
+    let isTracking = false;
+    let isPulling = false;
+
+    const tabsOrder = ['explore', 'map', 'requests', 'offers', 'profile'];
+
+    const isInteractive = (target) => {
+      if (!target || !(target instanceof Element)) return false;
+      if (target.closest('input, textarea, select, button, a, [contenteditable="true"]')) return true;
+      if (target.closest('.leaflet-container')) return true; // Ignorar toques en el mapa interactivo
+      return false;
+    };
+
+    const ptrContainer = document.getElementById('pull-to-refresh-container');
+    const ptrText = document.getElementById('pull-refresh-text');
+
+    window.addEventListener('touchstart', (e) => {
+      if (e.touches.length !== 1) return;
+      if (isInteractive(e.target)) {
+        isTracking = false;
+        return;
+      }
+
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      startTime = Date.now();
+      isTracking = true;
+      isPulling = (window.scrollY <= 5);
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isTracking || !isPulling || !ptrContainer) return;
+      const currentY = e.touches[0].clientY;
+      const diffY = currentY - startY;
+      const diffX = e.touches[0].clientX - startX;
+
+      if (diffY > 15 && Math.abs(diffX) < 45) {
+        ptrContainer.classList.add('ptr-active');
+        const spinner = ptrContainer.querySelector('.pull-refresh-spinner');
+        if (spinner) {
+          const deg = Math.min(diffY * 2.5, 360);
+          spinner.style.transform = `rotate(${deg}deg)`;
+        }
+        if (ptrText) {
+          ptrText.textContent = diffY > 60 ? '¡Suelta para refrescar pastelerías!' : 'Tira para actualizar...';
+        }
+      } else if (diffY <= 0) {
+        ptrContainer.classList.remove('ptr-active');
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      if (!isTracking || e.changedTouches.length !== 1) return;
+      isTracking = false;
+
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const diffX = endX - startX;
+      const diffY = endY - startY;
+      const elapsedTime = Date.now() - startTime;
+
+      // 1. Pull-to-refresh confirm
+      if (isPulling && diffY >= 60 && Math.abs(diffX) < 50 && ptrContainer) {
+        isPulling = false;
+        ptrContainer.classList.add('ptr-active', 'ptr-refreshing');
+        if (ptrText) ptrText.textContent = '🧁 Actualizando novedades...';
+        if ('vibrate' in navigator) navigator.vibrate(25);
+
+        setTimeout(() => {
+          UserApp.switchTab(UserApp.currentTab, false);
+          UserApp.showToast('✨ Pastelerías y ofertas actualizadas');
+          ptrContainer.classList.remove('ptr-active', 'ptr-refreshing');
+        }, 600);
+        return;
+      }
+      isPulling = false;
+      if (ptrContainer) ptrContainer.classList.remove('ptr-active');
+
+      // 2. Swipe-down para cerrar modales abiertos
+      const openModal = document.querySelector('#new-request-modal:not(.hidden), #bakery-detail-modal:not(.hidden)');
+      if (openModal && diffY >= 75 && Math.abs(diffX) <= 45 && elapsedTime <= 450) {
+        if ('vibrate' in navigator) navigator.vibrate(15);
+        if (openModal.id === 'new-request-modal') {
+          UserRequestsModule.closeNewRequestModal();
+        } else {
+          openModal.classList.add('hidden');
+        }
+        return;
+      }
+
+      if (openModal) return;
+
+      // 3. Swipe horizontal entre pestañas
+      const minDistance = 60;
+      const maxPerpendicular = 50;
+      const maxDuration = 400;
+
+      if (Math.abs(diffX) >= minDistance && Math.abs(diffY) <= maxPerpendicular && elapsedTime <= maxDuration) {
+        const currentIndex = tabsOrder.indexOf(this.currentTab);
+        if (currentIndex === -1) return;
+
+        if (diffX < 0) {
+          // Deslizar izquierda -> siguiente pestaña
+          if (currentIndex < tabsOrder.length - 1) {
+            const nextTab = tabsOrder[currentIndex + 1];
+            if ('vibrate' in navigator) navigator.vibrate(12);
+            this.switchTab(nextTab, true, 'slide-left');
+          }
+        } else {
+          // Deslizar derecha -> pestaña anterior
+          if (currentIndex > 0) {
+            const prevTab = tabsOrder[currentIndex - 1];
+            if ('vibrate' in navigator) navigator.vibrate(12);
+            this.switchTab(prevTab, true, 'slide-right');
+          }
+        }
+      }
+    }, { passive: true });
+  },
+
+  triggerCelebration() {
+    const container = document.getElementById('confetti-container');
+    if (!container) return;
+
+    if ('vibrate' in navigator) navigator.vibrate([20, 50, 20]);
+
+    const emojis = ['🧁', '✨', '🍰', '⭐', '🎈', '🎉', '🍓'];
+    const colors = ['#ec4899', '#db2777', '#f43f5e', '#10b981', '#f59e0b'];
+
+    for (let i = 0; i < 35; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'confetti-particle';
+      const isEmoji = Math.random() > 0.45;
+
+      if (isEmoji) {
+        piece.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        piece.style.fontSize = `${14 + Math.random() * 16}px`;
+      } else {
+        piece.style.width = `${8 + Math.random() * 8}px`;
+        piece.style.height = `${12 + Math.random() * 14}px`;
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.borderRadius = '3px';
+      }
+
+      piece.style.left = `${Math.random() * 100}vw`;
+      piece.style.animationDuration = `${1.8 + Math.random() * 1.5}s`;
+      piece.style.animationDelay = `${Math.random() * 0.4}s`;
+
+      container.appendChild(piece);
+    }
+
+    setTimeout(() => {
+      container.innerHTML = '';
+    }, 3800);
   },
 
   initPWAInstall() {
@@ -65,7 +227,7 @@ const UserApp = {
     }
   },
 
-  switchTab(tabName) {
+  switchTab(tabName, scrollToTop = true, direction = 'none') {
     this.currentTab = tabName;
 
     // Ocultar todas las vistas
@@ -75,10 +237,15 @@ const UserApp = {
       if (el) el.classList.add('hidden');
     });
 
-    // Mostrar vista seleccionada
+    // Mostrar vista seleccionada con transición direccional
     const target = document.getElementById(`${tabName}-view`);
     if (target) {
-      target.classList.remove('hidden');
+      target.classList.remove('hidden', 'view-slide-left', 'view-slide-right');
+      if (direction === 'slide-left') {
+        target.classList.add('view-slide-left');
+      } else if (direction === 'slide-right') {
+        target.classList.add('view-slide-right');
+      }
     }
 
     // Actualizar botones de navegación inferior
@@ -100,8 +267,10 @@ const UserApp = {
       UserProfileModule.renderProfileView();
     }
 
-    // Scroll al tope
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll al tope si solicitado
+    if (scrollToTop) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   },
 
   renderExploreTab() {

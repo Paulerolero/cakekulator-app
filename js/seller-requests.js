@@ -216,7 +216,7 @@ const SellerRequestsModule = {
               <p class="text-[11px] text-gray-400 mt-0.5">Te notificaremos en cuanto un cliente cercano publique un pedido.</p>
             </div>
           ` : `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
+            <div class="seller-requests-grid grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
               ${activeRequests.map(req => {
                 const formattedBudget = Number(req.budget || 0).toLocaleString('es-CL');
                 const cleanPhone = (req.userPhone || '+56900000000').replace(/[^0-9]/g, '');

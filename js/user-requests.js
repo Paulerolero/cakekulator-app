@@ -210,6 +210,9 @@ const UserRequestsModule = {
 
     this.closeNewRequestModal();
     this.renderRequests();
+    if (typeof UserApp.triggerCelebration === 'function') {
+      UserApp.triggerCelebration();
+    }
     UserApp.showToast('🎉 ¡Tu solicitud fue publicada! Los locales cercanos de este rubro recibirán tu aviso.');
   },
 

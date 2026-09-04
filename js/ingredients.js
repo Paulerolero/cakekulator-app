@@ -99,12 +99,12 @@ const IngredientsModule = {
           </button>
         </div>
       ` : `
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pb-16 sm:pb-0">
+        <div class="ingredient-card-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pb-16 sm:pb-0">
           ${filtered.map(ing => {
             const baseInfo = Calculator.getIngredientBaseUnitCost(ing);
             const unitLabel = baseInfo.baseUnit === 'g' ? 'gramo' : (baseInfo.baseUnit === 'ml' ? 'ml' : 'unidad');
             return `
-              <div onclick="IngredientsModule.openModal('${ing.id}')" class="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition relative flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
+              <div onclick="IngredientsModule.openModal('${ing.id}')" class="ingredient-card bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition relative flex flex-col justify-between group cursor-pointer active:scale-[0.99] overflow-hidden">
                 <div>
                   <div class="flex items-start justify-between gap-2">
                     <div>

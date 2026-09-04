@@ -16,6 +16,11 @@
   <link rel="icon" type="image/png" href="assets/icons/favicon.png">
   <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 
+  <!-- Google Fonts: Plus Jakarta Sans & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -23,6 +28,10 @@
       darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['"Outfit"', 'sans-serif'],
+          },
           colors: {
             pink: {
               50: '#fdf2f8',
@@ -341,6 +350,8 @@
                 <span>🧾</span> Escanear Boleta OCR
               </button>
             </div>
+          </div>
+
           <!-- Contenedor de Autenticación con Google -->
           <div id="auth-header-container"></div>
 
@@ -368,6 +379,14 @@
     <!-- Main Content Container (Solo el contenido interno tiene scroll en escritorio) -->
     <main id="app-main-content"
       class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 md:overflow-y-auto custom-scrollbar">
+
+      <!-- Indicador Táctil Pull-to-Refresh Móvil -->
+      <div id="pull-to-refresh-container">
+        <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 dark:bg-slate-800/95 shadow-md border border-pink-200/80 dark:border-slate-700 text-xs font-bold text-pink-600 dark:text-pink-400 select-none">
+          <span class="pull-refresh-spinner">🧁</span>
+          <span id="pull-refresh-text">Tira para actualizar...</span>
+        </div>
+      </div>
       <!-- View Containers -->
       <section id="dashboard-view"></section>
       <section id="quotes-view" class="hidden"></section>
@@ -495,6 +514,9 @@
   <script src="js/receipts.js?v=6.0"></script>
   <script src="js/seller-requests.js?v=6.0"></script>
   <script src="js/app.js?v=6.0"></script>
+
+  <!-- Contenedor Dinámico para Confeti Festivo -->
+  <div id="confetti-container"></div>
 </body>
 
 </html>

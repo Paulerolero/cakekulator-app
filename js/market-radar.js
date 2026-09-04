@@ -706,12 +706,12 @@ const MarketRadarModule = {
             </button>
           </div>
         ` : `
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 mb-8">
+          <div class="market-radar-card-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 mb-8">
             ${filtered.map(item => {
               const unitPrice = item.offerPrice / item.packageQty;
               const existingLocal = this.findMatchingLocalIngredient(item);
               return `
-                <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100/90 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group">
+                <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100/90 dark:border-slate-800 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group overflow-hidden">
                   
                   <div class="mb-3 sm:mb-4">
                     <!-- Header del Producto -->

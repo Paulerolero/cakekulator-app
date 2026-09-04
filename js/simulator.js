@@ -592,13 +592,13 @@ const SimulatorModule = {
 
   getMarginHealth(margin) {
     if (margin >= 45) {
-      return { text: 'Excelente', badgeClass: 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300', textClass: 'text-emerald-700 dark:text-emerald-400' };
+      return { text: 'Excelente 🔥', badgeClass: 'profit-badge-high font-black px-2.5 py-0.5 rounded-full', textClass: 'text-emerald-700 dark:text-emerald-400 font-black' };
     } else if (margin >= 30) {
-      return { text: 'Saludable', badgeClass: 'bg-teal-100 dark:bg-teal-950/70 text-teal-800 dark:text-teal-300', textClass: 'text-teal-700 dark:text-teal-400' };
+      return { text: 'Saludable ✨', badgeClass: 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800', textClass: 'text-emerald-700 dark:text-emerald-400' };
     } else if (margin >= 15) {
-      return { text: 'Ajustado', badgeClass: 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300', textClass: 'text-amber-700 dark:text-amber-400' };
+      return { text: 'Ajustado ⚠️', badgeClass: 'profit-badge-mid font-bold px-2.5 py-0.5 rounded-full', textClass: 'text-amber-700 dark:text-amber-400 font-bold' };
     } else {
-      return { text: 'Peligro', badgeClass: 'bg-red-100 dark:bg-red-950/70 text-red-800 dark:text-red-300', textClass: 'text-red-700 dark:text-red-400' };
+      return { text: 'Peligro 🚨', badgeClass: 'profit-badge-low font-black px-2.5 py-0.5 rounded-full', textClass: 'text-red-700 dark:text-red-400 font-black' };
     }
   },
 
@@ -707,6 +707,9 @@ const SimulatorModule = {
     this.targetMargin = margin;
     const marginFraction = margin >= 100 ? 0.99 : margin / 100;
     this.currentPrice = Calculator.roundUpTo(cost / (1 - marginFraction), 100);
+    if (margin >= 50 && typeof App !== 'undefined' && typeof App.triggerCelebration === 'function') {
+      App.triggerCelebration();
+    }
     this.render();
   },
 
