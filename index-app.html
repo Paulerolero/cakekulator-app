@@ -93,53 +93,99 @@
        ========================================== -->
   <div class="flex-1 flex flex-col min-w-0">
 
-    <!-- Top Mobile Navigation Header -->
-    <header
-      class="shrink-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/80 dark:border-slate-800 px-3.5 py-2.5 sticky top-0">
-      <div class="max-w-md mx-auto flex items-center justify-between gap-2">
+    <!-- Sticky Top Navigation Container (Header + Quick Access Carousel) -->
+    <div class="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/80 dark:border-slate-800 shadow-2xs transition-colors duration-200">
+      <!-- Top Mobile Navigation Header -->
+      <header class="px-3.5 py-2.5">
+        <div class="max-w-md mx-auto flex items-center justify-between gap-2">
 
-        <!-- Mobile Brand Logo -->
-        <div class="flex items-center gap-2 cursor-pointer select-none group shrink-0"
-          onclick="App.switchTab('dashboard')">
-          <img id="header-brand-logo" src="assets/icons/logo.png" alt="Cakekulator Logo"
-            class="w-8 h-8 rounded-xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700">
-          <div>
-            <span id="header-brand-title"
-              class="font-extrabold text-base text-gray-900 dark:text-white tracking-tight block leading-none">
-              Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
-            </span>
-            <span id="header-brand-name"
-              class="text-[9px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[120px] block">
-              App Vendedor Móvil
-            </span>
+          <!-- Mobile Brand Logo -->
+          <div class="flex items-center gap-2 cursor-pointer select-none group shrink-0"
+            onclick="App.switchTab('dashboard')">
+            <img id="header-brand-logo" src="assets/icons/logo.png" alt="Cakekulator Logo"
+              class="w-8 h-8 rounded-xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700">
+            <div>
+              <span id="header-brand-title"
+                class="font-extrabold text-base text-gray-900 dark:text-white tracking-tight block leading-none">
+                Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
+              </span>
+              <span id="header-brand-name"
+                class="text-[9px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[120px] block">
+                App Vendedor Móvil
+              </span>
+            </div>
+          </div>
+
+          <!-- Right Header Actions -->
+          <div class="flex items-center gap-1.5 shrink-0">
+            <!-- Selector de Ambiente (Productos / Servicios) -->
+            <button type="button" onclick="App.showModeSelectionModal()" id="header-mode-badge"
+              class="px-2 py-1 rounded-xl bg-pink-50 dark:bg-slate-800 border border-pink-200/70 dark:border-slate-700 text-pink-700 dark:text-pink-300 text-[10px] font-bold flex items-center gap-1 transition active:scale-95 cursor-pointer">
+              <span id="header-mode-icon">🎂</span> <span id="header-mode-text" class="hidden xs:inline">Prod</span>
+            </button>
+
+            <!-- Contenedor de Autenticación con Google -->
+            <div id="auth-header-container"></div>
+
+            <!-- Botón Instalar PWA -->
+            <button id="pwa-install-btn" onclick="App.installPWA()"
+              class="hidden bg-pink-100 dark:bg-slate-800 hover:bg-pink-200 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 px-2 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1">
+              <span>📲</span>
+            </button>
+
+            <!-- Ajustes en móvil -->
+            <button onclick="App.switchTab('settings')" data-tab="settings" title="Configuración"
+              class="nav-btn p-1.5 text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </button>
+          </div>
+
+        </div>
+      </header>
+
+      <!-- Barra de Acceso Rápido Horizontal (Quick Access Carousel) -->
+      <div class="border-t border-pink-100/60 dark:border-slate-800/80 py-1.5">
+        <div class="max-w-md mx-auto">
+          <div class="quick-access-carousel">
+            <button type="button" onclick="App.switchTab('dashboard')" data-tab="dashboard" class="quick-access-pill quick-access-pill-active">
+              <span>🏠</span> <span>Inicio</span>
+            </button>
+            <button type="button" onclick="App.switchTab('simulator')" data-tab="simulator" class="quick-access-pill">
+              <span>🧮</span> <span>Simulador</span>
+            </button>
+            <button type="button" onclick="App.switchTab('quotes')" data-tab="quotes" class="quick-access-pill">
+              <span id="quick-icon-quotes">📋</span> <span id="quick-text-quotes">Cotizar</span>
+            </button>
+            <button type="button" onclick="App.switchTab('recipes')" data-tab="recipes" class="quick-access-pill">
+              <span id="quick-icon-recipes">🎂</span> <span id="quick-text-recipes">Recetas</span>
+            </button>
+            <button type="button" onclick="App.switchTab('ingredients')" data-tab="ingredients" class="quick-access-pill">
+              <span id="quick-icon-ingredients">📦</span> <span id="quick-text-ingredients">Insumos</span>
+            </button>
+            <button type="button" onclick="App.switchTab('market-radar')" data-tab="market-radar" class="quick-access-pill">
+              <span>🛒</span> <span>Radar Ofertas</span>
+            </button>
+            <button type="button" onclick="App.switchTab('customers')" data-tab="customers" class="quick-access-pill">
+              <span>👥</span> <span>Clientes</span>
+            </button>
+            <button type="button" onclick="App.switchTab('finance')" data-tab="finance" class="quick-access-pill">
+              <span>📊</span> <span>Finanzas</span>
+            </button>
+            <button type="button" onclick="App.switchTab('ingredients'); setTimeout(() => { if (typeof ReceiptScannerModule !== 'undefined') ReceiptScannerModule.openModal(); }, 120);" class="quick-access-pill">
+              <span>🧾</span> <span>Escanear Boleta</span>
+            </button>
+            <button type="button" onclick="App.switchTab('settings')" data-tab="settings" class="quick-access-pill">
+              <span>⚙️</span> <span>Ajustes</span>
+            </button>
           </div>
         </div>
-
-        <!-- Right Header Actions -->
-        <div class="flex items-center gap-1.5 shrink-0">
-          <!-- Contenedor de Autenticación con Google -->
-          <div id="auth-header-container"></div>
-
-          <!-- Botón Instalar PWA -->
-          <button id="pwa-install-btn" onclick="App.installPWA()"
-            class="hidden bg-pink-100 dark:bg-slate-800 hover:bg-pink-200 dark:hover:bg-slate-700 text-pink-700 dark:text-pink-300 px-2 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1">
-            <span>📲</span>
-          </button>
-
-          <!-- Ajustes en móvil -->
-          <button onclick="App.switchTab('settings')" data-tab="settings" title="Configuración"
-            class="nav-btn p-1.5 text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 rounded-xl transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </button>
-        </div>
-
       </div>
-    </header>
+    </div>
 
     <!-- Main Content Container (Mobile Scrolling) -->
     <main id="app-main-content" class="flex-1 max-w-md w-full mx-auto p-3 space-y-4">

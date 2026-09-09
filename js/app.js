@@ -162,6 +162,21 @@ const App = {
     if (iIconM) iIconM.textContent = ingIcon;
     if (iTextM) iTextM.textContent = ingText;
 
+    // Quick Access Carousel Pills
+    const qIconQ = document.getElementById('quick-icon-quotes');
+    const qTextQ = document.getElementById('quick-text-quotes');
+    const qIconR = document.getElementById('quick-icon-recipes');
+    const qTextR = document.getElementById('quick-text-recipes');
+    const qIconI = document.getElementById('quick-icon-ingredients');
+    const qTextI = document.getElementById('quick-text-ingredients');
+
+    if (qIconQ) qIconQ.textContent = quotesIcon;
+    if (qTextQ) qTextQ.textContent = quotesText;
+    if (qIconR) qIconR.textContent = recipesIcon;
+    if (qTextR) qTextR.textContent = recipesText;
+    if (qIconI) qIconI.textContent = ingIcon;
+    if (qTextI) qTextI.textContent = ingText;
+
     // Switcher Button
     const swIcon = document.getElementById('mode-switcher-icon');
     const swLabel = document.getElementById('mode-switcher-label');
@@ -443,6 +458,18 @@ const App = {
       } else {
         btn.classList.remove('nav-active', 'text-pink-600', 'dark:text-pink-400', 'font-black', 'bg-pink-50/80');
         btn.classList.add('text-gray-400', 'dark:text-slate-500', 'font-medium');
+      }
+    });
+
+    // Actualizar píldoras de la barra de accesos rápidos
+    document.querySelectorAll('.quick-access-pill').forEach(pill => {
+      if (pill.dataset.tab === tabName) {
+        pill.classList.add('quick-access-pill-active');
+        try {
+          pill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } catch (e) {}
+      } else {
+        pill.classList.remove('quick-access-pill-active');
       }
     });
 

@@ -376,6 +376,44 @@
       </div>
     </header>
 
+    <!-- Barra de Acceso Rápido Móvil (Visible en dispositivos móviles < md) -->
+    <div class="md:hidden sticky top-[53px] z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/60 dark:border-slate-800/80 py-1.5 px-1 shadow-2xs transition-colors duration-200">
+      <div class="max-w-md mx-auto">
+        <div class="quick-access-carousel">
+          <button type="button" onclick="App.switchTab('dashboard')" data-tab="dashboard" class="quick-access-pill quick-access-pill-active">
+            <span>🏠</span> <span>Inicio</span>
+          </button>
+          <button type="button" onclick="App.switchTab('simulator')" data-tab="simulator" class="quick-access-pill">
+            <span>🧮</span> <span>Simulador</span>
+          </button>
+          <button type="button" onclick="App.switchTab('quotes')" data-tab="quotes" class="quick-access-pill">
+            <span id="quick-icon-quotes">📋</span> <span id="quick-text-quotes">Cotizar</span>
+          </button>
+          <button type="button" onclick="App.switchTab('recipes')" data-tab="recipes" class="quick-access-pill">
+            <span id="quick-icon-recipes">🎂</span> <span id="quick-text-recipes">Recetas</span>
+          </button>
+          <button type="button" onclick="App.switchTab('ingredients')" data-tab="ingredients" class="quick-access-pill">
+            <span id="quick-icon-ingredients">📦</span> <span id="quick-text-ingredients">Insumos</span>
+          </button>
+          <button type="button" onclick="App.switchTab('market-radar')" data-tab="market-radar" class="quick-access-pill">
+            <span>🛒</span> <span>Radar Ofertas</span>
+          </button>
+          <button type="button" onclick="App.switchTab('customers')" data-tab="customers" class="quick-access-pill">
+            <span>👥</span> <span>Clientes</span>
+          </button>
+          <button type="button" onclick="App.switchTab('finance')" data-tab="finance" class="quick-access-pill">
+            <span>📊</span> <span>Finanzas</span>
+          </button>
+          <button type="button" onclick="App.switchTab('ingredients'); setTimeout(() => { if (typeof ReceiptScannerModule !== 'undefined') ReceiptScannerModule.openModal(); }, 120);" class="quick-access-pill">
+            <span>🧾</span> <span>Escanear Boleta</span>
+          </button>
+          <button type="button" onclick="App.switchTab('settings')" data-tab="settings" class="quick-access-pill">
+            <span>⚙️</span> <span>Ajustes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Main Content Container (Solo el contenido interno tiene scroll en escritorio) -->
     <main id="app-main-content"
       class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 md:overflow-y-auto custom-scrollbar">
