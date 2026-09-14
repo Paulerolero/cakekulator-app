@@ -94,12 +94,80 @@ const App = {
     if (modal) modal.classList.add('hidden');
   },
 
+  toggleMobileMoreDrawer() {
+    const modal = document.getElementById('mobile-more-modal');
+    if (modal) {
+      if (modal.classList.contains('hidden')) {
+        this.openMobileMoreDrawer();
+      } else {
+        this.closeMobileMoreDrawer();
+      }
+    }
+  },
+
+  openMobileMoreDrawer() {
+    const modal = document.getElementById('mobile-more-modal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      if (this.lockBodyScroll) this.lockBodyScroll();
+    }
+  },
+
+  closeMobileMoreDrawer() {
+    const modal = document.getElementById('mobile-more-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      if (this.unlockBodyScroll) this.unlockBodyScroll();
+    }
+  },
+
+  toggleQuickDataInputDrawer() {
+    const modal = document.getElementById('quick-data-input-modal');
+    if (modal) {
+      if (modal.classList.contains('hidden')) {
+        this.openQuickDataInputDrawer();
+      } else {
+        this.closeQuickDataInputDrawer();
+      }
+    }
+  },
+
+  openQuickDataInputDrawer() {
+    const modal = document.getElementById('quick-data-input-modal');
+    if (modal) {
+      this.closeMobileMoreDrawer();
+      modal.classList.remove('hidden');
+      const createBtn = document.getElementById('nav-btn-create-mob');
+      if (createBtn) {
+        const isServices = this.currentMode === 'services';
+        createBtn.classList.add('nav-active', isServices ? 'text-teal-600' : 'text-pink-600', isServices ? 'dark:text-teal-400' : 'dark:text-pink-400', 'font-black');
+        createBtn.classList.remove('text-gray-400', 'dark:text-slate-500', 'font-medium');
+      }
+      if (this.lockBodyScroll) this.lockBodyScroll();
+    }
+  },
+
+  closeQuickDataInputDrawer() {
+    const modal = document.getElementById('quick-data-input-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      const createBtn = document.getElementById('nav-btn-create-mob');
+      if (createBtn) {
+        createBtn.classList.remove('nav-active', 'text-pink-600', 'dark:text-pink-400', 'text-teal-600', 'dark:text-teal-400', 'font-black');
+        createBtn.classList.add('text-gray-400', 'dark:text-slate-500', 'font-medium');
+      }
+      if (this.unlockBodyScroll) this.unlockBodyScroll();
+    }
+  },
+
   setAppMode(mode) {
     this.currentMode = mode;
     localStorage.setItem('cakekulator_app_mode', mode);
     this.applyModeTheme();
     this.updateHeaderBrand();
     this.closeModeSelectionModal();
+    this.closeMobileMoreDrawer();
+    this.closeQuickDataInputDrawer();
     this.renderCurrentTab();
     this.showToast(mode === 'products' 
       ? '🎂 Ambiente: Venta de Productos' 
@@ -182,6 +250,61 @@ const App = {
     const swLabel = document.getElementById('mode-switcher-label');
     if (swIcon) swIcon.textContent = isServ ? '💆' : '🎂';
     if (swLabel) swLabel.textContent = isServ ? 'Servicios' : 'Productos';
+
+    // Mobile Header Mode Badges & Buttons
+    const headerModeBadge = document.getElementById('header-mode-badge');
+    const headerModeIcon = document.getElementById('header-mode-icon');
+    const headerModeText = document.getElementById('header-mode-text');
+    const mobModeBtn = document.getElementById('mobile-mode-switcher-btn');
+    const mobModeIcon = document.getElementById('mobile-mode-icon');
+    const mobModeLabel = document.getElementById('mobile-mode-label');
+    const quickModePill = document.getElementById('quick-mode-pill');
+    const quickModeIcon = document.getElementById('quick-mode-pill-icon');
+    const quickModeText = document.getElementById('quick-mode-pill-text');
+    const moreDrawerModeName = document.getElementById('more-drawer-mode-name');
+    const moreDrawerIngredients = document.getElementById('more-drawer-text-ingredients');
+
+    if (headerModeIcon) headerModeIcon.textContent = isServ ? '💆' : '🎂';
+    if (headerModeText) headerModeText.textContent = isServ ? 'Servicios' : 'Productos';
+    if (headerModeBadge) {
+      headerModeBadge.className = isServ
+        ? 'px-2.5 py-1.5 rounded-full bg-teal-50 dark:bg-teal-950/70 border-2 border-teal-400/80 dark:border-teal-700 text-teal-800 dark:text-teal-200 text-xs font-black flex items-center gap-1.5 transition active:scale-95 shadow-xs cursor-pointer'
+        : 'px-2.5 py-1.5 rounded-full bg-pink-50 dark:bg-pink-950/70 border-2 border-pink-400/80 dark:border-pink-700 text-pink-800 dark:text-pink-200 text-xs font-black flex items-center gap-1.5 transition active:scale-95 shadow-xs cursor-pointer';
+    }
+
+    if (mobModeIcon) mobModeIcon.textContent = isServ ? '💆' : '🎂';
+    if (mobModeLabel) mobModeLabel.textContent = isServ ? 'Servicios' : 'Productos';
+    if (mobModeBtn) {
+      mobModeBtn.className = isServ
+        ? 'flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-teal-50 dark:bg-teal-950/70 border-2 border-teal-400 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-xs font-black shadow-xs active:scale-95 transition cursor-pointer'
+        : 'flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-pink-50 dark:bg-pink-950/70 border-2 border-pink-400 dark:border-pink-700 text-pink-900 dark:text-pink-100 text-xs font-black shadow-xs active:scale-95 transition cursor-pointer';
+    }
+
+    if (quickModeIcon) quickModeIcon.textContent = isServ ? '💆' : '🎂';
+    if (quickModeText) quickModeText.textContent = isServ ? 'Modo: Servicios ⇄' : 'Modo: Productos ⇄';
+    if (quickModePill) {
+      quickModePill.className = isServ
+        ? 'quick-access-pill border-2 border-teal-400 dark:border-teal-600 bg-teal-100/90 dark:bg-teal-950/80 font-black text-teal-900 dark:text-teal-200 shadow-xs'
+        : 'quick-access-pill border-2 border-pink-400 dark:border-pink-600 bg-pink-100/90 dark:bg-pink-950/80 font-black text-pink-900 dark:text-pink-200 shadow-xs';
+    }
+
+    if (moreDrawerModeName) {
+      moreDrawerModeName.textContent = isServ ? '💆 Servicios & Estética' : '🎂 Pastelería & Productos';
+      moreDrawerModeName.className = isServ ? 'font-black text-teal-700 dark:text-teal-300' : 'font-black text-pink-700 dark:text-pink-300';
+    }
+    if (moreDrawerIngredients) {
+      moreDrawerIngredients.textContent = isServ ? 'Insumos Cabina' : 'Insumos';
+    }
+
+    // Quick Data Input Drawer Labels
+    const quickInputQuote = document.getElementById('quick-input-text-quote');
+    const quickInputRecipeIcon = document.getElementById('quick-input-icon-recipe');
+    const quickInputRecipe = document.getElementById('quick-input-text-recipe');
+    const quickInputIng = document.getElementById('quick-input-text-ing');
+    if (quickInputQuote) quickInputQuote.textContent = isServ ? 'Nuevo Presupuesto' : 'Nueva Cotización';
+    if (quickInputRecipeIcon) quickInputRecipeIcon.textContent = isServ ? '💆' : '🎂';
+    if (quickInputRecipe) quickInputRecipe.textContent = isServ ? 'Nuevo Servicio / Ficha' : 'Nueva Receta / Ficha';
+    if (quickInputIng) quickInputIng.textContent = isServ ? 'Nuevo Insumo de Cabina' : 'Nuevo Insumo / Materia Prima';
 
     // Header Title and Subtitle
     const hTitle = document.getElementById('header-brand-title');
@@ -414,6 +537,11 @@ const App = {
   },
 
   switchTab(tabName, scrollToTop = true, direction = 'none') {
+    if (tabName === 'finance' && window.innerWidth < 768 && !document.getElementById('desktop-sidebar')) {
+      this.showToast('El panel de finanzas está disponible en la versión Web');
+      return;
+    }
+
     this.currentTab = tabName;
 
     const views = ['dashboard-view', 'quotes-view', 'customers-view', 'recipes-view', 'ingredients-view', 'simulator-view', 'market-radar-view', 'finance-view', 'settings-view'];
@@ -441,7 +569,7 @@ const App = {
       mobileNav.classList.add('translate-y-0', 'opacity-100');
     }
 
-    // Actualizar estilos de los botones de navegación (desktop sidebar y móvil)
+    // Actualizar estilos de los botones de navegación (desktop sidebar y dock móvil)
     document.querySelectorAll('.sidebar-nav-item').forEach(item => {
       if (item.dataset.tab === tabName) {
         item.classList.add('sidebar-active');
@@ -450,18 +578,38 @@ const App = {
       }
     });
 
+    const isServices = this.currentMode === 'services';
+    const activeColorClass = isServices ? 'text-teal-600' : 'text-pink-600';
+    const activeDarkClass = isServices ? 'dark:text-teal-400' : 'dark:text-pink-400';
+
     document.querySelectorAll('.nav-btn').forEach(btn => {
       const btnTab = btn.dataset.tab;
-      if (btnTab === tabName) {
-        btn.classList.add('nav-active', 'text-pink-600', 'dark:text-pink-400', 'font-black');
+      if (btnTab && btnTab === tabName) {
+        btn.classList.add('nav-active', activeColorClass, activeDarkClass, 'font-black');
         btn.classList.remove('text-gray-400', 'dark:text-slate-500', 'font-medium', 'text-gray-500');
-      } else {
-        btn.classList.remove('nav-active', 'text-pink-600', 'dark:text-pink-400', 'font-black', 'bg-pink-50/80');
+        try {
+          btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        } catch (e) {}
+      } else if (btnTab) {
+        btn.classList.remove('nav-active', 'text-pink-600', 'dark:text-pink-400', 'text-teal-600', 'dark:text-teal-400', 'font-black', 'bg-pink-50/80');
         btn.classList.add('text-gray-400', 'dark:text-slate-500', 'font-medium');
       }
     });
 
-    // Actualizar píldoras de la barra de accesos rápidos
+    // Actualizar botón "Más" en el dock flotante si la pestaña activa está en el cajón
+    const moreBtn = document.getElementById('nav-btn-more-mob');
+    const isMoreTab = ['ingredients', 'market-radar', 'customers', 'finance', 'settings', 'simulator'].includes(tabName);
+    if (moreBtn) {
+      if (isMoreTab) {
+        moreBtn.classList.add('nav-active', activeColorClass, activeDarkClass, 'font-black');
+        moreBtn.classList.remove('text-gray-400', 'dark:text-slate-500', 'font-medium');
+      } else {
+        moreBtn.classList.remove('nav-active', 'text-pink-600', 'dark:text-pink-400', 'text-teal-600', 'dark:text-teal-400', 'font-black');
+        moreBtn.classList.add('text-gray-400', 'dark:text-slate-500', 'font-medium');
+      }
+    }
+
+    // Actualizar píldoras de la barra de accesos rápidos si existen
     document.querySelectorAll('.quick-access-pill').forEach(pill => {
       if (pill.dataset.tab === tabName) {
         pill.classList.add('quick-access-pill-active');
@@ -472,6 +620,10 @@ const App = {
         pill.classList.remove('quick-access-pill-active');
       }
     });
+
+    // Cerrar drawers si estaban abiertos
+    this.closeMobileMoreDrawer();
+    this.closeQuickDataInputDrawer();
 
     // Actualizar encabezado del topbar en Desktop
     this.updateDesktopHeaderInfo(tabName);
@@ -1351,15 +1503,6 @@ const App = {
               </p>
             </div>
           </div>
-
-          <button 
-            type="button" 
-            onclick="App.switchTab('settings')" 
-            class="p-2 bg-white/20 hover:bg-white/30 active:scale-95 backdrop-blur-md border border-white/40 rounded-xl text-xs font-bold transition flex items-center gap-1 text-white shrink-0 cursor-pointer"
-            title="Ajustes"
-          >
-            <span>⚙️</span>
-          </button>
         </div>
       </div>
 
@@ -1374,7 +1517,7 @@ const App = {
           <span class="text-[10px] text-gray-400 font-semibold">Toca para abrir</span>
         </div>
 
-        <div class="grid grid-cols-4 gap-2">
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
           <!-- 1. Simulador -->
           <button type="button" onclick="App.switchTab('simulator')"
             class="p-2 rounded-2xl bg-pink-50/70 dark:bg-slate-900/60 border border-pink-100 dark:border-slate-700/80 hover:border-pink-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
@@ -1419,20 +1562,6 @@ const App = {
             <span class="text-2xl p-1.5 rounded-xl bg-indigo-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">👥</span>
             <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Clientes</span>
             ${customers.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-indigo-500 text-white shadow-xs">${customers.length}</span>` : ''}
-          </button>
-
-          <!-- 7. Finanzas -->
-          <button type="button" onclick="App.switchTab('finance')"
-            class="p-2 rounded-2xl bg-rose-50/70 dark:bg-slate-900/60 border border-rose-100 dark:border-slate-700/80 hover:border-rose-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
-            <span class="text-2xl p-1.5 rounded-xl bg-rose-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">📊</span>
-            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Finanzas</span>
-          </button>
-
-          <!-- 8. Ajustes -->
-          <button type="button" onclick="App.switchTab('settings')"
-            class="p-2 rounded-2xl bg-slate-100/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 hover:border-slate-400 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
-            <span class="text-2xl p-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">⚙️</span>
-            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Ajustes</span>
           </button>
         </div>
       </div>

@@ -281,6 +281,15 @@
           </div>
         </div>
 
+        <!-- Selector Móvil de Ambiente (Productos ⇄ Servicios) -->
+        <button type="button" onclick="App.showModeSelectionModal()" id="header-mode-badge"
+          class="md:hidden px-2.5 py-1.5 rounded-full bg-pink-50 dark:bg-pink-950/70 border-2 border-pink-400/80 dark:border-pink-700 text-pink-800 dark:text-pink-200 text-xs font-black flex items-center gap-1.5 transition active:scale-95 shadow-xs cursor-pointer shrink-0"
+          title="Cambiar entre Productos y Servicios">
+          <span id="header-mode-icon">🎂</span>
+          <span id="header-mode-text">Productos</span>
+          <span class="text-[10px] opacity-70">⇄</span>
+        </button>
+
         <!-- Desktop Current View Title / Breadcrumb -->
         <div class="hidden md:flex items-center gap-2 shrink-0">
           <span id="desktop-view-icon" class="text-xl">🏠</span>
@@ -376,47 +385,9 @@
       </div>
     </header>
 
-    <!-- Barra de Acceso Rápido Móvil (Visible en dispositivos móviles < md) -->
-    <div class="md:hidden sticky top-[53px] z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/60 dark:border-slate-800/80 py-1.5 px-1 shadow-2xs transition-colors duration-200">
-      <div class="max-w-md mx-auto">
-        <div class="quick-access-carousel">
-          <button type="button" onclick="App.switchTab('dashboard')" data-tab="dashboard" class="quick-access-pill quick-access-pill-active">
-            <span>🏠</span> <span>Inicio</span>
-          </button>
-          <button type="button" onclick="App.switchTab('simulator')" data-tab="simulator" class="quick-access-pill">
-            <span>🧮</span> <span>Simulador</span>
-          </button>
-          <button type="button" onclick="App.switchTab('quotes')" data-tab="quotes" class="quick-access-pill">
-            <span id="quick-icon-quotes">📋</span> <span id="quick-text-quotes">Cotizar</span>
-          </button>
-          <button type="button" onclick="App.switchTab('recipes')" data-tab="recipes" class="quick-access-pill">
-            <span id="quick-icon-recipes">🎂</span> <span id="quick-text-recipes">Recetas</span>
-          </button>
-          <button type="button" onclick="App.switchTab('ingredients')" data-tab="ingredients" class="quick-access-pill">
-            <span id="quick-icon-ingredients">📦</span> <span id="quick-text-ingredients">Insumos</span>
-          </button>
-          <button type="button" onclick="App.switchTab('market-radar')" data-tab="market-radar" class="quick-access-pill">
-            <span>🛒</span> <span>Radar Ofertas</span>
-          </button>
-          <button type="button" onclick="App.switchTab('customers')" data-tab="customers" class="quick-access-pill">
-            <span>👥</span> <span>Clientes</span>
-          </button>
-          <button type="button" onclick="App.switchTab('finance')" data-tab="finance" class="quick-access-pill">
-            <span>📊</span> <span>Finanzas</span>
-          </button>
-          <button type="button" onclick="App.switchTab('ingredients'); setTimeout(() => { if (typeof ReceiptScannerModule !== 'undefined') ReceiptScannerModule.openModal(); }, 120);" class="quick-access-pill">
-            <span>🧾</span> <span>Escanear Boleta</span>
-          </button>
-          <button type="button" onclick="App.switchTab('settings')" data-tab="settings" class="quick-access-pill">
-            <span>⚙️</span> <span>Ajustes</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Main Content Container (Solo el contenido interno tiene scroll en escritorio) -->
     <main id="app-main-content"
-      class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 md:overflow-y-auto custom-scrollbar">
+      class="flex-1 max-w-7xl w-full mx-auto p-3 pb-28 sm:p-6 lg:p-8 md:overflow-y-auto custom-scrollbar">
 
       <!-- Indicador Táctil Pull-to-Refresh Móvil -->
       <div id="pull-to-refresh-container">
@@ -473,62 +444,252 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal / Drawer Más Herramientas (Mobile Menu Moderno) -->
+    <div id="mobile-more-modal"
+      class="hidden fixed inset-0 z-70 bg-black/60 backdrop-blur-xs flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4 transition-all">
+      <!-- Backdrop click to close -->
+      <div class="absolute inset-0 cursor-pointer" onclick="App.closeMobileMoreDrawer()"></div>
+      
+      <!-- Drawer Card -->
+      <div class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl p-5 max-w-md w-full shadow-2xl border border-gray-100 dark:border-slate-800 space-y-4 max-h-[85vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
+        <!-- Handle bar -->
+        <div class="w-12 h-1.5 bg-gray-300 dark:bg-slate-700 rounded-full mx-auto"></div>
+
+        <div class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-slate-800">
+          <div>
+            <h3 class="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <span>✨</span> Más Herramientas
+            </h3>
+            <p class="text-xs text-gray-500 dark:text-slate-400">Todos los módulos y accesos rápidos</p>
+          </div>
+          <button type="button" onclick="App.closeMobileMoreDrawer()"
+            class="p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 bg-gray-100 dark:bg-slate-800 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Banner de Cambio de Ambiente (Productos / Servicios) -->
+        <div class="p-3.5 rounded-2xl bg-gradient-to-r from-pink-50 to-teal-50 dark:from-pink-950/40 dark:to-teal-950/40 border border-pink-200/60 dark:border-slate-700/80 flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase tracking-wider font-extrabold text-gray-500 dark:text-slate-400">Ambiente actual</span>
+            <div id="more-drawer-mode-name" class="font-black text-sm text-pink-700 dark:text-pink-300">🎂 Pastelería & Productos</div>
+          </div>
+          <button type="button" onclick="App.closeMobileMoreDrawer(); App.showModeSelectionModal();"
+            class="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 text-gray-800 dark:text-white font-extrabold text-xs border border-gray-200 dark:border-slate-600 shadow-xs hover:border-pink-400 active:scale-95 transition flex items-center gap-1.5 cursor-pointer">
+            <span>🔄</span> <span>Cambiar</span>
+          </button>
+        </div>
+
+        <!-- Grid de Accesos (4 Módulos Esenciales Móvil) -->
+        <div class="grid grid-cols-2 gap-2.5 pt-1">
+          <!-- Insumos -->
+          <button type="button" onclick="App.switchTab('ingredients')"
+            class="p-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-pink-300 dark:hover:border-pink-800 active:scale-98 transition flex items-start gap-3 text-left group cursor-pointer">
+            <span class="text-2xl p-2 rounded-xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">📦</span>
+            <div class="min-w-0">
+              <div id="more-drawer-text-ingredients" class="font-black text-xs text-gray-900 dark:text-white truncate">Insumos</div>
+              <div class="text-[10px] text-gray-500 dark:text-slate-400 truncate">Precios y mermas</div>
+            </div>
+          </button>
+
+          <!-- Clientes -->
+          <button type="button" onclick="App.switchTab('customers')"
+            class="p-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-pink-300 dark:hover:border-pink-800 active:scale-98 transition flex items-start gap-3 text-left group cursor-pointer">
+            <span class="text-2xl p-2 rounded-xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">👥</span>
+            <div class="min-w-0">
+              <div class="font-black text-xs text-gray-900 dark:text-white truncate">Clientes</div>
+              <div class="text-[10px] text-gray-500 dark:text-slate-400 truncate">Historial y agenda</div>
+            </div>
+          </button>
+
+          <!-- Simulador de Precios -->
+          <button type="button" onclick="App.switchTab('simulator')"
+            class="p-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-pink-300 dark:hover:border-pink-800 active:scale-98 transition flex items-start gap-3 text-left group cursor-pointer">
+            <span class="text-2xl p-2 rounded-xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">🧮</span>
+            <div class="min-w-0">
+              <div class="font-black text-xs text-gray-900 dark:text-white truncate">Simulador</div>
+              <div class="text-[10px] text-gray-500 dark:text-slate-400 truncate">Márgenes y precios</div>
+            </div>
+          </button>
+
+          <!-- Radar Ofertas -->
+          <button type="button" onclick="App.switchTab('market-radar')"
+            class="p-3 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-pink-300 dark:hover:border-pink-800 active:scale-98 transition flex items-start gap-3 text-left group cursor-pointer">
+            <span class="text-2xl p-2 rounded-xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">🛒</span>
+            <div class="min-w-0">
+              <div class="font-black text-xs text-gray-900 dark:text-white truncate">Radar Ofertas</div>
+              <div class="text-[10px] text-gray-500 dark:text-slate-400 truncate">Precios super</div>
+            </div>
+          </button>
+        </div>
+
+        <button type="button" onclick="App.closeMobileMoreDrawer()"
+          class="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 font-bold text-xs hover:bg-gray-200 dark:hover:bg-slate-700 transition">
+          Cerrar Menú
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal / Drawer Ingresar Datos (+) (Acciones Rápidas) -->
+    <div id="quick-data-input-modal"
+      class="hidden fixed inset-0 z-70 bg-black/60 backdrop-blur-xs flex flex-col justify-end sm:items-center sm:justify-center p-0 sm:p-4 transition-all">
+      <!-- Backdrop click to close -->
+      <div class="absolute inset-0 cursor-pointer" onclick="App.closeQuickDataInputDrawer()"></div>
+      
+      <!-- Drawer Card -->
+      <div class="relative bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl p-5 max-w-md w-full shadow-2xl border border-gray-100 dark:border-slate-800 space-y-4 max-h-[85vh] overflow-y-auto z-10 animate-in slide-in-from-bottom duration-200">
+        <!-- Handle bar -->
+        <div class="w-12 h-1.5 bg-gray-300 dark:bg-slate-700 rounded-full mx-auto"></div>
+
+        <div class="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-slate-800">
+          <div>
+            <h3 class="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <span class="text-pink-600 dark:text-pink-400">➕</span> Ingresar Datos
+            </h3>
+            <p class="text-xs text-gray-500 dark:text-slate-400">¿Qué deseas registrar en el sistema?</p>
+          </div>
+          <button type="button" onclick="App.closeQuickDataInputDrawer()"
+            class="p-2 rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 bg-gray-100 dark:bg-slate-800 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Grid de Opciones para Ingresar Datos -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          <!-- 1. Nueva Cotización / Presupuesto -->
+          <button type="button" onclick="App.quickCreateAction('quote'); App.closeQuickDataInputDrawer();"
+            class="p-3.5 rounded-2xl border border-pink-200/70 dark:border-slate-800 bg-pink-50/50 dark:bg-slate-800/60 hover:bg-pink-100/60 active:scale-98 transition flex items-center gap-3.5 text-left group cursor-pointer">
+            <span class="text-2xl p-2.5 rounded-2xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">📋</span>
+            <div class="min-w-0 flex-1">
+              <div id="quick-input-text-quote" class="font-black text-sm text-gray-900 dark:text-white truncate">Nueva Cotización</div>
+              <div class="text-[11px] text-gray-500 dark:text-slate-400 truncate">Calcular costo y registrar pedido</div>
+            </div>
+          </button>
+
+          <!-- 2. Nueva Receta / Ficha de Servicio -->
+          <button type="button" onclick="App.quickCreateAction('recipe'); App.closeQuickDataInputDrawer();"
+            class="p-3.5 rounded-2xl border border-pink-200/70 dark:border-slate-800 bg-pink-50/50 dark:bg-slate-800/60 hover:bg-pink-100/60 active:scale-98 transition flex items-center gap-3.5 text-left group cursor-pointer">
+            <span id="quick-input-icon-recipe" class="text-2xl p-2.5 rounded-2xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">🎂</span>
+            <div class="min-w-0 flex-1">
+              <div id="quick-input-text-recipe" class="font-black text-sm text-gray-900 dark:text-white truncate">Nueva Receta</div>
+              <div class="text-[11px] text-gray-500 dark:text-slate-400 truncate">Ficha técnica, tiempos y porciones</div>
+            </div>
+          </button>
+
+          <!-- 3. Nuevo Insumo -->
+          <button type="button" onclick="App.quickCreateAction('ingredient'); App.closeQuickDataInputDrawer();"
+            class="p-3.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-pink-300 active:scale-98 transition flex items-center gap-3.5 text-left group cursor-pointer">
+            <span class="text-2xl p-2.5 rounded-2xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">📦</span>
+            <div class="min-w-0 flex-1">
+              <div id="quick-input-text-ing" class="font-black text-sm text-gray-900 dark:text-white truncate">Nuevo Insumo</div>
+              <div class="text-[11px] text-gray-500 dark:text-slate-400 truncate">Precio de compra, unidad y merma</div>
+            </div>
+          </button>
+
+          <!-- 4. Nuevo Cliente -->
+          <button type="button" onclick="App.quickCreateAction('customer'); App.closeQuickDataInputDrawer();"
+            class="p-3.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-pink-300 active:scale-98 transition flex items-center gap-3.5 text-left group cursor-pointer">
+            <span class="text-2xl p-2.5 rounded-2xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">👥</span>
+            <div class="min-w-0 flex-1">
+              <div class="font-black text-sm text-gray-900 dark:text-white truncate">Nuevo Cliente</div>
+              <div class="text-[11px] text-gray-500 dark:text-slate-400 truncate">Contacto, WhatsApp y dirección</div>
+            </div>
+          </button>
+
+          <!-- 5. Simular Precio Libre -->
+          <button type="button" onclick="App.switchTab('simulator'); App.closeQuickDataInputDrawer();"
+            class="p-3.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-pink-300 active:scale-98 transition flex items-center gap-3.5 text-left group cursor-pointer">
+            <span class="text-2xl p-2.5 rounded-2xl bg-white dark:bg-slate-700 shadow-xs group-hover:scale-110 transition">🧮</span>
+            <div class="min-w-0 flex-1">
+              <div class="font-black text-sm text-gray-900 dark:text-white truncate">Simular Precio Libre</div>
+              <div class="text-[11px] text-gray-500 dark:text-slate-400 truncate">Calcular margen y ganancia rápida</div>
+            </div>
+          </button>
+        </div>
+
+        <button type="button" onclick="App.closeQuickDataInputDrawer()"
+          class="w-full py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 font-bold text-xs hover:bg-gray-200 dark:hover:bg-slate-700 transition">
+          Cancelar
+        </button>
+      </div>
+    </div>
   </div>
 
-  <!-- Mobile Bottom Navigation Bar -->
+  <!-- Modern Floating Dock Navigation Bar (Vistoso & Ergonómico en Móvil) -->
+  <!-- Modern Floating Dock Navigation Bar (Vistoso & Ergonómico en Móvil - Desagregado) -->
   <nav id="mobile-bottom-nav"
-    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-pink-100 dark:border-slate-800 px-1 py-1.5 flex items-center justify-around shadow-lg transition-all duration-300 transform"
-    style="padding-bottom: calc(0.45rem + env(safe-area-inset-bottom, 0px));">
+    class="md:hidden fixed bottom-3 left-2 right-2 max-w-lg mx-auto z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-pink-200/70 dark:border-slate-700/80 rounded-3xl px-1 py-1.5 flex items-center justify-between shadow-[0_12px_36px_-6px_rgba(219,39,119,0.35)] dark:shadow-[0_12px_36px_-6px_rgba(0,0,0,0.7)] transition-all duration-300 transform overflow-x-auto no-scrollbar"
+    style="margin-bottom: env(safe-area-inset-bottom, 0px);">
+    
     <!-- 1. Inicio -->
     <button onclick="App.switchTab('dashboard')" data-tab="dashboard" id="nav-btn-home-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">🏠</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Inicio</span>
+      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
+      title="Inicio">
+      <div class="nav-icon-wrapper transition-all">
+        <span class="nav-icon leading-none pointer-events-none">🏠</span>
+      </div>
+      <span class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Inicio</span>
     </button>
-    <!-- 2. Simular -->
-    <button onclick="App.switchTab('simulator')" data-tab="simulator" id="nav-btn-simulator-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">🧮</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Simular</span>
-    </button>
-    <!-- 3. Cotizar -->
+
+    <!-- 2. Cotizaciones (Cotizar / Presupuesto) -->
     <button onclick="App.switchTab('quotes')" data-tab="quotes" id="nav-btn-quotes-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span id="nav-icon-quotes-mob" class="nav-icon text-xl leading-none pointer-events-none">📋</span>
-      <span id="nav-text-quotes-mob"
-        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Cotizar</span>
+      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
+      title="Cotizar">
+      <div class="nav-icon-wrapper transition-all">
+        <span id="nav-icon-quotes-mob" class="nav-icon leading-none pointer-events-none">📋</span>
+      </div>
+      <span id="nav-text-quotes-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Cotizar</span>
     </button>
-    <!-- 4. Recetas / Servicios -->
+
+    <!-- 3. Recetas / Servicios -->
     <button onclick="App.switchTab('recipes')" data-tab="recipes" id="nav-btn-recipes-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span id="nav-icon-recipes-mob" class="nav-icon text-xl leading-none pointer-events-none">🎂</span>
-      <span id="nav-text-recipes-mob"
-        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Recetas</span>
+      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
+      title="Recetas / Servicios">
+      <div class="nav-icon-wrapper transition-all">
+        <span id="nav-icon-recipes-mob" class="nav-icon leading-none pointer-events-none">🎂</span>
+      </div>
+      <span id="nav-text-recipes-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Recetas</span>
     </button>
-    <!-- 5. Insumos -->
+
+    <!-- 4. Insumos -->
     <button onclick="App.switchTab('ingredients')" data-tab="ingredients" id="nav-btn-ingredients-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span id="nav-icon-ingredients-mob" class="nav-icon text-xl leading-none pointer-events-none">📦</span>
-      <span id="nav-text-ingredients-mob"
-        class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Insumos</span>
+      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
+      title="Insumos">
+      <div class="nav-icon-wrapper transition-all">
+        <span id="nav-icon-ingredients-mob" class="nav-icon leading-none pointer-events-none">📦</span>
+      </div>
+      <span id="nav-text-ingredients-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Insumos</span>
     </button>
-    <!-- 6. Ofertas -->
-    <button onclick="App.switchTab('market-radar')" data-tab="market-radar" id="nav-btn-market-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">🛒</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Ofertas</span>
-    </button>
-    <!-- 7. Clientes -->
+
+    <!-- 6. Clientes -->
     <button onclick="App.switchTab('customers')" data-tab="customers" id="nav-btn-customers-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">👥</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Clientes</span>
+      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
+      title="Clientes">
+      <div class="nav-icon-wrapper transition-all">
+        <span id="nav-icon-customers-mob" class="nav-icon leading-none pointer-events-none">👥</span>
+      </div>
+      <span id="nav-text-customers-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Clientes</span>
     </button>
-    <!-- 8. Finanzas -->
-    <button onclick="App.switchTab('finance')" data-tab="finance" id="nav-btn-finance-mob"
-      class="nav-btn flex-1 flex flex-col items-center justify-center gap-0.5 py-1 px-0.5 rounded-xl transition-all duration-300 touch-manipulation cursor-pointer">
-      <span class="nav-icon text-xl leading-none pointer-events-none">📊</span>
-      <span class="nav-label text-[9px] font-bold pointer-events-none truncate max-w-full">Finanzas</span>
+
+    <!-- 7. Simulador -->
+    <button onclick="App.switchTab('simulator')" data-tab="simulator" id="nav-btn-simulator-mob"
+      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
+      title="Simulador de Precios">
+      <div class="nav-icon-wrapper transition-all">
+        <span id="nav-icon-simulator-mob" class="nav-icon leading-none pointer-events-none">🧮</span>
+      </div>
+      <span id="nav-text-simulator-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Simular</span>
+    </button>
+
+    <!-- 8. Radar Ofertas -->
+    <button onclick="App.switchTab('market-radar')" data-tab="market-radar" id="nav-btn-radar-mob"
+      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
+      title="Radar Ofertas">
+      <div class="nav-icon-wrapper transition-all">
+        <span id="nav-icon-radar-mob" class="nav-icon leading-none pointer-events-none">🛒</span>
+      </div>
+      <span id="nav-text-radar-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Ofertas</span>
     </button>
   </nav>
 

@@ -49,6 +49,7 @@ console.log('Scaled labor (2.5h * 1.875^0.75):', scaled30.recipe.laborHours, 'h'
 
 console.log('\n[Test 2] Scaling by Diameter: 18cm -> 24cm mold');
 const scaledDiameter = Calculator.scaleRecipe(sampleRecipe, {
+  mode: 'diameter',
   targetPortions: 30, // Note: when targetPortions is passed together with targetDiameterCm
   baseDiameterCm: 18,
   targetDiameterCm: 24

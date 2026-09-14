@@ -1301,6 +1301,9 @@ const Calculator = {
 
     if (options.scalingFactor && options.scalingFactor > 0) {
       scalingFactor = options.scalingFactor;
+    } else if ((options.mode === 'diameter' || !options.targetPortions) && options.targetDiameterCm && options.baseDiameterCm && options.baseDiameterCm > 0) {
+      // Escalado por área de molde circular: (D_meta / D_base)^2
+      scalingFactor = Math.pow(options.targetDiameterCm / options.baseDiameterCm, 2);
     } else if (options.targetPortions && options.targetPortions > 0) {
       scalingFactor = options.targetPortions / basePortions;
     } else if (options.targetDiameterCm && options.baseDiameterCm && options.baseDiameterCm > 0) {
@@ -1308,7 +1311,9 @@ const Calculator = {
       scalingFactor = Math.pow(options.targetDiameterCm / options.baseDiameterCm, 2);
     }
 
-    const targetPortions = options.targetPortions || Math.max(1, Math.round(basePortions * scalingFactor));
+    const targetPortions = (options.mode === 'diameter' && options.targetDiameterCm)
+      ? (options.targetPortions || this.estimateCakePortionsByDiameter(options.targetDiameterCm))
+      : (options.targetPortions || Math.max(1, Math.round(basePortions * scalingFactor)));
     const targetUnits = Math.max(1, Math.round((recipe.yieldUnits || 1) * (recipe.type === 'cake' ? 1 : scalingFactor)));
 
     // Escalar Ingredientes

@@ -572,29 +572,18 @@ body.mode-services .btn-primary:hover {
 body.mode-services .nav-btn.text-pink-600,
 body.mode-services .nav-btn.nav-active {
   color: #0f766e !important;
-  background-color: #ccfbf1 !important;
-  border-color: #99f6e4 !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
   font-weight: 800 !important;
 }
 
 html.dark body.mode-services .nav-btn.text-pink-600,
 html.dark body.mode-services .nav-btn.nav-active {
   color: #2dd4bf !important;
-  background-color: #134e4a !important;
-  border-color: #0d9488 !important;
-}
-
-body.mode-services nav.md\:hidden .nav-btn.nav-active {
-  transform: scale(1.16) translateY(-5px) !important;
-  background-color: rgba(204, 251, 241, 0.95) !important;
-  box-shadow: 0 4px 12px -2px rgba(13, 148, 136, 0.35), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-  border: 1.5px solid rgba(45, 212, 191, 0.8) !important;
-}
-
-.dark body.mode-services nav.md\:hidden .nav-btn.nav-active {
-  background-color: rgba(19, 78, 74, 0.85) !important;
-  box-shadow: 0 4px 14px -2px rgba(45, 212, 191, 0.3) !important;
-  border: 1.5px solid rgba(45, 212, 191, 0.5) !important;
+  background-color: transparent !important;
+  border: none !important;
+  outline: none !important;
 }
 
 /* Conmutador de Ambiente */
@@ -791,52 +780,131 @@ html.dark body.mode-services ::-webkit-scrollbar-thumb:hover {
   position: relative;
   transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
   will-change: transform, opacity;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
-.nav-btn .nav-icon {
-  font-size: 1.35rem;
-  line-height: 1.1;
-  display: block;
-  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.28s ease;
+.nav-btn:focus,
+.nav-btn:focus-visible,
+.nav-btn:active,
+.nav-btn * {
+  outline: none !important;
+  border: none !important;
 }
 
-/* Inactivos: Muted, en escala de grises, opacidad baja */
-.nav-btn:not(.nav-active) {
+/* En Barra Móvil / Floating Dock */
+#mobile-bottom-nav {
+  box-shadow: 0 14px 40px -8px rgba(219, 39, 119, 0.3), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#mobile-bottom-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.dark #mobile-bottom-nav {
+  box-shadow: 0 16px 44px -8px rgba(0, 0, 0, 0.8), 0 4px 14px -2px rgba(244, 114, 182, 0.15);
+}
+
+body.mode-services #mobile-bottom-nav {
+  box-shadow: 0 14px 40px -8px rgba(13, 148, 136, 0.32), 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+}
+
+/* Base Wrapper: Sin bordes, sin fondos, idéntico para todos */
+#mobile-bottom-nav .nav-btn {
+  flex: 1 1 0px;
+  min-width: 44px;
+  max-width: 74px;
+  scroll-snap-align: center;
+}
+
+#mobile-bottom-nav .nav-btn .nav-icon-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 30px !important;
+  height: 30px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translateY(0);
+}
+
+/* TODOS los 8 iconos nacen del mismo tamaño exacto */
+#mobile-bottom-nav .nav-btn .nav-icon {
+  font-size: 20px !important;
+  line-height: 1 !important;
+  width: 26px !important;
+  height: 26px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  transform: scale(1) translateY(0) !important;
   opacity: 0.52;
   filter: grayscale(100%);
-  transform: scale(0.92) translateY(0);
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease, filter 0.2s ease;
+  will-change: transform;
 }
 
-.nav-btn:not(.nav-active):hover {
+#mobile-bottom-nav .nav-btn .nav-label {
+  font-size: 9.5px;
+  line-height: 1.05;
+  margin-top: 2px;
+  max-width: 100%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+#mobile-bottom-nav .nav-btn:hover .nav-icon {
   opacity: 0.85;
   filter: grayscale(20%);
-  transform: scale(1) translateY(0);
 }
 
-/* Activo: Destacado, coloreado, más grande que el resto y elevado con animación */
-.nav-btn.nav-active {
+/* Activo: Destacado, coloreado y CRECE SIN LÍNEAS NI BORDES */
+#mobile-bottom-nav .nav-btn.nav-active {
   opacity: 1 !important;
-  filter: grayscale(0%) !important;
   z-index: 10;
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
-/* En Barra Móvil */
-nav.md\:hidden .nav-btn.nav-active {
-  transform: scale(1.16) translateY(-5px) !important;
-  background-color: rgba(253, 242, 248, 0.95);
-  box-shadow: 0 4px 12px -2px rgba(219, 39, 119, 0.25), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border: 1.5px solid rgba(244, 114, 182, 0.6);
+#mobile-bottom-nav .nav-btn.nav-active .nav-icon-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  transform: translateY(-4px) !important;
 }
 
-.dark nav.md\:hidden .nav-btn.nav-active {
-  background-color: rgba(80, 7, 36, 0.65);
-  box-shadow: 0 4px 14px -2px rgba(244, 114, 182, 0.3);
-  border: 1.5px solid rgba(244, 114, 182, 0.4);
+#mobile-bottom-nav .nav-btn.nav-active .nav-icon {
+  transform: scale(1.36) !important;
+  opacity: 1 !important;
+  filter: grayscale(0%) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.16)) !important;
+  border: none !important;
+  outline: none !important;
 }
 
-nav.md\:hidden .nav-btn.nav-active .nav-icon {
-  transform: scale(1.22);
-  filter: drop-shadow(0 2px 4px rgba(219, 39, 119, 0.3));
+#mobile-bottom-nav .nav-btn.nav-active .nav-label {
+  transform: translateY(-2px);
+  font-weight: 900 !important;
 }
 
 /* En Desktop Header */
@@ -1251,6 +1319,120 @@ body.mode-services .dark .sidebar-nav-item.sidebar-active,
   color: #ffffff !important;
   box-shadow: 0 3px 10px rgba(244, 114, 182, 0.3);
 }
+
+/* =======================================================
+   Modern Mobile Floating Dock: Active Selection Animation
+   (Cambio dinámico de tamaño y posición de icono al seleccionar)
+   ======================================================= */
+.nav-btn {
+  outline: none !important;
+  box-shadow: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+  border: none !important;
+  position: relative;
+  transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.nav-btn:focus,
+.nav-btn:focus-visible,
+.nav-btn:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.nav-btn .nav-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  padding: 4px 10px;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+  transform: translateY(0);
+}
+
+.nav-btn .nav-icon {
+  font-size: 20px;
+  line-height: 1;
+  display: inline-block;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
+  transform: scale(1);
+}
+
+.nav-btn .nav-label {
+  font-size: 10px;
+  line-height: 1.1;
+  margin-top: 2px;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, font-weight 0.2s ease;
+  transform: translateY(0);
+}
+
+/* ESTADO SELECCIONADO (ACTIVE): ICONO MÁS GRANDE Y ELEVADO SIN FONDO NI BORDE */
+.nav-btn.nav-active .nav-icon-wrapper {
+  transform: translateY(-4px);
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.dark .nav-btn.nav-active .nav-icon-wrapper,
+.mode-services .nav-btn.nav-active .nav-icon-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.nav-btn.nav-active .nav-icon {
+  transform: scale(1.36) !important;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.16));
+}
+
+.nav-btn.nav-active .nav-label {
+  transform: translateY(-2px);
+  font-weight: 900 !important;
+}
+
+/* Indicador micro-dot activo */
+.nav-btn.nav-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background-color: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  animation: pulse-dot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
+
+#hero-action-pill {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: linear-gradient(135deg, #db2777 0%, #f43f5e 50%, #ec4899 100%) !important;
+  box-shadow: 0 8px 24px -4px rgba(219, 39, 119, 0.5) !important;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease !important;
+}
+
+#hero-action-pill:active {
+  transform: scale(0.9) !important;
+}
+
+.mode-services #hero-action-pill {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%) !important;
+  box-shadow: 0 8px 24px -4px rgba(13, 148, 136, 0.5) !important;
+}
+
 
 
 

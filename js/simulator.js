@@ -117,15 +117,15 @@ const SimulatorModule = {
       }
     }
 
-    // Inicializar precio de venta sugerido si no está seteado o es menor al costo
-    if (!this.currentPrice || this.currentPrice < currentCost) {
+    // Inicializar precio de venta sugerido si no está seteado o es 0
+    if (!this.currentPrice || this.currentPrice <= 0) {
       const marginFrac = this.targetMargin >= 100 ? 0.99 : this.targetMargin / 100;
       this.currentPrice = Calculator.roundUpTo(currentCost / (1 - marginFrac), 100);
     }
 
-    // Rango del slider
-    const minSliderPrice = Math.max(100, Math.floor(currentCost * 0.5));
-    const maxSliderPrice = Math.max(minSliderPrice + 1000, Math.ceil(currentCost * 4.5));
+    // Rango dinámico del slider
+    const minSliderPrice = Math.min(Math.floor(currentCost * 0.5), this.currentPrice, 100);
+    const maxSliderPrice = Math.max(minSliderPrice + 1000, Math.ceil(currentCost * 4.5), this.currentPrice + 1000);
 
     // Cálculos de simulación
     const feePct = this.includeCardFee ? this.cardFeePercent : 0;
@@ -232,6 +232,7 @@ const SimulatorModule = {
                 <span class="text-xs font-bold text-gray-700 dark:text-gray-300">Simular para:</span>
                 <input 
                   type="number" 
+                  id="sim-target-portions-input"
                   min="1" 
                   max="100" 
                   value="${this.simTargetPortions || baseSessionsOrPortions}" 
@@ -283,6 +284,7 @@ const SimulatorModule = {
             ${!this.selectedRecipeId ? `
               <input 
                 type="number" 
+                id="sim-custom-cost-input"
                 min="0" 
                 step="any" 
                 value="${this.customCost}" 
@@ -643,6 +645,11 @@ const SimulatorModule = {
     this.simTargetPortions = Math.max(1, parseInt(val) || 1);
     this.currentPrice = 0;
     this.render();
+    const input = document.getElementById('sim-target-portions-input');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(String(this.simTargetPortions).length, String(this.simTargetPortions).length);
+    }
   },
 
   saveScaledAsNewRecipe() {
@@ -679,6 +686,11 @@ const SimulatorModule = {
   onCustomCostChange(val) {
     this.customCost = Math.max(0, parseFloat(val) || 0);
     this.render();
+    const input = document.getElementById('sim-custom-cost-input');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(String(this.customCost).length, String(this.customCost).length);
+    }
   },
 
   onPriceSliderChange(val) {
@@ -691,6 +703,11 @@ const SimulatorModule = {
   onPriceInputChange(val) {
     this.currentPrice = Math.max(0, parseFloat(val) || 0);
     this.render();
+    const input = document.getElementById('sim-price-input');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(String(this.currentPrice).length, String(this.currentPrice).length);
+    }
   },
 
   adjustPriceBy(amount) {

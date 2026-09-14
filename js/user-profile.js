@@ -169,11 +169,17 @@ const UserProfileModule = {
     if (e) e.preventDefault();
     const profile = UserDB.getProfile();
 
-    profile.name = document.getElementById('prof-name').value.trim();
-    profile.phone = document.getElementById('prof-phone').value.trim();
-    profile.email = document.getElementById('prof-email').value.trim();
-    profile.address = document.getElementById('prof-address').value.trim();
-    profile.commune = document.getElementById('prof-commune').value;
+    const nameEl = document.getElementById('prof-name');
+    const phoneEl = document.getElementById('prof-phone');
+    const emailEl = document.getElementById('prof-email');
+    const addressEl = document.getElementById('prof-address');
+    const communeEl = document.getElementById('prof-commune');
+
+    if (nameEl) profile.name = nameEl.value.trim();
+    if (phoneEl) profile.phone = phoneEl.value.trim();
+    if (emailEl) profile.email = emailEl.value.trim();
+    if (addressEl) profile.address = addressEl.value.trim();
+    if (communeEl) profile.commune = communeEl.value;
 
     UserDB.saveProfile(profile);
     UserApp.showToast('✅ Perfil guardado con éxito');
