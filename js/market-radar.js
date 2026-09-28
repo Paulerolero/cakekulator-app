@@ -597,8 +597,8 @@ const MarketRadarModule = {
           <button onclick="MarketRadarModule.openScraperCaptureModal()" class="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs shadow-purple-200 active:scale-95 cursor-pointer truncate">
             <span>🤖</span> <span class="truncate">+ Capturar Precio</span>
           </button>
-          <button onclick="MarketRadarModule.openStoreManagerModal()" class="px-2.5 sm:px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-gray-200 dark:border-slate-700 shadow-2xs active:scale-95 cursor-pointer truncate">
-            <span>⚙️</span> <span class="truncate">Tiendas</span>
+          <button onclick="MarketRadarModule.openStoreManagerModal()" class="col-span-2 sm:col-span-1 px-2.5 sm:px-3 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 text-xs font-bold transition flex items-center justify-center gap-1.5 border border-gray-200 dark:border-slate-700 shadow-2xs active:scale-95 cursor-pointer truncate">
+            <span>⚙️</span> <span class="truncate">Administrar Tiendas</span>
           </button>
           <button onclick="MarketRadarModule.refreshPricesLive()" title="Actualizar y guardar precios del radar" class="hidden sm:flex p-2 rounded-xl bg-emerald-50 dark:bg-slate-800 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 transition active:scale-95 cursor-pointer border border-emerald-200 dark:border-slate-700 items-center justify-center">
             <span>🔄</span>

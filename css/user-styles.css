@@ -237,3 +237,20 @@
   transform: scale(0.96);
 }
 
+/* Despeje inferior y contención en móvil para app clientes */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 16px)) !important;
+  }
+  #explore-view,
+  #map-view,
+  #requests-view,
+  #offers-view,
+  #profile-view {
+    padding-bottom: 2rem !important;
+  }
+  [id$="-modal"] > div {
+    max-height: calc(100dvh - 2.5rem) !important;
+  }
+}
+

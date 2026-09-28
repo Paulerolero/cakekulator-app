@@ -262,20 +262,20 @@
     <!-- Top Navigation Header (Desktop Topbar + Mobile Topbar) -->
     <header
       class="shrink-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-pink-100/80 dark:border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 transition-colors duration-200 sticky top-0 md:static">
-      <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+      <div class="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4">
 
         <!-- Mobile Brand Logo (Oculto en Desktop Sidebar) -->
-        <div class="flex md:hidden items-center gap-2 cursor-pointer select-none group shrink-0"
+        <div class="flex md:hidden items-center gap-2 cursor-pointer select-none group min-w-0 shrink"
           onclick="App.switchTab('dashboard')">
           <img id="header-brand-logo" src="assets/icons/logo.png" alt="Cakekulator Logo"
-            class="w-8 h-8 rounded-xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700">
-          <div>
+            class="w-8 h-8 rounded-xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700 shrink-0">
+          <div class="min-w-0">
             <span id="header-brand-title"
               class="font-extrabold text-base text-gray-900 dark:text-white tracking-tight block leading-none">
               Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
             </span>
             <span id="header-brand-name"
-              class="text-[9px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[110px] block">
+              class="text-[9px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[100px] block">
               Gestión Pastelera
             </span>
           </div>
@@ -283,7 +283,7 @@
 
         <!-- Selector Móvil de Ambiente (Productos ⇄ Servicios) -->
         <button type="button" onclick="App.showModeSelectionModal()" id="header-mode-badge"
-          class="md:hidden px-2.5 py-1.5 rounded-full bg-pink-50 dark:bg-pink-950/70 border-2 border-pink-400/80 dark:border-pink-700 text-pink-800 dark:text-pink-200 text-xs font-black flex items-center gap-1.5 transition active:scale-95 shadow-xs cursor-pointer shrink-0"
+          class="md:hidden px-2 py-1 rounded-full bg-pink-50 dark:bg-pink-950/70 border-2 border-pink-400/80 dark:border-pink-700 text-pink-800 dark:text-pink-200 text-xs font-black flex items-center gap-1 sm:gap-1.5 transition active:scale-95 shadow-xs cursor-pointer shrink-0"
           title="Cambiar entre Productos y Servicios">
           <span id="header-mode-icon">🎂</span>
           <span id="header-mode-text">Productos</span>

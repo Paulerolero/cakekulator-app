@@ -1259,6 +1259,33 @@ body.mode-services .dark .sidebar-nav-item.sidebar-active,
   white-space: nowrap !important;
 }
 
+/* 9. Despeje inferior y prevención de superposición con barra flotante y safe-areas en móvil */
+@media (max-width: 767px) {
+  body {
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 20px)) !important;
+  }
+  #app-main-content {
+    padding-bottom: calc(8rem + env(safe-area-inset-bottom, 24px)) !important;
+  }
+  #dashboard-view,
+  #quotes-view,
+  #customers-view,
+  #recipes-view,
+  #ingredients-view,
+  #simulator-view,
+  #market-radar-view,
+  #finance-view,
+  #settings-view {
+    padding-bottom: 2.5rem !important;
+  }
+  
+  /* Contención vertical de modales en móviles para que botones de acción no se corten */
+  [id$="-modal"] > div,
+  .modal-animate-in {
+    max-height: calc(100dvh - 2rem) !important;
+  }
+}
+
 /* =======================================================
    Barra de Acceso Rápido Móvil (Quick Access Carousel)
    ======================================================= */

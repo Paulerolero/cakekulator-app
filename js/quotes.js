@@ -670,19 +670,19 @@ const QuotesModule = {
       </div>
 
       <!-- Fila 2: Cantidad, Precio Unitario, Subtotal y Borrar -->
-      <div class="flex items-center gap-2 pt-0.5">
-        <div class="w-20 shrink-0">
-          <input type="number" step="1" min="1" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 text-xs text-center font-bold q-item-qty focus:ring-2 focus:ring-pink-400 bg-gray-50/60" oninput="QuotesModule.recalculateTotals()">
+      <div class="flex items-center gap-1.5 sm:gap-2 pt-0.5">
+        <div class="w-14 sm:w-20 shrink-0">
+          <input type="number" step="1" min="1" placeholder="Cant." value="${qty}" class="w-full px-2 py-1.5 rounded-xl border border-gray-200 text-xs text-center font-bold q-item-qty focus:ring-2 focus:ring-pink-400 bg-gray-50/60" oninput="QuotesModule.recalculateTotals()">
         </div>
 
-        <div class="flex-1 min-w-[90px]">
+        <div class="flex-1 min-w-[70px]">
           <div class="relative">
-            <span class="absolute left-2.5 top-1.5 text-gray-400 text-xs">$</span>
-            <input type="number" step="100" min="0" placeholder="Precio" value="${unitPrice}" class="w-full pl-5 pr-2.5 py-1.5 rounded-xl border border-gray-200 text-xs text-right font-bold text-gray-800 q-item-price focus:ring-2 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
+            <span class="absolute left-2 top-1.5 text-gray-400 text-xs">$</span>
+            <input type="number" step="100" min="0" placeholder="Precio" value="${unitPrice}" class="w-full pl-4.5 pr-2 py-1.5 rounded-xl border border-gray-200 text-xs text-right font-bold text-gray-800 q-item-price focus:ring-2 focus:ring-pink-400" oninput="QuotesModule.recalculateTotals()">
           </div>
         </div>
 
-        <div class="w-20 text-right px-1 shrink-0">
+        <div class="w-16 sm:w-20 text-right px-1 shrink-0">
           <span class="text-xs font-black text-pink-600 q-item-subtotal truncate block">$ 0</span>
         </div>
 

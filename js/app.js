@@ -2926,7 +2926,7 @@ const App = {
     if (!toast) {
       toast = document.createElement('div');
       toast.id = 'app-toast';
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl z-50 transition-all duration-300 transform -translate-y-12 opacity-0 pointer-events-none flex items-center gap-2';
+      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl z-[100] transition-all duration-300 transform -translate-y-12 opacity-0 pointer-events-none flex items-center gap-2';
       document.body.appendChild(toast);
     }
 

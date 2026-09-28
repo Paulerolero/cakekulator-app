@@ -42,7 +42,8 @@ const ASSETS_TO_CACHE = [
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/icons/icon-user-192.png',
-  './assets/icons/icon-user-512.png'
+  './assets/icons/icon-user-512.png',
+  './assets/icons/logo-user.png'
 ];
 
 // Instalación y almacenamiento en caché de archivos estáticos

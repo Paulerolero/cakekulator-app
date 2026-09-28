@@ -418,7 +418,7 @@ const SimulatorModule = {
               </div>
             </div>
 
-            <div class="grid grid-cols-4 gap-2">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
               ${(isServicesMode ? [40, 50, 60, 70] : [30, 40, 50, 60]).map(m => `
                 <button 
                   onclick="SimulatorModule.applyTargetMargin(${m}, ${currentCost})"

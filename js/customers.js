@@ -457,7 +457,7 @@ const CustomersModule = {
     if (!modalsRoot) return;
 
     modalsRoot.innerHTML = `
-      <div id="customer-detail-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
+      <div id="customer-detail-modal" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           
           <!-- Modal Header -->
@@ -815,7 +815,7 @@ const CustomersModule = {
     const initialNotes = customer ? (customer.notes || '') : (prefillData ? (prefillData.notes || '') : '');
 
     modalsRoot.innerHTML = `
-      <div id="customer-editor-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
+      <div id="customer-editor-modal" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           
           <div class="bg-pink-600 dark:bg-pink-700 p-4 text-white flex items-center justify-between shrink-0">
@@ -1025,7 +1025,7 @@ const CustomersModule = {
     if (!modalsRoot) return;
 
     modalsRoot.innerHTML = `
-      <div id="customer-whatsapp-modal" class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
+      <div id="customer-whatsapp-modal" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
         <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           
           <!-- Header -->

@@ -98,17 +98,17 @@
       <div class="max-w-md mx-auto flex items-center justify-between gap-2">
 
         <!-- Mobile Brand Logo -->
-        <div class="flex items-center gap-2 cursor-pointer select-none group shrink-0"
+        <div class="flex items-center gap-2 cursor-pointer select-none group min-w-0 shrink"
           onclick="App.switchTab('dashboard')">
           <img id="header-brand-logo" src="assets/icons/logo.png" alt="Cakekulator Logo"
-            class="w-8 h-8 rounded-xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700">
-          <div>
+            class="w-8 h-8 rounded-xl shadow-md shadow-pink-200/70 dark:shadow-none object-cover ring-1 ring-pink-200/50 dark:ring-slate-700 shrink-0">
+          <div class="min-w-0">
             <span id="header-brand-title"
               class="font-extrabold text-base text-gray-900 dark:text-white tracking-tight block leading-none">
               Cake<span class="text-pink-600 dark:text-pink-400">kulator</span>
             </span>
             <span id="header-brand-name"
-              class="text-[9px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[120px] block">
+              class="text-[9px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider truncate max-w-[100px] block">
               App Vendedor Móvil
             </span>
           </div>
@@ -118,7 +118,7 @@
         <div class="flex items-center gap-1.5 shrink-0">
           <!-- Selector de Ambiente Rápido y Prominente (Productos ⇄ Servicios) -->
           <button type="button" onclick="App.showModeSelectionModal()" id="header-mode-badge"
-            class="px-2.5 py-1.5 rounded-full bg-pink-50 dark:bg-pink-950/70 border-2 border-pink-400/80 dark:border-pink-700 text-pink-800 dark:text-pink-200 text-xs font-black flex items-center gap-1.5 transition active:scale-95 shadow-xs cursor-pointer"
+            class="px-2 py-1 rounded-full bg-pink-50 dark:bg-pink-950/70 border-2 border-pink-400/80 dark:border-pink-700 text-pink-800 dark:text-pink-200 text-xs font-black flex items-center gap-1.5 transition active:scale-95 shadow-xs cursor-pointer"
             title="Toca para cambiar entre Productos y Servicios">
             <span id="header-mode-icon" class="text-sm">🎂</span>
             <span id="header-mode-text" class="font-extrabold tracking-tight">Productos</span>

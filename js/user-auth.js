@@ -117,7 +117,7 @@ const UserAuthModule = {
           <div class="p-4 bg-gradient-to-br from-pink-50 via-rose-50 to-white dark:from-slate-800 dark:to-slate-900 rounded-3xl border border-pink-200 dark:border-slate-700 shadow-xs space-y-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2.5">
-                <img src="${this.currentUser.photoURL || 'assets/icons/favicon-user.png'}" class="w-10 h-10 rounded-2xl object-cover ring-2 ring-pink-400/40" />
+                <img src="${this.currentUser.photoURL || 'assets/icons/icon-user-192.png'}" class="w-10 h-10 rounded-2xl object-cover ring-2 ring-pink-400/40" />
                 <div>
                   <h4 class="font-extrabold text-xs text-gray-900 dark:text-white">${this.currentUser.displayName || 'Cliente Cakekulator'}</h4>
                   <p class="text-[11px] text-gray-500 dark:text-gray-400">${this.currentUser.email}</p>
