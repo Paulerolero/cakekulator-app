@@ -1165,7 +1165,10 @@ const RecipesModule = {
       const root = document.getElementById('modals-root') || document.body;
       root.appendChild(modal);
     }
-    modal.className = 'fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
+    modal.className = 'fixed inset-0 z-[70] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
+    modal.onclick = (e) => {
+      if (e.target === modal) RecipesModule.closeScalingModal();
+    };
 
     this.renderScalingModalContent();
     modal.classList.remove('hidden');
@@ -1207,6 +1210,11 @@ const RecipesModule = {
     if (!recipe) return;
 
     const isCake = recipe.type === 'cake';
+    const unitSuffix = isCake ? 'p' : ' un.';
+    const unitNoun = isCake ? 'personas' : (recipe.unitName || 'unidades');
+    const baseCount = Math.max(1, Number(recipe.yieldPortions || recipe.yieldUnits || 1));
+    const targetCount = this.scalingState.targetPortions;
+
     const allIngredients = DB.getIngredients();
     const ingredientsMap = new Map(allIngredients.map(i => [i.id, i]));
 
@@ -1233,19 +1241,19 @@ const RecipesModule = {
         <!-- Header -->
         <div class="bg-gradient-to-r from-pink-500 via-rose-500 to-pink-600 p-4 text-white flex items-center justify-between shrink-0">
           <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-xs">
+            <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl shadow-xs shrink-0">
               📏
             </div>
-            <div>
-              <h3 class="font-bold text-base leading-tight">Escalador Inteligente de Receta</h3>
-              <p class="text-xs text-pink-100">${recipe.name} · Base: ${recipe.yieldPortions} ${isCake ? 'personas' : 'unidades'}</p>
+            <div class="min-w-0">
+              <h3 class="font-bold text-base leading-tight truncate">Escalador Inteligente de Receta</h3>
+              <p class="text-xs text-pink-100 truncate">${recipe.name} · Base: ${baseCount} ${unitNoun}</p>
             </div>
           </div>
-          <button onclick="RecipesModule.closeScalingModal()" class="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">✕</button>
+          <button onclick="RecipesModule.closeScalingModal()" class="text-white/80 hover:text-white p-1.5 rounded-full hover:bg-white/10 transition shrink-0 cursor-pointer" title="Cerrar modal">✕</button>
         </div>
 
         <!-- Contenido Scrollable -->
-        <div class="p-4 sm:p-6 overflow-y-auto space-y-5 flex-1 text-xs">
+        <div class="p-4 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5 flex-1 text-xs">
           
           <!-- Selector de Modo y Tamaño -->
           <div class="bg-pink-50/60 dark:bg-slate-800/80 p-4 rounded-2xl border border-pink-100 dark:border-slate-700 space-y-3">
@@ -1254,15 +1262,17 @@ const RecipesModule = {
               
               <div class="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-pink-200 dark:border-slate-700 shadow-2xs">
                 <button 
+                  type="button"
                   onclick="RecipesModule.setScalingMode('portions')"
-                  class="px-3 py-1 rounded-lg font-bold transition ${this.scalingState.mode === 'portions' ? 'bg-pink-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:text-pink-600'}"
+                  class="px-3 py-1 rounded-lg font-bold transition cursor-pointer ${this.scalingState.mode === 'portions' ? 'bg-pink-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:text-pink-600'}"
                 >
-                  👥 Por Personas / Porciones
+                  ${isCake ? '👥 Por Personas / Porciones' : '📦 Por Cantidad de Unidades'}
                 </button>
                 ${isCake ? `
                   <button 
+                    type="button"
                     onclick="RecipesModule.setScalingMode('diameter')"
-                    class="px-3 py-1 rounded-lg font-bold transition ${this.scalingState.mode === 'diameter' ? 'bg-pink-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:text-pink-600'}"
+                    class="px-3 py-1 rounded-lg font-bold transition cursor-pointer ${this.scalingState.mode === 'diameter' ? 'bg-pink-600 text-white' : 'text-gray-600 dark:text-gray-400 hover:text-pink-600'}"
                   >
                     🎂 Por Diámetro Molde (cm)
                   </button>
@@ -1282,21 +1292,22 @@ const RecipesModule = {
                       id="scaling-target-portions-input"
                       min="1" 
                       max="500" 
-                      value="${this.scalingState.targetPortions}"
+                      value="${targetCount}"
                       oninput="RecipesModule.setTargetPortions(this.value)"
                       class="w-20 px-2 py-1 text-center rounded-xl border border-pink-300 dark:border-slate-600 font-black text-pink-700 dark:text-pink-300 bg-white dark:bg-slate-900 text-sm"
                     />
-                    <span>${isCake ? 'personas' : 'unidades'}</span>
+                    <span>${unitNoun}</span>
                   </div>
                 </div>
 
                 <div class="flex flex-wrap gap-1.5">
                   ${portionPresets.map(p => `
                     <button 
+                      type="button"
                       onclick="RecipesModule.setTargetPortions(${p})"
-                      class="px-3 py-1.5 rounded-xl font-bold transition ${this.scalingState.targetPortions === p ? 'bg-pink-600 text-white shadow-xs scale-105' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-pink-100 dark:hover:bg-slate-700 border border-pink-200 dark:border-slate-700'}"
+                      class="px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${targetCount === p ? 'bg-pink-600 text-white shadow-xs scale-105' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-pink-100 dark:hover:bg-slate-700 border border-pink-200 dark:border-slate-700'}"
                     >
-                      ${p} ${isCake ? 'pers.' : 'un.'}
+                      ${p} ${unitSuffix}
                     </button>
                   `).join('')}
                 </div>
@@ -1316,8 +1327,9 @@ const RecipesModule = {
                 <div class="flex flex-wrap gap-1.5">
                   ${diameterPresets.map(d => `
                     <button 
+                      type="button"
                       onclick="RecipesModule.setTargetDiameter(${d})"
-                      class="px-3 py-1.5 rounded-xl font-bold transition ${this.scalingState.targetDiameter === d ? 'bg-pink-600 text-white shadow-xs scale-105' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-pink-100 dark:hover:bg-slate-700 border border-pink-200 dark:border-slate-700'}"
+                      class="px-3 py-1.5 rounded-xl font-bold transition cursor-pointer ${this.scalingState.targetDiameter === d ? 'bg-pink-600 text-white shadow-xs scale-105' : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-pink-100 dark:hover:bg-slate-700 border border-pink-200 dark:border-slate-700'}"
                     >
                       Ø ${d} cm (${Calculator.estimateCakePortionsByDiameter(d)}p)
                     </button>
@@ -1340,11 +1352,11 @@ const RecipesModule = {
             <div class="bg-gray-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-gray-200 dark:border-slate-700 text-center">
               <span class="text-gray-600 dark:text-gray-400 block font-semibold text-[11px]">Factor de Escala</span>
               <span class="text-lg font-black text-gray-800 dark:text-gray-100 block mt-0.5">${factor.toFixed(2)}x</span>
-              <span class="text-[10px] text-gray-500">Base: ${recipe.yieldPortions}p → Meta: ${scaleResult.targetPortions}p</span>
+              <span class="text-[10px] text-gray-500">Base: ${baseCount}${unitSuffix} → Meta: ${scaleResult.targetPortions}${unitSuffix}</span>
             </div>
 
             <div class="bg-pink-50 dark:bg-slate-800 p-3.5 rounded-2xl border border-pink-200 dark:border-slate-700 text-center">
-              <span class="text-pink-800 dark:text-pink-300 block font-bold text-[11px]">Costo Torta Escalada (${this.scalingState.targetPortions}p)</span>
+              <span class="text-pink-800 dark:text-pink-300 block font-bold text-[11px]">Costo ${isCake ? 'Torta' : 'Lote'} Escalado (${targetCount}${unitSuffix})</span>
               <span class="text-base font-black text-pink-700 dark:text-pink-300 block mt-0.5">${Calculator.formatCurrency(scaledCosts.totalBatchCost)}</span>
               <span class="text-[10px] text-pink-700 dark:text-pink-400 font-medium">Insumos: ${Calculator.formatCurrency(scaledCosts.ingredientsCost)}</span>
             </div>
@@ -1367,17 +1379,17 @@ const RecipesModule = {
               <table class="w-full text-left text-xs">
                 <thead>
                   <tr class="bg-gray-50/50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-b border-gray-100 dark:border-slate-700 font-semibold text-[11px]">
-                    <th class="p-2.5">Ingrediente</th>
-                    <th class="p-2.5 text-center">Base (${recipe.yieldPortions}p)</th>
-                    <th class="p-2.5 text-center bg-pink-50/50 dark:bg-slate-700 font-black text-pink-700 dark:text-pink-300">Nueva Cantidad (${this.scalingState.targetPortions}p)</th>
-                    <th class="p-2.5 text-right">Nuevo Costo</th>
+                    <th class="p-2.5 min-w-[140px]">Ingrediente</th>
+                    <th class="p-2.5 text-center min-w-[80px]">Base (${baseCount}${unitSuffix})</th>
+                    <th class="p-2.5 text-center min-w-[110px] bg-pink-50/50 dark:bg-slate-700 font-black text-pink-700 dark:text-pink-300">Nueva Cantidad (${targetCount}${unitSuffix})</th>
+                    <th class="p-2.5 text-right min-w-[90px]">Nuevo Costo</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
                   ${scaledRecipe.ingredients.map(item => {
-      const ing = ingredientsMap.get(item.ingredientId);
-      const itemCost = ing ? Calculator.getIngredientItemCost(ing, item.quantity, item.unit) : 0;
-      return `
+                    const ing = ingredientsMap.get(item.ingredientId);
+                    const itemCost = ing ? Calculator.getIngredientItemCost(ing, item.quantity, item.unit) : 0;
+                    return `
                       <tr class="hover:bg-pink-50/30 dark:hover:bg-slate-700/50 transition">
                         <td class="p-2.5 font-bold text-gray-800 dark:text-gray-200">${ing ? ing.name : 'Insumo'}</td>
                         <td class="p-2.5 text-center text-gray-500 dark:text-gray-400">${item.originalQuantity} ${item.unit}</td>
@@ -1387,35 +1399,76 @@ const RecipesModule = {
                         <td class="p-2.5 text-right font-semibold text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(itemCost)}</td>
                       </tr>
                     `;
-    }).join('')}
+                  }).join('')}
                 </tbody>
               </table>
             </div>
           </div>
+
+          ${scaledRecipe.packaging && scaledRecipe.packaging.length > 0 ? `
+            <!-- Tabla Comparativa de Empaques -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 overflow-hidden shadow-2xs">
+              <div class="px-4 py-2.5 bg-gray-50 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
+                <h4 class="font-bold text-gray-800 dark:text-gray-200 text-xs">3. Empaques y Presentación</h4>
+                <span class="text-[11px] text-gray-500 dark:text-gray-400">${scaledRecipe.packaging.length} empaques</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                  <thead>
+                    <tr class="bg-gray-50/50 dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-b border-gray-100 dark:border-slate-700 font-semibold text-[11px]">
+                      <th class="p-2.5 min-w-[140px]">Empaque</th>
+                      <th class="p-2.5 text-center min-w-[80px]">Base</th>
+                      <th class="p-2.5 text-center min-w-[110px] bg-pink-50/50 dark:bg-slate-700 font-black text-pink-700 dark:text-pink-300">Nuevo Total</th>
+                      <th class="p-2.5 text-right min-w-[90px]">Nuevo Costo</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100 dark:divide-slate-700">
+                    ${scaledRecipe.packaging.map(item => {
+                      const ing = ingredientsMap.get(item.ingredientId);
+                      const itemCost = ing ? Calculator.getIngredientItemCost(ing, item.quantity, item.unit) : 0;
+                      return `
+                        <tr class="hover:bg-pink-50/30 dark:hover:bg-slate-700/50 transition">
+                          <td class="p-2.5 font-bold text-gray-800 dark:text-gray-200">${ing ? ing.name : 'Empaque'}</td>
+                          <td class="p-2.5 text-center text-gray-500 dark:text-gray-400">${item.originalQuantity} ${item.unit}</td>
+                          <td class="p-2.5 text-center bg-pink-50/40 dark:bg-slate-700 font-black text-pink-600 dark:text-pink-300 text-sm">
+                            ${item.quantity} ${item.unit}
+                          </td>
+                          <td class="p-2.5 text-right font-semibold text-gray-700 dark:text-gray-300">${Calculator.formatCurrency(itemCost)}</td>
+                        </tr>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ` : ''}
 
         </div>
 
         <!-- Footer Acciones -->
         <div class="p-4 bg-gray-50 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-2.5 shrink-0">
           <button 
+            type="button"
             onclick="RecipesModule.openInSimulatorFromScaling()" 
             class="w-full sm:w-auto py-2.5 px-4 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-2xs transition flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <span>📊</span> Probar en Simulador
           </button>
 
-          <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div class="flex items-center gap-2 w-full sm:w-auto justify-end flex-wrap sm:flex-nowrap">
             <button 
+              type="button"
               onclick="RecipesModule.applyScalingToCurrentRecipe()" 
               class="flex-1 sm:flex-none py-2.5 px-4 bg-pink-100 dark:bg-slate-700 hover:bg-pink-200 dark:hover:bg-slate-600 text-pink-800 dark:text-pink-300 font-bold text-xs rounded-xl transition cursor-pointer"
             >
               🔄 Modificar Receta Actual
             </button>
             <button 
+              type="button"
               onclick="RecipesModule.saveScaledRecipeAsNew()" 
               class="flex-1 sm:flex-none py-2.5 px-5 bg-pink-600 hover:bg-pink-700 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 cursor-pointer"
             >
-              💾 Guardar como Nueva Receta (${this.scalingState.targetPortions}p)
+              💾 Guardar como Nueva Receta (${targetCount}${unitSuffix})
             </button>
           </div>
         </div>
