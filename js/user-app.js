@@ -531,12 +531,144 @@ const UserApp = {
       </div>
     `;
 
-    modal.classList.remove('hidden');
+    this.openModal('bakery-detail-modal');
+  },
+
+  openModal(modalId) {
+    const modal = typeof modalId === 'string' ? document.getElementById(modalId) : modalId;
+    if (!modal) return;
+    const strId = typeof modalId === 'string' ? modalId : (modal.id || '');
+
+    modal.classList.remove('hidden', 'modal-closing');
+    modal.classList.add('modal-opening');
+
+    const dialog = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.firstElementChild;
+    if (dialog) {
+      dialog.classList.remove('modal-animate-out');
+      dialog.classList.add('modal-animate-in');
+    }
+
+    if (!modal.dataset.backdropBound && strId) {
+      modal.dataset.backdropBound = 'true';
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) this.closeModal(strId);
+      });
+    }
+
+    setTimeout(() => modal.classList.remove('modal-opening'), 300);
+  },
+
+  closeModal(modalId, callback) {
+    const modal = typeof modalId === 'string' ? document.getElementById(modalId) : modalId;
+    if (!modal || modal.classList.contains('hidden')) return;
+
+    modal.classList.add('modal-closing');
+    const dialog = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.firstElementChild;
+    if (dialog) {
+      dialog.classList.remove('modal-animate-in');
+      dialog.classList.add('modal-animate-out');
+    }
+
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('modal-closing');
+      if (dialog) dialog.classList.remove('modal-animate-out');
+      if (callback) callback();
+    }, 200);
   },
 
   closeBakeryDetail() {
-    const modal = document.getElementById('bakery-detail-modal');
-    if (modal) modal.classList.add('hidden');
+    this.closeModal('bakery-detail-modal');
+  },
+
+  triggerCelebration(originX, originY) {
+    try {
+      const colors = ['#ec4899', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6', '#3b82f6'];
+      const emojis = ['🧁', '✨', '🎉', '⭐', '🍰'];
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '99999';
+      document.body.appendChild(canvas);
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const startX = originX || window.innerWidth / 2;
+      const startY = originY || (window.innerHeight * 0.4);
+
+      const particles = [];
+      const particleCount = 36;
+
+      for (let i = 0; i < particleCount; i++) {
+        const isEmoji = i % 5 === 0;
+        const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.4;
+        const velocity = 5 + Math.random() * 7;
+        particles.push({
+          x: startX,
+          y: startY,
+          vx: Math.cos(angle) * velocity,
+          vy: Math.sin(angle) * velocity - 3,
+          gravity: 0.3,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          emoji: isEmoji ? emojis[Math.floor(Math.random() * emojis.length)] : null,
+          size: isEmoji ? 16 : (5 + Math.random() * 4),
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 12,
+          opacity: 1,
+          decay: 0.016 + Math.random() * 0.01
+        });
+      }
+
+      let animationFrame;
+      const render = () => {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        let active = 0;
+
+        for (const p of particles) {
+          if (p.opacity <= 0) continue;
+          active++;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.vx *= 0.98;
+          p.rotation += p.rotationSpeed;
+          p.opacity -= p.decay;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(0, p.opacity);
+
+          if (p.emoji) {
+            ctx.font = `${p.size}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(p.emoji, 0, 0);
+          } else {
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          }
+          ctx.restore();
+        }
+
+        if (active > 0) {
+          animationFrame = requestAnimationFrame(render);
+        } else {
+          cancelAnimationFrame(animationFrame);
+          if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+        }
+      };
+
+      requestAnimationFrame(render);
+    } catch (_) {}
   },
 
   updateBadges() {
@@ -548,22 +680,29 @@ const UserApp = {
     }
   },
 
-  showToast(message) {
+  showToast(message, duration = 2600) {
     let toast = document.getElementById('user-toast');
     if (!toast) {
       toast = document.createElement('div');
       toast.id = 'user-toast';
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-70 bg-gray-900/90 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-xl backdrop-blur-md transition-all duration-300 pointer-events-none opacity-0 translate-y-[-10px] flex items-center gap-2';
       document.body.appendChild(toast);
     }
 
-    toast.innerHTML = `<span>🧁</span><span>${message}</span>`;
-    toast.classList.remove('opacity-0', 'translate-y-[-10px]');
-    toast.classList.add('opacity-100', 'translate-y-0');
+    if ('vibrate' in navigator) {
+      try { navigator.vibrate(25); } catch (_) {}
+    }
 
-    setTimeout(() => {
-      toast.classList.remove('opacity-100', 'translate-y-0');
-      toast.classList.add('opacity-0', 'translate-y-[-10px]');
-    }, 2800);
+    toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-70 bg-slate-900/95 dark:bg-slate-800/95 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-2xl backdrop-blur-md border border-pink-500/30 flex items-center gap-2 pointer-events-none transition-all duration-300';
+    toast.innerHTML = `<span>🧁</span><span>${message}</span>`;
+    toast.style.animation = 'modalSpringIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+    toast.style.opacity = '1';
+
+    if (this._toastTimeout) clearTimeout(this._toastTimeout);
+    this._toastTimeout = setTimeout(() => {
+      toast.style.animation = 'modalSpringOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 200);
+    }, duration);
   }
 };

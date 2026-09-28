@@ -104,7 +104,7 @@ const IngredientsModule = {
             const baseInfo = Calculator.getIngredientBaseUnitCost(ing);
             const unitLabel = baseInfo.baseUnit === 'g' ? 'gramo' : (baseInfo.baseUnit === 'ml' ? 'ml' : 'unidad');
             return `
-              <div onclick="IngredientsModule.openModal('${ing.id}')" class="ingredient-card bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition relative flex flex-col justify-between group cursor-pointer active:scale-[0.99] overflow-hidden">
+              <div onclick="IngredientsModule.openModal('${ing.id}')" data-ingredient-id="${ing.id}" class="ingredient-card bg-white dark:bg-slate-900 rounded-2xl p-4 border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition relative flex flex-col justify-between group cursor-pointer active:scale-[0.99] overflow-hidden">
                 <div>
                   <div class="flex items-start justify-between gap-2">
                     <div>
@@ -395,6 +395,9 @@ const IngredientsModule = {
       const dummy = { packageQty: qty, packageUnit: unit, packagePrice: price, yieldWastePercent: waste };
       const baseInfo = Calculator.getIngredientBaseUnitCost(dummy);
       costValEl.textContent = `${Calculator.formatCurrency(baseInfo.costPerBase)} / ${baseInfo.baseUnit}`;
+      costValEl.classList.remove('number-pop');
+      void costValEl.offsetWidth;
+      costValEl.classList.add('number-pop');
     } else {
       costValEl.textContent = '$ 0';
     }
@@ -419,17 +422,32 @@ const IngredientsModule = {
       yieldWastePercent
     };
 
+    let targetId = id;
     if (id) {
       DB.updateIngredient(id, data);
     } else {
-      DB.addIngredient(data);
+      const created = DB.addIngredient(data);
+      targetId = created ? created.id : null;
     }
 
     this.closeModal();
     this.render();
 
-    // Notificación toast
-    App.showToast(id ? 'Insumo actualizado con éxito' : 'Nuevo insumo agregado');
+    // Resaltar con resplandor la tarjeta recién guardada o modificada
+    setTimeout(() => {
+      const finalId = targetId || (DB.getIngredients().slice(-1)[0]?.id);
+      if (finalId) {
+        const card = document.querySelector(`[data-ingredient-id="${finalId}"]`);
+        if (card) {
+          card.classList.add('item-saved-glow');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+        }
+      }
+    }, 60);
+
+    // Notificación toast con confeti automático
+    App.showToast(id ? 'Insumo actualizado con éxito ✨' : '🎉 ¡Nuevo insumo agregado!');
   },
 
   deleteConfirm(id, name) {

@@ -84,14 +84,74 @@ const App = {
     }
   },
 
+  openModal(modalId) {
+    const modal = typeof modalId === 'string' ? document.getElementById(modalId) : modalId;
+    if (!modal) return;
+    const strId = typeof modalId === 'string' ? modalId : (modal.id || '');
+
+    modal.classList.remove('hidden', 'modal-closing');
+    modal.classList.add('modal-opening');
+
+    const dialog = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.firstElementChild;
+    if (dialog) {
+      dialog.classList.remove('modal-animate-out');
+      dialog.classList.add('modal-animate-in');
+    }
+
+    // Auto-cierre al tocar el fondo difuminado (backdrop click)
+    if (!modal.dataset.backdropBound && strId) {
+      modal.dataset.backdropBound = 'true';
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) this.closeModal(strId);
+      });
+    }
+
+    if (this.lockBodyScroll) this.lockBodyScroll();
+
+    // Registrar estado en el historial del navegador para soporte de botón Atrás en Android/PWA
+    try {
+      if (strId && (!history.state || history.state.modalId !== strId)) {
+        history.pushState({ modalOpen: true, modalId: strId }, '');
+      }
+    } catch (e) {
+      console.warn('Error en history.pushState:', e);
+    }
+
+    setTimeout(() => modal.classList.remove('modal-opening'), 300);
+  },
+
+  closeModal(modalId, callback) {
+    const modal = typeof modalId === 'string' ? document.getElementById(modalId) : modalId;
+    if (!modal || modal.classList.contains('hidden')) return;
+    const strId = typeof modalId === 'string' ? modalId : (modal.id || '');
+
+    modal.classList.add('modal-closing');
+    const dialog = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.firstElementChild;
+    if (dialog) {
+      dialog.classList.remove('modal-animate-in');
+      dialog.classList.add('modal-animate-out');
+    }
+
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      modal.classList.remove('modal-closing');
+      if (dialog) dialog.classList.remove('modal-animate-out');
+      if (this.unlockBodyScroll) this.unlockBodyScroll();
+      if (callback) callback();
+    }, 200);
+
+    // Limpiar entrada del historial si corresponde
+    if (strId && history.state && history.state.modalOpen && history.state.modalId === strId) {
+      try { history.back(); } catch (_) {}
+    }
+  },
+
   showModeSelectionModal() {
-    const modal = document.getElementById('mode-selection-modal');
-    if (modal) modal.classList.remove('hidden');
+    this.openModal('mode-selection-modal');
   },
 
   closeModeSelectionModal() {
-    const modal = document.getElementById('mode-selection-modal');
-    if (modal) modal.classList.add('hidden');
+    this.closeModal('mode-selection-modal');
   },
 
   toggleMobileMoreDrawer() {
@@ -108,16 +168,32 @@ const App = {
   openMobileMoreDrawer() {
     const modal = document.getElementById('mobile-more-modal');
     if (modal) {
-      modal.classList.remove('hidden');
+      modal.classList.remove('hidden', 'modal-closing');
+      modal.classList.add('modal-opening');
+      const drawer = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.lastElementChild;
+      if (drawer) {
+        drawer.classList.remove('drawer-animate-out');
+        drawer.classList.add('drawer-animate-in');
+      }
       if (this.lockBodyScroll) this.lockBodyScroll();
     }
   },
 
   closeMobileMoreDrawer() {
     const modal = document.getElementById('mobile-more-modal');
-    if (modal) {
-      modal.classList.add('hidden');
-      if (this.unlockBodyScroll) this.unlockBodyScroll();
+    if (modal && !modal.classList.contains('hidden')) {
+      modal.classList.add('modal-closing');
+      const drawer = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.lastElementChild;
+      if (drawer) {
+        drawer.classList.remove('drawer-animate-in');
+        drawer.classList.add('drawer-animate-out');
+      }
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-closing');
+        if (drawer) drawer.classList.remove('drawer-animate-out');
+        if (this.unlockBodyScroll) this.unlockBodyScroll();
+      }, 200);
     }
   },
 
@@ -136,7 +212,13 @@ const App = {
     const modal = document.getElementById('quick-data-input-modal');
     if (modal) {
       this.closeMobileMoreDrawer();
-      modal.classList.remove('hidden');
+      modal.classList.remove('hidden', 'modal-closing');
+      modal.classList.add('modal-opening');
+      const drawer = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.lastElementChild;
+      if (drawer) {
+        drawer.classList.remove('drawer-animate-out');
+        drawer.classList.add('drawer-animate-in');
+      }
       const createBtn = document.getElementById('nav-btn-create-mob');
       if (createBtn) {
         const isServices = this.currentMode === 'services';
@@ -149,14 +231,24 @@ const App = {
 
   closeQuickDataInputDrawer() {
     const modal = document.getElementById('quick-data-input-modal');
-    if (modal) {
-      modal.classList.add('hidden');
+    if (modal && !modal.classList.contains('hidden')) {
+      modal.classList.add('modal-closing');
+      const drawer = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.lastElementChild;
+      if (drawer) {
+        drawer.classList.remove('drawer-animate-in');
+        drawer.classList.add('drawer-animate-out');
+      }
       const createBtn = document.getElementById('nav-btn-create-mob');
       if (createBtn) {
         createBtn.classList.remove('nav-active', 'text-pink-600', 'dark:text-pink-400', 'text-teal-600', 'dark:text-teal-400', 'font-black');
         createBtn.classList.add('text-gray-400', 'dark:text-slate-500', 'font-medium');
       }
-      if (this.unlockBodyScroll) this.unlockBodyScroll();
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-closing');
+        if (drawer) drawer.classList.remove('drawer-animate-out');
+        if (this.unlockBodyScroll) this.unlockBodyScroll();
+      }, 200);
     }
   },
 
@@ -587,6 +679,12 @@ const App = {
       if (btnTab && btnTab === tabName) {
         btn.classList.add('nav-active', activeColorClass, activeDarkClass, 'font-black');
         btn.classList.remove('text-gray-400', 'dark:text-slate-500', 'font-medium', 'text-gray-500');
+        const icon = btn.querySelector('.nav-icon') || btn.querySelector('svg, span');
+        if (icon) {
+          icon.classList.remove('nav-icon-bounce');
+          void icon.offsetWidth;
+          icon.classList.add('nav-icon-bounce');
+        }
         try {
           btn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         } catch (e) {}
@@ -2920,23 +3018,150 @@ const App = {
     }
   },
 
-  // Notificaciones Toast Flotantes
-  showToast(message, duration = 2500) {
+  // Motor de Confeti y Celebración Dulce (Canvas 2D Ultra-ligero)
+  triggerConfetti(originX, originY) {
+    try {
+      const colors = ['#ec4899', '#f43f5e', '#10b981', '#f59e0b', '#8b5cf6', '#3b82f6', '#fbbf24'];
+      const emojis = ['🧁', '✨', '🎉', '⭐', '🍰', '🍪'];
+      const canvas = document.createElement('canvas');
+      canvas.style.position = 'fixed';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.width = '100vw';
+      canvas.style.height = '100vh';
+      canvas.style.pointerEvents = 'none';
+      canvas.style.zIndex = '99999';
+      document.body.appendChild(canvas);
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+
+      const startX = originX || window.innerWidth / 2;
+      const startY = originY || (window.innerHeight * 0.35);
+
+      const particles = [];
+      const particleCount = 42;
+
+      for (let i = 0; i < particleCount; i++) {
+        const isEmoji = i % 6 === 0;
+        const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.5;
+        const velocity = 5 + Math.random() * 8;
+        particles.push({
+          x: startX,
+          y: startY,
+          vx: Math.cos(angle) * velocity,
+          vy: Math.sin(angle) * velocity - 4,
+          gravity: 0.32 + Math.random() * 0.12,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          emoji: isEmoji ? emojis[Math.floor(Math.random() * emojis.length)] : null,
+          size: isEmoji ? 18 : (5 + Math.random() * 5),
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 14,
+          opacity: 1,
+          decay: 0.015 + Math.random() * 0.012
+        });
+      }
+
+      let animationFrame;
+      const render = () => {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        let active = 0;
+
+        for (const p of particles) {
+          if (p.opacity <= 0) continue;
+          active++;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.vx *= 0.98;
+          p.rotation += p.rotationSpeed;
+          p.opacity -= p.decay;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(0, p.opacity);
+
+          if (p.emoji) {
+            ctx.font = `${p.size}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(p.emoji, 0, 0);
+          } else {
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.65);
+          }
+          ctx.restore();
+        }
+
+        if (active > 0) {
+          animationFrame = requestAnimationFrame(render);
+        } else {
+          cancelAnimationFrame(animationFrame);
+          if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
+        }
+      };
+
+      requestAnimationFrame(render);
+    } catch (e) {
+      console.warn('Confetti effect skipped', e);
+    }
+  },
+
+  // Notificaciones Toast Flotantes con Animación Elástica & Háptica
+  showToast(message, duration = 2500, icon = null) {
     let toast = document.getElementById('app-toast');
     if (!toast) {
       toast = document.createElement('div');
       toast.id = 'app-toast';
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-gray-900/90 backdrop-blur-md text-white text-xs font-semibold px-4 py-2.5 rounded-2xl shadow-xl z-[100] transition-all duration-300 transform -translate-y-12 opacity-0 pointer-events-none flex items-center gap-2';
       document.body.appendChild(toast);
     }
 
-    toast.textContent = `✨ ${message}`;
-    toast.classList.remove('-translate-y-12', 'opacity-0');
-    toast.classList.add('translate-y-0', 'opacity-100');
+    // Vibración háptica suave en móviles compatibles
+    if ('vibrate' in navigator) {
+      try { navigator.vibrate(28); } catch (_) {}
+    }
 
-    setTimeout(() => {
-      toast.classList.remove('translate-y-0', 'opacity-100');
-      toast.classList.add('-translate-y-12', 'opacity-0');
+    // Determinar icono contextual y confeti si es acción relevante
+    let toastIcon = icon;
+    const lower = String(message || '').toLowerCase();
+    if (!toastIcon) {
+      if (lower.includes('guardad') || lower.includes('cread') || lower.includes('éxito') || lower.includes('exito') || lower.includes('actualizad')) {
+        toastIcon = '🎉';
+        if (lower.includes('receta') || lower.includes('cotización') || lower.includes('cliente') || lower.includes('ficha')) {
+          this.triggerConfetti();
+        }
+      } else if (lower.includes('eliminad') || lower.includes('borrad')) {
+        toastIcon = '🗑️';
+      } else if (lower.includes('escalad')) {
+        toastIcon = '📏';
+      } else if (lower.includes('copia') || lower.includes('descarga') || lower.includes('restaurad')) {
+        toastIcon = '💾';
+      } else if (lower.includes('modo')) {
+        toastIcon = lower.includes('oscuro') ? '🌙' : '☀️';
+      } else {
+        toastIcon = '✨';
+      }
+    }
+
+    toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-md text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-2xl z-[100] border border-pink-500/30 dark:border-slate-700 flex items-center gap-2.5 pointer-events-none transition-all duration-300';
+    toast.innerHTML = `
+      <span class="text-base select-none shrink-0" style="animation: sweetFloat 1s ease-in-out infinite;">${toastIcon}</span>
+      <span class="leading-tight">${this.escapeHtml(message)}</span>
+    `;
+
+    toast.style.animation = 'modalSpringIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
+    toast.style.opacity = '1';
+
+    if (this._toastTimeout) clearTimeout(this._toastTimeout);
+    this._toastTimeout = setTimeout(() => {
+      toast.style.animation = 'modalSpringOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+      setTimeout(() => {
+        toast.style.opacity = '0';
+      }, 200);
     }, duration);
   },
 
@@ -2998,29 +3223,6 @@ const App = {
   // ==========================================
   // Manejo de Modales y Gestos "Atrás" en Móvil
   // ==========================================
-  openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-    modal.classList.remove('hidden');
-    this.lockBodyScroll();
-    // Registrar estado en el historial del navegador para soporte de botón Atrás
-    try {
-      history.pushState({ modalOpen: true, modalId: modalId }, '');
-    } catch (e) {
-      console.warn('Error en history.pushState:', e);
-    }
-  },
-
-  closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.add('hidden');
-    this.unlockBodyScroll();
-    // Limpiar entrada del historial si corresponde
-    if (history.state && history.state.modalOpen && history.state.modalId === modalId) {
-      history.back();
-    }
-  },
-
   closeAllModals() {
     const modalIds = [
       'ingredient-modal',
@@ -3036,13 +3238,16 @@ const App = {
       'firebase-config-modal',
       'gemini-key-modal',
       'login-prompt-modal',
-      'sim-add-to-quote-modal'
+      'sim-add-to-quote-modal',
+      'mode-selection-modal',
+      'mobile-more-modal',
+      'quick-data-input-modal'
     ];
     let closedAny = false;
     modalIds.forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.classList.contains('hidden')) {
-        el.classList.add('hidden');
+        this.closeModal(id);
         closedAny = true;
       }
     });

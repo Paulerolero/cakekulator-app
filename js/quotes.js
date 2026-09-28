@@ -99,7 +99,7 @@ const QuotesModule = {
         const balance = q.remainingBalance || (total - deposit);
 
         return `
-              <div onclick="QuotesModule.openEditor('${q.id}')" class="quote-card bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
+              <div onclick="QuotesModule.openEditor('${q.id}')" data-quote-id="${q.id}" class="quote-card bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServicesMode ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div class="p-4">
                   <!-- Top Bar -->
                   <div class="flex items-start justify-between gap-2 mb-2">
@@ -747,9 +747,19 @@ const QuotesModule = {
 
     if (subtotalEl) subtotalEl.textContent = Calculator.formatCurrency(subtotal);
     if (discountEl) discountEl.textContent = '-' + Calculator.formatCurrency(discountAmount);
-    if (totalEl) totalEl.textContent = Calculator.formatCurrency(total);
+    if (totalEl) {
+      totalEl.textContent = Calculator.formatCurrency(total);
+      totalEl.classList.remove('number-pop');
+      void totalEl.offsetWidth;
+      totalEl.classList.add('number-pop');
+    }
     if (depositEl) depositEl.textContent = Calculator.formatCurrency(depositAmount);
-    if (balanceEl) balanceEl.textContent = Calculator.formatCurrency(balance);
+    if (balanceEl) {
+      balanceEl.textContent = Calculator.formatCurrency(balance);
+      balanceEl.classList.remove('number-pop');
+      void balanceEl.offsetWidth;
+      balanceEl.classList.add('number-pop');
+    }
   },
 
   saveQuoteForm(e) {
@@ -853,21 +863,51 @@ const QuotesModule = {
           notes: notes || ''
         });
       }
+      const highlightSavedCard = () => {
+        setTimeout(() => {
+          const targetId = savedQuote?.id || id;
+          if (targetId) {
+            const card = document.querySelector(`[data-quote-id="${targetId}"]`);
+            if (card) {
+              card.classList.add('item-saved-glow');
+              card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+            }
+          }
+        }, 60);
+      };
+
       if (status === 'approved' && typeof App !== 'undefined' && typeof App.triggerCelebration === 'function') {
         App.triggerCelebration();
       }
 
       this.closeEditor();
       this.render();
+      highlightSavedCard();
       App.showToast(id ? 'Presupuesto actualizado ✨' : `Cotización vinculada a ${existingCustomer.name} 📋`);
     } else if (customerName && customerName.length > 1) {
       if (status === 'approved' && typeof App !== 'undefined' && typeof App.triggerCelebration === 'function') {
         App.triggerCelebration();
       }
 
+      const highlightSavedCard = () => {
+        setTimeout(() => {
+          const targetId = savedQuote?.id || id;
+          if (targetId) {
+            const card = document.querySelector(`[data-quote-id="${targetId}"]`);
+            if (card) {
+              card.classList.add('item-saved-glow');
+              card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+            }
+          }
+        }, 60);
+      };
+
       // Cliente NUEVO: guardar cotización y preguntar si desea crear el perfil de cliente
       this.closeEditor();
       this.render();
+      highlightSavedCard();
 
       this.promptSaveNewCustomer({
         id: savedQuote?.id || id,
@@ -888,6 +928,17 @@ const QuotesModule = {
 
       this.closeEditor();
       this.render();
+      setTimeout(() => {
+        const targetId = savedQuote?.id || id;
+        if (targetId) {
+          const card = document.querySelector(`[data-quote-id="${targetId}"]`);
+          if (card) {
+            card.classList.add('item-saved-glow');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+          }
+        }
+      }, 60);
       App.showToast(id ? 'Presupuesto actualizado ✨' : 'Cotización generada con éxito ✨');
     }
   },
@@ -903,9 +954,12 @@ const QuotesModule = {
 
     this.pendingNewCustomerQuote = quoteData;
 
-    promptModal.className = 'fixed inset-0 z-[70] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto';
+    promptModal.className = 'fixed inset-0 z-[70] bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto modal-opening';
+    promptModal.onclick = (e) => {
+      if (e.target === promptModal) QuotesModule.dismissNewCustomerPrompt();
+    };
     promptModal.innerHTML = `
-      <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 text-center animate-in fade-in zoom-in-95 duration-150 space-y-4">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-pink-100 dark:border-slate-800 text-center modal-animate-in space-y-4">
         
         <div class="w-14 h-14 mx-auto rounded-2xl bg-pink-100 dark:bg-pink-950/50 text-pink-600 dark:text-pink-400 flex items-center justify-center text-3xl shadow-xs">
           👤
@@ -968,7 +1022,13 @@ const QuotesModule = {
 
   dismissNewCustomerPrompt() {
     const modal = document.getElementById('save-new-customer-prompt-modal');
-    if (modal) modal.remove();
+    if (modal) {
+      if (typeof App !== 'undefined' && App.closeModal) {
+        App.closeModal(modal, () => modal.remove());
+      } else {
+        modal.remove();
+      }
+    }
     this.pendingNewCustomerQuote = null;
     App.showToast('✅ Cotización guardada');
   },
@@ -976,7 +1036,13 @@ const QuotesModule = {
   confirmCreateCustomerFromQuote() {
     const quoteData = this.pendingNewCustomerQuote;
     const modal = document.getElementById('save-new-customer-prompt-modal');
-    if (modal) modal.remove();
+    if (modal) {
+      if (typeof App !== 'undefined' && App.closeModal) {
+        App.closeModal(modal, () => modal.remove());
+      } else {
+        modal.remove();
+      }
+    }
     this.pendingNewCustomerQuote = null;
 
     if (!quoteData) return;

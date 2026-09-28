@@ -357,50 +357,67 @@ input[type=range]::-webkit-slider-thumb {
 
 /* ==========================================
    Animaciones de Transición de Pestañas & Gestos Móviles
+/* ==========================================
+   Animaciones de Transición de Pestañas & Gestos Móviles
    ========================================== */
 @keyframes tabFadeIn {
-  from {
-    opacity: 0.3;
-    transform: translateY(6px);
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
   }
-  to {
+  60% {
+    opacity: 0.95;
+    transform: translateY(-1px) scale(1.002);
+  }
+  100% {
     opacity: 1;
-    transform: none;
+    transform: translateY(0) scale(1);
   }
 }
 
 @keyframes tabSlideFromRight {
-  from {
-    opacity: 0.4;
-    transform: translateX(18px);
+  0% {
+    opacity: 0;
+    transform: translateX(24px) scale(0.98);
   }
-  to {
+  65% {
     opacity: 1;
-    transform: none;
+    transform: translateX(-2px) scale(1.002);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
 }
 
 @keyframes tabSlideFromLeft {
-  from {
-    opacity: 0.4;
-    transform: translateX(-18px);
+  0% {
+    opacity: 0;
+    transform: translateX(-24px) scale(0.98);
   }
-  to {
+  65% {
     opacity: 1;
-    transform: none;
+    transform: translateX(2px) scale(1.002);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
   }
 }
 
 .view-transition {
-  animation: tabFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: tabFadeIn 0.26s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  will-change: transform, opacity;
 }
 
 .view-slide-left {
-  animation: tabSlideFromRight 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: tabSlideFromRight 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  will-change: transform, opacity;
 }
 
 .view-slide-right {
-  animation: tabSlideFromLeft 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: tabSlideFromLeft 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  will-change: transform, opacity;
 }
 
 /* ==========================================
@@ -428,21 +445,106 @@ html.dark ::-webkit-scrollbar-thumb:hover {
 }
 
 /* ==========================================
-   Sistema de Modales Centrados & Mobile Friendly
+   Sistema de Modales Centrados & Mobile Friendly con Spring Physics
    ========================================== */
-@keyframes modalPopIn {
-  from {
+@keyframes modalSpringIn {
+  0% {
     opacity: 0;
-    transform: scale(0.96) translateY(8px);
+    transform: scale(0.91) translateY(18px);
   }
-  to {
+  65% {
+    opacity: 1;
+    transform: scale(1.02) translateY(-2px);
+  }
+  100% {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
 }
 
+@keyframes modalSpringOut {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.93) translateY(14px);
+  }
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+@keyframes backdropFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes drawerSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawerSlideDown {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
 .modal-animate-in {
-  animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalSpringIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+  will-change: transform, opacity;
+}
+
+.modal-animate-out {
+  animation: modalSpringOut 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  will-change: transform, opacity;
+}
+
+.modal-opening {
+  animation: backdropFadeIn 0.25s ease-out forwards;
+}
+
+.modal-closing {
+  animation: backdropFadeOut 0.2s ease-in forwards;
+}
+
+.drawer-animate-in {
+  animation: drawerSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+  will-change: transform, opacity;
+}
+
+.drawer-animate-out {
+  animation: drawerSlideDown 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
+  will-change: transform, opacity;
 }
 
 /* Mode Selection Card Animation */
@@ -1119,12 +1221,13 @@ body.mode-services .dark .sidebar-nav-item.sidebar-active,
 }
 
 /* 4. Micro-interacciones Táctiles y Rebote Dulce */
-.tap-bounce {
-  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.tap-bounce:active {
-  transform: scale(0.94);
+.tap-bounce,
+.btn-touch,
+button:not(:disabled):active,
+.btn-action:active,
+[role="button"]:active {
+  transform: scale(0.96) !important;
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 .sweet-float {
@@ -1140,23 +1243,108 @@ body.mode-services .dark .sidebar-nav-item.sidebar-active,
   }
 }
 
-/* 5. Destello de Número al Actualizarse */
+/* 5. Destello de Número al Actualizarse (Live Pop) */
 .number-pop {
-  animation: numberPopIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: numberPopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  display: inline-block;
+  will-change: transform, color;
 }
 
 @keyframes numberPopIn {
   0% {
-    transform: scale(0.88);
+    transform: scale(0.85);
     opacity: 0.6;
   }
   50% {
-    transform: scale(1.08);
+    transform: scale(1.18);
+    color: #db2777;
+    text-shadow: 0 0 10px rgba(219, 39, 119, 0.3);
   }
   100% {
     transform: scale(1);
     opacity: 1;
   }
+}
+
+/* 6. Destello de Éxito al Guardar / Modificar Elemento */
+.item-saved-glow,
+.flash-success {
+  animation: itemSavedGlow 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes itemSavedGlow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    border-color: #10b981;
+    transform: scale(0.985);
+  }
+  45% {
+    box-shadow: 0 0 0 12px rgba(16, 185, 129, 0);
+    border-color: #10b981;
+    transform: scale(1.015);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    transform: scale(1);
+  }
+}
+
+/* 7. Elevación Suave en Tarjetas al pasar el cursor */
+.recipe-card,
+.quote-card,
+.customer-card,
+.ingredient-card,
+.touch-card {
+  transition: transform 0.24s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.24s ease,
+              border-color 0.2s ease !important;
+  will-change: transform, box-shadow;
+}
+
+.recipe-card:hover,
+.quote-card:hover,
+.customer-card:hover,
+.ingredient-card:hover,
+.touch-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px -6px rgba(219, 39, 119, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.04);
+}
+
+.dark .recipe-card:hover,
+.dark .quote-card:hover,
+.dark .customer-card:hover,
+.dark .ingredient-card:hover,
+.dark .touch-card:hover {
+  box-shadow: 0 14px 30px -6px rgba(0, 0, 0, 0.5);
+}
+
+/* 8. Rebote en el Ícono Activo del Dock Flotante */
+@keyframes navIconBounce {
+  0% { transform: scale(0.85) translateY(0); }
+  50% { transform: scale(1.22) translateY(-4px); }
+  75% { transform: scale(0.96) translateY(-1px); }
+  100% { transform: scale(1.08) translateY(-2px); }
+}
+
+.nav-btn.nav-active svg,
+.nav-btn.nav-active span:first-child {
+  animation: navIconBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* 9. Botón Flotante Central con Brillo Pulsante Elegante */
+@keyframes pulseGlowButton {
+  0%, 100% {
+    box-shadow: 0 4px 14px rgba(219, 39, 119, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 6px 24px rgba(219, 39, 119, 0.65);
+    transform: scale(1.05);
+  }
+}
+
+.btn-pulse-glow {
+  animation: pulseGlowButton 2.8s infinite ease-in-out;
 }
 
 /* =======================================================

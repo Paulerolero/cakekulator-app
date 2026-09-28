@@ -108,7 +108,7 @@ const RecipesModule = {
             const isServ = costs.isService;
             const isCake = recipe.type === 'cake';
             return `
-              <div onclick="RecipesModule.openEditor('${recipe.id}')" class="recipe-card bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServ ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
+              <div onclick="RecipesModule.openEditor('${recipe.id}')" data-recipe-id="${recipe.id}" class="recipe-card bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm hover:shadow-md ${isServ ? 'hover:border-teal-300 dark:hover:border-teal-500' : 'hover:border-pink-300 dark:hover:border-pink-500'} transition overflow-hidden flex flex-col justify-between group cursor-pointer active:scale-[0.99]">
                 <div class="p-4">
                   <!-- Header Card -->
                   <div class="flex items-start justify-between gap-2 mb-2">
@@ -1006,7 +1006,12 @@ const RecipesModule = {
     const saleUnitEl = document.getElementById('summary-sale-unit');
     const saleUnitLabelEl = document.getElementById('summary-sale-unit-label');
 
-    if (totalCostEl) totalCostEl.textContent = Calculator.formatCurrency(totalBatchCost);
+    if (totalCostEl) {
+      totalCostEl.textContent = Calculator.formatCurrency(totalBatchCost);
+      totalCostEl.classList.remove('number-pop');
+      void totalCostEl.offsetWidth;
+      totalCostEl.classList.add('number-pop');
+    }
 
     if (isCake) {
       if (unitCostLabelEl) unitCostLabelEl.textContent = 'Costo x Porción';
@@ -1092,10 +1097,12 @@ const RecipesModule = {
       notes
     };
 
+    let targetId = id;
     if (id) {
       DB.updateRecipe(id, data);
     } else {
-      DB.addRecipe(data);
+      const created = DB.addRecipe(data);
+      targetId = created ? created.id : null;
     }
 
     if (typeof App !== 'undefined' && typeof App.triggerCelebration === 'function') {
@@ -1104,6 +1111,20 @@ const RecipesModule = {
 
     this.closeEditor();
     this.render();
+
+    // Animación visual de destello en la tarjeta guardada / modificada
+    setTimeout(() => {
+      const finalId = targetId || (DB.getRecipes().slice(-1)[0]?.id);
+      if (finalId) {
+        const card = document.querySelector(`[data-recipe-id="${finalId}"]`);
+        if (card) {
+          card.classList.add('item-saved-glow');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+        }
+      }
+    }, 60);
+
     App.showToast(id ? 'Ficha técnica actualizada ✨' : '🎉 ¡Nueva ficha técnica creada!');
   },
 
@@ -1171,14 +1192,20 @@ const RecipesModule = {
     };
 
     this.renderScalingModalContent();
-    modal.classList.remove('hidden');
-    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+    if (typeof App !== 'undefined' && App.openModal) {
+      App.openModal('recipe-scaling-modal');
+    } else {
+      modal.classList.remove('hidden');
+    }
   },
 
   closeScalingModal() {
-    const modal = document.getElementById('recipe-scaling-modal');
-    if (modal) modal.classList.add('hidden');
-    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
+    if (typeof App !== 'undefined' && App.closeModal) {
+      App.closeModal('recipe-scaling-modal');
+    } else {
+      const modal = document.getElementById('recipe-scaling-modal');
+      if (modal) modal.classList.add('hidden');
+    }
   },
 
   setScalingMode(mode) {
@@ -1496,6 +1523,16 @@ const RecipesModule = {
     const saved = DB.addRecipe(newRecipeData);
     this.closeScalingModal();
     this.render();
+    setTimeout(() => {
+      if (saved && saved.id) {
+        const card = document.querySelector(`[data-recipe-id="${saved.id}"]`);
+        if (card) {
+          card.classList.add('item-saved-glow');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+        }
+      }
+    }, 60);
     App.showToast(`🎉 ¡Nueva ficha técnica creada: "${saved.name}"!`);
   },
 
@@ -1522,6 +1559,14 @@ const RecipesModule = {
 
       this.closeScalingModal();
       this.render();
+      setTimeout(() => {
+        const card = document.querySelector(`[data-recipe-id="${recipe.id}"]`);
+        if (card) {
+          card.classList.add('item-saved-glow');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+        }
+      }, 60);
       App.showToast(`✅ Receta "${recipe.name}" actualizada a ${this.scalingState.targetPortions} personas.`);
     }
   },

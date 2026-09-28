@@ -14,19 +14,28 @@ const ReceiptScannerModule = {
       const root = document.getElementById('modals-root') || document.body;
       root.appendChild(modal);
     }
-    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto modal-opening';
+    modal.onclick = (e) => {
+      if (e.target === modal) ReceiptScannerModule.closeModal();
+    };
 
     this.scannedItems = [];
     this.isProcessing = false;
     this.renderCaptureStep();
-    modal.classList.remove('hidden');
-    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+    if (typeof App !== 'undefined' && App.openModal) {
+      App.openModal('receipt-scanner-modal');
+    } else {
+      modal.classList.remove('hidden');
+    }
   },
 
   closeModal() {
-    const modal = document.getElementById('receipt-scanner-modal');
-    if (modal) modal.classList.add('hidden');
-    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
+    if (typeof App !== 'undefined' && App.closeModal) {
+      App.closeModal('receipt-scanner-modal');
+    } else {
+      const modal = document.getElementById('receipt-scanner-modal');
+      if (modal) modal.classList.add('hidden');
+    }
   },
 
   renderCaptureStep() {

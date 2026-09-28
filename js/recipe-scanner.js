@@ -14,19 +14,28 @@ const RecipeScannerModule = {
       const root = document.getElementById('modals-root') || document.body;
       root.appendChild(modal);
     }
-    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto modal-opening';
+    modal.onclick = (e) => {
+      if (e.target === modal) RecipeScannerModule.closeModal();
+    };
 
     this.scannedRecipe = null;
     this.isProcessing = false;
     this.renderCaptureStep();
-    modal.classList.remove('hidden');
-    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
+    if (typeof App !== 'undefined' && App.openModal) {
+      App.openModal('recipe-scanner-modal');
+    } else {
+      modal.classList.remove('hidden');
+    }
   },
 
   closeModal() {
-    const modal = document.getElementById('recipe-scanner-modal');
-    if (modal) modal.classList.add('hidden');
-    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
+    if (typeof App !== 'undefined' && App.closeModal) {
+      App.closeModal('recipe-scanner-modal');
+    } else {
+      const modal = document.getElementById('recipe-scanner-modal');
+      if (modal) modal.classList.add('hidden');
+    }
   },
 
   renderCaptureStep() {

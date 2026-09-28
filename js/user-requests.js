@@ -33,7 +33,7 @@ const UserRequestsModule = {
       const dateAgo = new Date(req.createdAt).toLocaleDateString('es-CL', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
       return `
-        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-pink-100/80 dark:border-slate-800 p-4 shadow-sm space-y-3 touch-card hover:shadow-md transition">
+        <div data-request-id="${req.id}" class="bg-white dark:bg-slate-900 rounded-3xl border border-pink-100/80 dark:border-slate-800 p-4 shadow-sm space-y-3 touch-card hover:shadow-md transition">
           <!-- Encabezado de la Solicitud -->
           <div class="flex items-start justify-between gap-2">
             <div>
@@ -139,12 +139,20 @@ const UserRequestsModule = {
     document.getElementById('req-description').value = '';
     document.getElementById('req-dietary').value = (profile.dietaryPreferences || []).join(', ');
 
-    modal.classList.remove('hidden');
+    if (typeof UserApp !== 'undefined' && UserApp.openModal) {
+      UserApp.openModal('user-request-modal');
+    } else {
+      modal.classList.remove('hidden');
+    }
   },
 
   closeNewRequestModal() {
-    const modal = document.getElementById('user-request-modal');
-    if (modal) modal.classList.add('hidden');
+    if (typeof UserApp !== 'undefined' && UserApp.closeModal) {
+      UserApp.closeModal('user-request-modal');
+    } else {
+      const modal = document.getElementById('user-request-modal');
+      if (modal) modal.classList.add('hidden');
+    }
   },
 
   onBusinessTypeChange(type) {
@@ -195,7 +203,7 @@ const UserRequestsModule = {
 
     const profile = UserDB.getProfile();
 
-    UserDB.addRequest({
+    const createdReq = UserDB.addRequest({
       userName: profile.name || 'Cliente Cakekulator',
       userPhone: profile.phone || '+56900000000',
       businessType,
@@ -210,10 +218,23 @@ const UserRequestsModule = {
 
     this.closeNewRequestModal();
     this.renderRequests();
+
     if (typeof UserApp.triggerCelebration === 'function') {
       UserApp.triggerCelebration();
     }
-    UserApp.showToast('🎉 ¡Tu solicitud fue publicada! Los locales cercanos de este rubro recibirán tu aviso.');
+
+    setTimeout(() => {
+      if (createdReq && createdReq.id) {
+        const card = document.querySelector(`[data-request-id="${createdReq.id}"]`);
+        if (card) {
+          card.classList.add('item-saved-glow');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+        }
+      }
+    }, 60);
+
+    UserApp.showToast('🎉 ¡Tu solicitud fue publicada! Los locales cercanos recibirán tu aviso.');
   },
 
   // Plantillas rápidas para facilitar la creación de solicitudes

@@ -309,6 +309,7 @@ const CustomersModule = {
     return `
       <div 
         onclick="CustomersModule.openCustomerDetail('${customer.id}')"
+        data-customer-id="${customer.id}"
         class="customer-card bg-white dark:bg-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-700 shadow-2xs hover:shadow-md hover:border-pink-300 dark:hover:border-pink-500/50 hover:scale-[1.008] transition-all flex flex-col justify-between group cursor-pointer active:scale-[0.99] overflow-hidden"
         title="Click para ver perfil completo"
       >
@@ -457,8 +458,8 @@ const CustomersModule = {
     if (!modalsRoot) return;
 
     modalsRoot.innerHTML = `
-      <div id="customer-detail-modal" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div id="customer-detail-modal" onclick="if(event.target === this) CustomersModule.closeModal('customer-detail-modal')" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs modal-opening">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden modal-animate-in">
           
           <!-- Modal Header -->
           <div class="bg-pink-600 dark:bg-pink-700 p-4 sm:p-5 text-white flex items-center justify-between shrink-0">
@@ -815,8 +816,8 @@ const CustomersModule = {
     const initialNotes = customer ? (customer.notes || '') : (prefillData ? (prefillData.notes || '') : '');
 
     modalsRoot.innerHTML = `
-      <div id="customer-editor-modal" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div id="customer-editor-modal" onclick="if(event.target === this) CustomersModule.closeModal('customer-editor-modal')" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs modal-opening">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden modal-animate-in">
           
           <div class="bg-pink-600 dark:bg-pink-700 p-4 text-white flex items-center justify-between shrink-0">
             <h3 class="font-bold text-base flex items-center gap-2">
@@ -1006,6 +1007,18 @@ const CustomersModule = {
 
     this.closeModal('customer-editor-modal');
     this.render();
+
+    const targetCustId = id || (DB.getCustomers().slice(-1)[0]?.id);
+    setTimeout(() => {
+      if (targetCustId) {
+        const card = document.querySelector(`[data-customer-id="${targetCustId}"]`);
+        if (card) {
+          card.classList.add('item-saved-glow');
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+        }
+      }
+    }, 60);
   },
 
   // ==========================================
@@ -1025,8 +1038,8 @@ const CustomersModule = {
     if (!modalsRoot) return;
 
     modalsRoot.innerHTML = `
-      <div id="customer-whatsapp-modal" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200">
-        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div id="customer-whatsapp-modal" onclick="if(event.target === this) CustomersModule.closeModal('customer-whatsapp-modal')" class="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs modal-opening">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full max-h-[90vh] shadow-2xl border border-pink-100 dark:border-slate-800 flex flex-col overflow-hidden modal-animate-in">
           
           <!-- Header -->
           <div class="bg-emerald-600 p-4 text-white flex items-center justify-between shrink-0">
@@ -1522,9 +1535,16 @@ const CustomersModule = {
 
   closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.remove();
+    if (!modal) return;
+    const dialog = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.firstElementChild;
+    modal.classList.add('modal-closing');
+    if (dialog) {
+      dialog.classList.remove('modal-animate-in');
+      dialog.classList.add('modal-animate-out');
     }
+    setTimeout(() => {
+      if (modal.parentNode) modal.remove();
+    }, 200);
   },
 
   // ==========================================
