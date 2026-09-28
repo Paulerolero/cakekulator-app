@@ -71,6 +71,11 @@ const App = {
       this.currentMode = 'products';
     }
 
+    // Iniciar Tutorial Guiado Interactivo para nuevos usuarios
+    if (typeof TutorialModule !== 'undefined' && TutorialModule.init) {
+      TutorialModule.init();
+    }
+
     console.log('Cakekulator cargado correctamente con control de gestos, buscador y ambientes separados.');
   },
 
@@ -2588,6 +2593,117 @@ const App = {
                   >
                   <span>📋 Cotizaciones Pendientes de Respuesta</span>
                 </label>
+              </div>
+            </div>
+
+            <!-- Centro de Ayuda y Tutorial Guiado por Vistas -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-200/80 dark:border-slate-800 shadow-sm space-y-4">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center text-lg font-bold shadow-xs">
+                    🎓
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm">
+                      Tutorial Guiado Interactivo
+                    </h3>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                      Aprende el funcionamiento de cada vista y función del sistema
+                    </p>
+                  </div>
+                </div>
+                <span class="text-[10px] px-2.5 py-1 rounded-full font-black bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 border border-pink-200/60 dark:border-pink-800/60">
+                  Todas las Vistas
+                </span>
+              </div>
+
+              <!-- Botón Principal: Tour Completo -->
+              <div class="p-3.5 rounded-2xl bg-gradient-to-br from-pink-50/80 via-rose-50/60 to-purple-50/60 dark:from-slate-800/90 dark:via-slate-800/60 dark:to-slate-900 border border-pink-100 dark:border-slate-700/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="space-y-0.5">
+                  <span class="font-extrabold text-xs text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                    <span>✨</span> Recorrido Completo del Taller
+                  </span>
+                  <p class="text-[11px] text-gray-600 dark:text-gray-400">
+                    Navega automáticamente por todas las vistas con explicaciones y consejos de negocio.
+                  </p>
+                </div>
+                <button 
+                  type="button" 
+                  onclick="TutorialModule.start(0)" 
+                  class="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white font-black text-xs rounded-xl shadow-md shadow-pink-500/20 active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer shrink-0"
+                >
+                  <span>🚀</span> Iniciar Tour Completo
+                </button>
+              </div>
+
+              <!-- Lanzadores Rápidos por Vista Específica -->
+              <div class="space-y-2">
+                <span class="text-[11px] font-extrabold text-gray-700 dark:text-gray-300 uppercase tracking-wider block">
+                  O abre la guía de una vista específica:
+                </span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button type="button" onclick="TutorialModule.startForTab('dashboard')" class="p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 hover:bg-pink-50 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 text-left transition active:scale-95 cursor-pointer">
+                    <span class="text-base block mb-1">📊</span>
+                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate">Dashboard</span>
+                    <span class="text-[10px] text-gray-400 block">Métricas y modo</span>
+                  </button>
+
+                  <button type="button" onclick="TutorialModule.startForTab('recipes')" class="p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 hover:bg-pink-50 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 text-left transition active:scale-95 cursor-pointer">
+                    <span class="text-base block mb-1">🎂</span>
+                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate">Recetas & Fichas</span>
+                    <span class="text-[10px] text-gray-400 block">Costeo y escáner IA</span>
+                  </button>
+
+                  <button type="button" onclick="TutorialModule.startForTab('ingredients')" class="p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 hover:bg-pink-50 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 text-left transition active:scale-95 cursor-pointer">
+                    <span class="text-base block mb-1">📦</span>
+                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate">Insumos</span>
+                    <span class="text-[10px] text-gray-400 block">Mermas y boletas</span>
+                  </button>
+
+                  <button type="button" onclick="TutorialModule.startForTab('quotes')" class="p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 hover:bg-pink-50 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 text-left transition active:scale-95 cursor-pointer">
+                    <span class="text-base block mb-1">📋</span>
+                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate">Cotizaciones</span>
+                    <span class="text-[10px] text-gray-400 block">WhatsApp y tarjeta PNG</span>
+                  </button>
+
+                  <button type="button" onclick="TutorialModule.startForTab('customers')" class="p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 hover:bg-pink-50 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 text-left transition active:scale-95 cursor-pointer">
+                    <span class="text-base block mb-1">👥</span>
+                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate">Clientes (CRM)</span>
+                    <span class="text-[10px] text-gray-400 block">Cumpleaños y gustos</span>
+                  </button>
+
+                  <button type="button" onclick="TutorialModule.startForTab('simulator')" class="p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 hover:bg-pink-50 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 text-left transition active:scale-95 cursor-pointer">
+                    <span class="text-base block mb-1">🧮</span>
+                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate">Simulador</span>
+                    <span class="text-[10px] text-gray-400 block">Márgenes y POS</span>
+                  </button>
+
+                  <button type="button" onclick="TutorialModule.startForTab('market-radar')" class="p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 hover:bg-pink-50 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 text-left transition active:scale-95 cursor-pointer">
+                    <span class="text-base block mb-1">🛒</span>
+                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate">Radar Ofertas</span>
+                    <span class="text-[10px] text-gray-400 block">Precios super</span>
+                  </button>
+
+                  <button type="button" onclick="TutorialModule.startForTab('settings')" class="p-2.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 hover:bg-pink-50 dark:bg-slate-800/50 dark:hover:bg-slate-700/60 text-left transition active:scale-95 cursor-pointer">
+                    <span class="text-base block mb-1">🚀</span>
+                    <span class="text-xs font-bold text-gray-800 dark:text-gray-200 block truncate">Botón Central</span>
+                    <span class="text-[10px] text-gray-400 block">Gestos y accesos</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Acción de Reinicio -->
+              <div class="pt-2 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span class="text-[11px] text-gray-500 dark:text-gray-400">
+                  ¿Deseas que vuelva a mostrarse automáticamente como usuario nuevo?
+                </span>
+                <button 
+                  type="button" 
+                  onclick="TutorialModule.resetTutorialStatus()" 
+                  class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition cursor-pointer active:scale-95 shrink-0"
+                >
+                  🔄 Reiniciar para Nuevo Inicio
+                </button>
               </div>
             </div>
 

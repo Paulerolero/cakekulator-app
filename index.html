@@ -218,6 +218,14 @@
             <span>Ajustes & Notificaciones</span>
           </div>
         </button>
+        <button type="button" onclick="if (typeof TutorialModule !== 'undefined') TutorialModule.start(0)" id="sidebar-nav-tutorial"
+          class="sidebar-nav-item w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition text-pink-600 dark:text-pink-400 hover:bg-pink-50/70 dark:hover:bg-slate-800/80 cursor-pointer">
+          <div class="flex items-center gap-2.5">
+            <span class="text-base">🎓</span>
+            <span>Tutorial Guiado</span>
+          </div>
+          <span class="text-[9px] px-1.5 py-0.5 rounded-full font-bold bg-pink-100 text-pink-800 dark:bg-pink-950/60 dark:text-pink-300">Ayuda</span>
+        </button>
       </div>
 
     </div>
@@ -712,7 +720,8 @@
   <script src="js/customers.js?v=6.0"></script>
   <script src="js/receipts.js?v=6.0"></script>
   <script src="js/seller-requests.js?v=6.0"></script>
-  <script src="js/app.js?v=6.0"></script>
+  <script src="js/tutorial.js?v=7.3"></script>
+  <script src="js/app.js?v=7.3"></script>
 
   <!-- Contenedor Dinámico para Confeti Festivo -->
   <div id="confetti-container"></div>

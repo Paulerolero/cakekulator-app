@@ -357,6 +357,7 @@ graph LR
 | [`recipes.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/recipes.js) | Fichas Técnicas (`ingredients`, `packaging`, `laborHours`, `overheadCost`, `yieldPortions`) | [`quotes.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/quotes.js), [`simulator.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/simulator.js), [`finance.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/finance.js) | Agregado de productos en presupuestos; simulación de margen deseado; cálculo de costo de venta. |
 | [`quotes.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/quotes.js) | Presupuestos (`items`, `discountPct`, `depositPct`, `totalAmount`, `status`) | [`customers.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/customers.js), [`finance.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/finance.js) | Actualización del valor de vida (*LTV*) del cliente; registro de ingresos cobrados en finanzas. |
 | [`customers.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/customers.js) | Cartera de Clientes (`name`, `phone`, `specialDates`, `address`) | [`quotes.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/quotes.js), [`app.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/app.js) | Vinculación inmediata de teléfono para WhatsApp; alertas de cumpleaños en el inicio. |
+| [`tutorial.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/tutorial.js) | Tutorial Guiado Interactivo (`baseSteps`, `isMinimized`, `currentStepIndex`) | [`app.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/app.js) | Onboarding interactivo paso a paso sincronizado con las vistas activas y reanudable desde Ajustes. |
 | [`user-requests.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/user-requests.js) | Solicitudes Flash (`category`, `budget`, `portions`, `dueDate`, `clientPhone`) | [`seller-requests.js`](file:///c:/Users/psali/OneDrive/Documents/1.%20Agents%20IA/cakekulator-app/js/seller-requests.js) | Notificación en el mapa de oportunidades del pastelero para responder cotizaciones. |
 
 ---
@@ -732,6 +733,7 @@ cakekulator-app/
 │   ├── seller-requests.js      # Bandeja de solicitudes de clientes recibidas en mapa
 │   ├── simulator.js            # Simulador de rentabilidad, comisiones POS y precios
 │   ├── templates.js            # Semillas predeterminadas de recetas e insumos
+│   ├── tutorial.js             # Tutorial guiado interactivo por vistas, minimizable y configurable
 │   ├── user-app.js             # Controlador general del Portal de Clientes
 │   ├── user-auth.js            # Autenticación y perfil del cliente
 │   ├── user-db.js              # Persistencia local del catálogo público y pedidos
