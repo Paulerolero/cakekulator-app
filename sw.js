@@ -2,7 +2,7 @@
 // Cakekulator - Service Worker para Soporte Offline & Push
 // ==========================================
 
-const CACHE_NAME = 'cakekulator-v6.0';
+const CACHE_NAME = 'cakekulator-v7.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -50,7 +50,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Precargando archivos en caché v3.5');
+      console.log('[Service Worker] Precargando archivos en caché v7.0');
       return cache.addAll(ASSETS_TO_CACHE);
     }).then(() => self.skipWaiting())
   );
