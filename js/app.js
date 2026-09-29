@@ -1975,15 +1975,27 @@ const App = {
     container.innerHTML = `
       <div class="max-w-3xl mx-auto space-y-4 sm:space-y-5 pb-8">
 
-        <!-- Botón de Cambio de Ambiente (Productos ⇄ Servicios) sin títulos -->
-        <div id="settings-mode-card" class="flex justify-end">
+        <!-- Botones de Acción Superior (Instalar App + Cambio de Modo) -->
+        <div id="settings-top-actions" class="flex flex-wrap items-center justify-between gap-2">
           <button 
             type="button" 
-            onclick="App.showModeSelectionModal()" 
-            class="w-full sm:w-auto px-4 py-2.5 rounded-2xl font-extrabold text-xs bg-white dark:bg-slate-800 text-gray-800 dark:text-white border border-pink-200 dark:border-slate-700 hover:border-pink-400 dark:hover:border-teal-400 shadow-sm transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            onclick="App.installPWA()" 
+            id="settings-install-app-btn"
+            class="px-4 py-2.5 rounded-2xl font-extrabold text-xs bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white shadow-sm transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            title="Instalar Cakekulator Vendedor en tu pantalla de inicio"
           >
-            <span>🔄</span> <span>Cambiar Modo (${this.currentMode === 'services' ? '💆 Servicios ➔ 🎂 Productos' : '🎂 Productos ➔ 💆 Servicios'})</span>
+            <span>📲</span> <span>Instalar App en el Celular</span>
           </button>
+
+          <div id="settings-mode-card" class="flex justify-end">
+            <button 
+              type="button" 
+              onclick="App.showModeSelectionModal()" 
+              class="w-full sm:w-auto px-4 py-2.5 rounded-2xl font-extrabold text-xs bg-white dark:bg-slate-800 text-gray-800 dark:text-white border border-pink-200 dark:border-slate-700 hover:border-pink-400 dark:hover:border-teal-400 shadow-sm transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>🔄</span> <span>Cambiar Modo (${this.currentMode === 'services' ? '💆 Servicios ➔ 🎂 Productos' : '🎂 Productos ➔ 💆 Servicios'})</span>
+            </button>
+          </div>
         </div>
 
         <!-- Selector de Pestañas (Pills) -->
