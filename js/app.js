@@ -1609,63 +1609,32 @@ const App = {
         </div>
       </div>
 
-      <!-- ==========================================
-           MÓDULOS DE LA APLICACIÓN (Botonera Estilo App Nativa)
-           ========================================== -->
-      <div class="bg-white dark:bg-slate-800 p-3.5 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs mb-3.5">
-        <div class="flex items-center justify-between px-1 mb-2.5">
-          <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-            <span>✨</span> Módulos del Sistema
+      <!-- Barra de Acciones Rápidas (Personalizable) al Inicio -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs mb-3.5">
+        <div class="flex items-center justify-between gap-2 mb-2.5">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
+            <span>⚡</span> Acciones Rápidas
           </span>
-          <span class="text-[10px] text-gray-400 font-semibold">Toca para abrir</span>
+          <button 
+            type="button" 
+            onclick="App.openQuickActionsConfigModal()" 
+            class="text-[10px] text-pink-600 dark:text-pink-400 font-bold hover:underline flex items-center gap-1 cursor-pointer bg-pink-50/70 dark:bg-pink-950/40 px-2 py-0.5 rounded-lg border border-pink-200/80 dark:border-pink-800 transition"
+          >
+            <span>⚙️</span> Personalizar
+          </button>
         </div>
-
-        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
-          <!-- 1. Simulador -->
-          <button type="button" onclick="App.switchTab('simulator')"
-            class="p-2 rounded-2xl bg-pink-50/70 dark:bg-slate-900/60 border border-pink-100 dark:border-slate-700/80 hover:border-pink-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
-            <span class="text-2xl p-1.5 rounded-xl bg-pink-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">🧮</span>
-            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Simular</span>
-          </button>
-
-          <!-- 2. Cotizaciones -->
-          <button type="button" onclick="App.switchTab('quotes')"
-            class="relative p-2 rounded-2xl bg-emerald-50/70 dark:bg-slate-900/60 border border-emerald-100 dark:border-slate-700/80 hover:border-emerald-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
-            <span class="text-2xl p-1.5 rounded-xl bg-emerald-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">📋</span>
-            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Cotizar</span>
-            ${quotes.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-500 text-white shadow-xs">${quotes.length}</span>` : ''}
-          </button>
-
-          <!-- 3. Recetas / Servicios -->
-          <button type="button" onclick="App.switchTab('recipes')"
-            class="relative p-2 rounded-2xl bg-purple-50/70 dark:bg-slate-900/60 border border-purple-100 dark:border-slate-700/80 hover:border-purple-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
-            <span class="text-2xl p-1.5 rounded-xl bg-purple-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">${isServicesMode ? '💆' : '🎂'}</span>
-            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">${isServicesMode ? 'Servicios' : 'Recetas'}</span>
-            ${recipes.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-purple-500 text-white shadow-xs">${recipes.length}</span>` : ''}
-          </button>
-
-          <!-- 4. Insumos -->
-          <button type="button" onclick="App.switchTab('ingredients')"
-            class="relative p-2 rounded-2xl bg-amber-50/70 dark:bg-slate-900/60 border border-amber-100 dark:border-slate-700/80 hover:border-amber-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
-            <span class="text-2xl p-1.5 rounded-xl bg-amber-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">📦</span>
-            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Insumos</span>
-            ${ingredients.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-amber-500 text-white shadow-xs">${ingredients.length}</span>` : ''}
-          </button>
-
-          <!-- 5. Radar Ofertas -->
-          <button type="button" onclick="App.switchTab('market-radar')"
-            class="p-2 rounded-2xl bg-cyan-50/70 dark:bg-slate-900/60 border border-cyan-100 dark:border-slate-700/80 hover:border-cyan-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
-            <span class="text-2xl p-1.5 rounded-xl bg-cyan-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">🛒</span>
-            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Ofertas</span>
-          </button>
-
-          <!-- 6. Clientes CRM -->
-          <button type="button" onclick="App.switchTab('customers')"
-            class="relative p-2 rounded-2xl bg-indigo-50/70 dark:bg-slate-900/60 border border-indigo-100 dark:border-slate-700/80 hover:border-indigo-300 flex flex-col items-center justify-center gap-1 text-center transition active:scale-95 cursor-pointer group">
-            <span class="text-2xl p-1.5 rounded-xl bg-indigo-100 dark:bg-slate-800 group-hover:scale-110 transition shrink-0">👥</span>
-            <span class="font-black text-[10px] text-gray-800 dark:text-gray-200 truncate w-full">Clientes</span>
-            ${customers.length > 0 ? `<span class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full text-[9px] font-black bg-indigo-500 text-white shadow-xs">${customers.length}</span>` : ''}
-          </button>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          ${enabledActions.map(action => `
+            <button 
+              type="button" 
+              onclick="${action.handler}"
+              class="p-2.5 rounded-2xl ${action.colorClass} border text-xs font-bold transition flex items-center gap-2 group active:scale-95 cursor-pointer shadow-2xs text-left"
+            >
+              <span class="text-base group-hover:scale-110 transition shrink-0">${action.icon}</span>
+              <span class="truncate text-[11px]">${action.title}</span>
+            </button>
+          `).join('')}
         </div>
       </div>
 
@@ -1674,35 +1643,6 @@ const App = {
         
         <!-- Radar & Mapa de Oportunidades de Clientes -->
         ${typeof SellerRequestsModule !== 'undefined' ? SellerRequestsModule.renderSellerMapCard() : ''}
-
-        <!-- Barra de Acciones Rápidas (Personalizable) -->
-        <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
-          <div class="flex items-center justify-between gap-2 mb-2.5">
-            <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
-              <span>⚡</span> Acciones Rápidas
-            </span>
-            <button 
-              type="button" 
-              onclick="App.openQuickActionsConfigModal()" 
-              class="text-[10px] text-pink-600 dark:text-pink-400 font-bold hover:underline flex items-center gap-1 cursor-pointer bg-pink-50/70 dark:bg-pink-950/40 px-2 py-0.5 rounded-lg border border-pink-200/80 dark:border-pink-800 transition"
-            >
-              <span>⚙️</span> Personalizar
-            </button>
-          </div>
-          
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            ${enabledActions.map(action => `
-              <button 
-                type="button" 
-                onclick="${action.handler}"
-                class="p-2.5 rounded-2xl ${action.colorClass} border text-xs font-bold transition flex items-center gap-2 group active:scale-95 cursor-pointer shadow-2xs text-left"
-              >
-                <span class="text-base group-hover:scale-110 transition shrink-0">${action.icon}</span>
-                <span class="truncate text-[11px]">${action.title}</span>
-              </button>
-            `).join('')}
-          </div>
-        </div>
 
         <!-- Agenda de Entregas & Citas -->
         <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
