@@ -2,7 +2,7 @@
 // Cakekulator - Service Worker para Soporte Offline & Push
 // ==========================================
 
-const CACHE_NAME = 'cakekulator-v7.9';
+const CACHE_NAME = 'cakekulator-v8.0';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
