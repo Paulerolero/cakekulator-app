@@ -1975,50 +1975,14 @@ const App = {
     container.innerHTML = `
       <div class="max-w-3xl mx-auto space-y-4 sm:space-y-5 pb-8">
 
-        <!-- Header de Configuración -->
-        <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-100 dark:border-slate-800 shadow-sm flex items-center justify-between gap-3">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-teal-500 text-white flex items-center justify-center text-xl sm:text-2xl shadow-sm shrink-0">
-              ⚙️
-            </div>
-            <div>
-              <h2 class="font-black text-gray-900 dark:text-gray-100 text-base sm:text-lg tracking-tight">
-                Configuración del Sistema
-              </h2>
-              <p class="text-gray-500 dark:text-gray-400 text-xs">
-                Ajusta parámetros, tarifas y marca para cada ambiente
-              </p>
-            </div>
-          </div>
-          <span class="text-xs px-3 py-1 rounded-full font-bold bg-pink-50 dark:bg-slate-800 text-pink-700 dark:text-pink-300 border border-pink-100 dark:border-slate-700 hidden sm:inline-block">
-            ${this.currentMode === 'services' ? '💆 Modo Servicios Activo' : '🎂 Modo Productos Activo'}
-          </span>
-        </div>
-
-        <!-- Tarjeta de Ambiente de Operación (Cambiar entre Productos y Servicios) -->
-        <div id="settings-mode-card" class="bg-gradient-to-r from-pink-50/90 via-rose-50/70 to-teal-50/90 dark:from-slate-800/90 dark:via-slate-800/70 dark:to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-200/90 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-12 h-12 rounded-2xl ${this.currentMode === 'services' ? 'bg-teal-600' : 'bg-pink-600'} text-white flex items-center justify-center text-2xl shadow-md shrink-0">
-              ${this.currentMode === 'services' ? '💆' : '🎂'}
-            </div>
-            <div class="min-w-0">
-              <span class="text-[10px] font-black uppercase tracking-wider text-pink-700 dark:text-pink-300 block">
-                Ambiente de Operación Activo
-              </span>
-              <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-white leading-tight">
-                ${this.currentMode === 'services' ? 'Modo Servicios, Belleza & Spa' : 'Modo Pastelería & Productos'}
-              </h3>
-              <p class="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
-                ${this.currentMode === 'services' ? 'Costeo de sesiones, protocolos de cabina y honorarios por hora.' : 'Costeo al gramo, control de mermas y catálogo de recetas.'}
-              </p>
-            </div>
-          </div>
+        <!-- Botón de Cambio de Ambiente (Productos ⇄ Servicios) sin títulos -->
+        <div id="settings-mode-card" class="flex justify-end">
           <button 
             type="button" 
             onclick="App.showModeSelectionModal()" 
-            class="w-full sm:w-auto px-4 py-2.5 rounded-xl font-extrabold text-xs bg-white dark:bg-slate-700 text-gray-800 dark:text-white border border-gray-200 dark:border-slate-600 hover:border-pink-400 dark:hover:border-teal-400 shadow-xs transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+            class="w-full sm:w-auto px-4 py-2.5 rounded-2xl font-extrabold text-xs bg-white dark:bg-slate-800 text-gray-800 dark:text-white border border-pink-200 dark:border-slate-700 hover:border-pink-400 dark:hover:border-teal-400 shadow-sm transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <span>🔄</span> <span>Cambiar Modo (Productos ⇄ Servicios)</span>
+            <span>🔄</span> <span>Cambiar Modo (${this.currentMode === 'services' ? '💆 Servicios ➔ 🎂 Productos' : '🎂 Productos ➔ 💆 Servicios'})</span>
           </button>
         </div>
 
