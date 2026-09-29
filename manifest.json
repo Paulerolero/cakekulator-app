@@ -1,8 +1,10 @@
 {
+  "id": "/app-vendedor",
   "name": "Cakekulator - Costos y Presupuestos de Pastelería",
-  "short_name": "Cakekulator",
+  "short_name": "Cakekulator Pro",
   "description": "Calculadora de costos unitarios, porciones, márgenes de ganancia y generador de cotizaciones para pastelería y repostería.",
-  "start_url": "./index.html",
+  "start_url": "/app",
+  "scope": "/app",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ec4899",

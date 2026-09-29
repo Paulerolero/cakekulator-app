@@ -3287,6 +3287,8 @@ const App = {
         const installBtn = document.getElementById('pwa-install-btn');
         if (installBtn) installBtn.classList.add('hidden');
       });
+    } else {
+      alert('Para instalar Cakekulator Vendedor:\n\n📱 En Android: Toca el menú de 3 puntos (⋮) de Chrome y presiona "Instalar aplicación" o "Agregar a pantalla principal".\n\n🍏 En iPhone: Toca el botón Compartir 📤 en Safari y selecciona "Agregar a pantalla de inicio".');
     }
   },
 
