@@ -432,6 +432,37 @@ const App = {
     });
   },
 
+  getTabsOrder() {
+    // 1. Detectar si estamos en móvil con la barra de navegación inferior activa en pantalla
+    const mobileNav = document.getElementById('mobile-bottom-nav') || document.querySelector('nav.md\\:hidden');
+    if (mobileNav && (window.innerWidth < 768 || !document.getElementById('desktop-sidebar'))) {
+      const navButtons = mobileNav.querySelectorAll('button[data-tab]');
+      const tabs = Array.from(navButtons)
+        .map(btn => btn.dataset.tab)
+        .filter(tab => tab && tab !== 'none');
+      if (tabs.length > 0) {
+        // Si el usuario navegó a configuración, incluir settings al final para que pueda retroceder con swipe
+        if (this.currentTab === 'settings' && !tabs.includes('settings')) {
+          tabs.push('settings');
+        }
+        return tabs;
+      }
+    }
+
+    // 2. Si estamos en escritorio con barra lateral visible
+    const sidebar = document.getElementById('desktop-sidebar');
+    if (sidebar && window.innerWidth >= 768) {
+      const sidebarButtons = sidebar.querySelectorAll('.sidebar-nav-item[data-tab]');
+      const tabs = Array.from(sidebarButtons)
+        .map(btn => btn.dataset.tab)
+        .filter(tab => tab && tab !== 'none');
+      if (tabs.length > 0) return tabs;
+    }
+
+    // 3. Orden canónico predeterminado (Inicio -> Recetas -> Insumos -> Cotizaciones -> Clientes -> Simulador -> Ofertas -> Ajustes)
+    return ['dashboard', 'recipes', 'ingredients', 'quotes', 'customers', 'simulator', 'market-radar', 'settings'];
+  },
+
   initGestures() {
     let startX = 0;
     let startY = 0;
@@ -439,9 +470,7 @@ const App = {
     let isTracking = false;
     let isPulling = false;
 
-    const getTabsOrder = () => {
-      return ['dashboard', 'simulator', 'quotes', 'recipes', 'ingredients', 'market-radar', 'customers', 'finance'];
-    };
+    const getTabsOrder = () => this.getTabsOrder();
 
     const isInteractiveElement = (target) => {
       if (!target || !(target instanceof Element)) return false;

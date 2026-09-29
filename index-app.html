@@ -411,17 +411,7 @@
       <span class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Inicio</span>
     </button>
 
-    <!-- 2. Cotizaciones (Cotizar / Presupuesto) -->
-    <button onclick="App.switchTab('quotes')" data-tab="quotes" id="nav-btn-quotes-mob"
-      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
-      title="Cotizar">
-      <div class="nav-icon-wrapper transition-all">
-        <span id="nav-icon-quotes-mob" class="nav-icon leading-none pointer-events-none">📋</span>
-      </div>
-      <span id="nav-text-quotes-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Cotizar</span>
-    </button>
-
-    <!-- 3. Recetas / Servicios -->
+    <!-- 2. Recetas / Servicios -->
     <button onclick="App.switchTab('recipes')" data-tab="recipes" id="nav-btn-recipes-mob"
       class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
       title="Recetas / Servicios">
@@ -431,7 +421,7 @@
       <span id="nav-text-recipes-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Recetas</span>
     </button>
 
-    <!-- 4. Insumos -->
+    <!-- 3. Insumos -->
     <button onclick="App.switchTab('ingredients')" data-tab="ingredients" id="nav-btn-ingredients-mob"
       class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
       title="Insumos">
@@ -441,7 +431,17 @@
       <span id="nav-text-ingredients-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Insumos</span>
     </button>
 
-    <!-- 6. Clientes -->
+    <!-- 4. Cotizaciones (Cotizar / Presupuesto) -->
+    <button onclick="App.switchTab('quotes')" data-tab="quotes" id="nav-btn-quotes-mob"
+      class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
+      title="Cotizar">
+      <div class="nav-icon-wrapper transition-all">
+        <span id="nav-icon-quotes-mob" class="nav-icon leading-none pointer-events-none">📋</span>
+      </div>
+      <span id="nav-text-quotes-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Cotizar</span>
+    </button>
+
+    <!-- 5. Clientes -->
     <button onclick="App.switchTab('customers')" data-tab="customers" id="nav-btn-customers-mob"
       class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
       title="Clientes">
@@ -451,7 +451,7 @@
       <span id="nav-text-customers-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Clientes</span>
     </button>
 
-    <!-- 7. Simulador -->
+    <!-- 6. Simulador -->
     <button onclick="App.switchTab('simulator')" data-tab="simulator" id="nav-btn-simulator-mob"
       class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
       title="Simulador de Precios">
@@ -461,7 +461,7 @@
       <span id="nav-text-simulator-mob" class="nav-label text-[9.5px] font-extrabold pointer-events-none truncate tracking-tight">Simular</span>
     </button>
 
-    <!-- 8. Radar Ofertas -->
+    <!-- 7. Radar Ofertas -->
     <button onclick="App.switchTab('market-radar')" data-tab="market-radar" id="nav-btn-radar-mob"
       class="nav-btn flex-1 min-w-[44px] flex flex-col items-center justify-center py-1 px-0.5 rounded-2xl transition-all duration-300 touch-manipulation cursor-pointer group"
       title="Radar Ofertas">
@@ -490,8 +490,8 @@
   <script src="js/customers.js?v=6.0"></script>
   <script src="js/receipts.js?v=6.0"></script>
   <script src="js/seller-requests.js?v=6.0"></script>
-  <script src="js/tutorial.js?v=7.4"></script>
-  <script src="js/app.js?v=7.4"></script>
+  <script src="js/tutorial.js?v=7.5"></script>
+  <script src="js/app.js?v=7.5"></script>
 
   <!-- Contenedor Dinámico para Confeti Festivo -->
   <div id="confetti-container"></div>
