@@ -67,16 +67,26 @@ const UserApp = {
       startY = e.touches[0].clientY;
       startTime = Date.now();
       isTracking = true;
-      isPulling = (window.scrollY <= 5);
+
+      const currentScroll = Math.max(window.scrollY || 0, window.pageYOffset || 0, document.documentElement.scrollTop || 0, document.body.scrollTop || 0);
+      isPulling = (currentScroll <= 2);
     }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
       if (!isTracking || !isPulling || !ptrContainer) return;
+
+      const currentScroll = Math.max(window.scrollY || 0, window.pageYOffset || 0, document.documentElement.scrollTop || 0, document.body.scrollTop || 0);
+      if (currentScroll > 2) {
+        isPulling = false;
+        ptrContainer.classList.remove('ptr-active', 'ptr-refreshing');
+        return;
+      }
+
       const currentY = e.touches[0].clientY;
       const diffY = currentY - startY;
       const diffX = e.touches[0].clientX - startX;
 
-      if (diffY > 15 && Math.abs(diffX) < 45) {
+      if (diffY > 25 && Math.abs(diffX) < 40) {
         ptrContainer.classList.add('ptr-active');
         const spinner = ptrContainer.querySelector('.pull-refresh-spinner');
         if (spinner) {
@@ -84,7 +94,7 @@ const UserApp = {
           spinner.style.transform = `rotate(${deg}deg)`;
         }
         if (ptrText) {
-          ptrText.textContent = diffY > 60 ? '¡Suelta para refrescar pastelerías!' : 'Tira para actualizar...';
+          ptrText.textContent = diffY > 70 ? '¡Suelta para refrescar pastelerías!' : 'Tira para actualizar...';
         }
       } else if (diffY <= 0) {
         ptrContainer.classList.remove('ptr-active');
@@ -101,8 +111,10 @@ const UserApp = {
       const diffY = endY - startY;
       const elapsedTime = Date.now() - startTime;
 
+      const currentScroll = Math.max(window.scrollY || 0, window.pageYOffset || 0, document.documentElement.scrollTop || 0, document.body.scrollTop || 0);
+
       // 1. Pull-to-refresh confirm
-      if (isPulling && diffY >= 60 && Math.abs(diffX) < 50 && ptrContainer) {
+      if (isPulling && currentScroll <= 2 && diffY >= 70 && Math.abs(diffX) < 45 && ptrContainer) {
         isPulling = false;
         ptrContainer.classList.add('ptr-active', 'ptr-refreshing');
         if (ptrText) ptrText.textContent = '🧁 Actualizando novedades...';
@@ -116,7 +128,7 @@ const UserApp = {
         return;
       }
       isPulling = false;
-      if (ptrContainer) ptrContainer.classList.remove('ptr-active');
+      if (ptrContainer) ptrContainer.classList.remove('ptr-active', 'ptr-refreshing');
 
       // 2. Swipe-down para cerrar modales abiertos
       const openModal = document.querySelector('#new-request-modal:not(.hidden), #bakery-detail-modal:not(.hidden)');

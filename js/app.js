@@ -489,6 +489,13 @@ const App = {
     const ptrContainer = document.getElementById('pull-to-refresh-container');
     const ptrText = document.getElementById('pull-refresh-text');
 
+    const getAppScrollTop = () => {
+      const scrollContent = document.getElementById('app-main-content');
+      const contentScroll = (scrollContent && scrollContent.scrollTop > 0) ? scrollContent.scrollTop : 0;
+      const winScroll = Math.max(window.scrollY || 0, window.pageYOffset || 0, document.documentElement.scrollTop || 0, document.body.scrollTop || 0);
+      return Math.max(contentScroll, winScroll);
+    };
+
     window.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) return;
       if (isInteractiveElement(e.target)) {
@@ -501,20 +508,27 @@ const App = {
       startTime = Date.now();
       isTracking = true;
 
-      // Verificar si estamos al tope del scroll para pull-to-refresh
-      const scrollContent = document.getElementById('app-main-content');
-      const scrollTop = scrollContent ? scrollContent.scrollTop : window.scrollY;
-      isPulling = (scrollTop <= 5);
+      // Solo permitir pull-to-refresh si estamos estrictamente en el tope superior absoluto (<= 2px)
+      const currentScroll = getAppScrollTop();
+      isPulling = (currentScroll <= 2);
     }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
       if (!isTracking || !isPulling || !ptrContainer) return;
+
+      // Si el usuario no está en el tope absoluto de la pantalla, cancelar inmediatamente
+      if (getAppScrollTop() > 2) {
+        isPulling = false;
+        ptrContainer.classList.remove('ptr-active', 'ptr-refreshing');
+        return;
+      }
+
       const currentY = e.touches[0].clientY;
       const diffY = currentY - startY;
       const diffX = e.touches[0].clientX - startX;
 
-      // Pull down gesture
-      if (diffY > 15 && Math.abs(diffX) < 45) {
+      // Pull down gesture: requiere tirar hacia abajo con movimiento predominantemente vertical
+      if (diffY > 25 && Math.abs(diffX) < 40) {
         ptrContainer.classList.add('ptr-active');
         const spinner = ptrContainer.querySelector('.pull-refresh-spinner');
         if (spinner) {
@@ -522,7 +536,7 @@ const App = {
           spinner.style.transform = `rotate(${deg}deg)`;
         }
         if (ptrText) {
-          ptrText.textContent = diffY > 60 ? '¡Suelta para hornear datos!' : 'Tira para actualizar...';
+          ptrText.textContent = diffY > 70 ? '¡Suelta para hornear datos!' : 'Tira para actualizar...';
         }
       } else if (diffY <= 0) {
         ptrContainer.classList.remove('ptr-active');
@@ -539,8 +553,8 @@ const App = {
       const diffY = endY - startY;
       const elapsedTime = Date.now() - startTime;
 
-      // 1. Pull-to-refresh confirm
-      if (isPulling && diffY >= 60 && Math.abs(diffX) < 50 && ptrContainer) {
+      // 1. Pull-to-refresh confirm (solo si sigue en el tope y tiró al menos 70px)
+      if (isPulling && getAppScrollTop() <= 2 && diffY >= 70 && Math.abs(diffX) < 45 && ptrContainer) {
         isPulling = false;
         ptrContainer.classList.add('ptr-active', 'ptr-refreshing');
         if (ptrText) ptrText.textContent = '🧁 Horneando datos frescos...';
@@ -554,7 +568,7 @@ const App = {
         return;
       }
       isPulling = false;
-      if (ptrContainer) ptrContainer.classList.remove('ptr-active');
+      if (ptrContainer) ptrContainer.classList.remove('ptr-active', 'ptr-refreshing');
 
       // 2. Swipe-down para cerrar modales abiertos
       const openModal = document.querySelector('#recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #customer-detail-modal, #customer-editor-modal, #customer-whatsapp-modal, #ingredient-modal:not(.hidden), #quote-whatsapp-modal:not(.hidden), #quote-print-modal:not(.hidden), #recipe-scanner-modal:not(.hidden), #receipt-scanner-modal:not(.hidden), #mode-selection-modal:not(.hidden)');
@@ -1979,6 +1993,33 @@ const App = {
           <span class="text-xs px-3 py-1 rounded-full font-bold bg-pink-50 dark:bg-slate-800 text-pink-700 dark:text-pink-300 border border-pink-100 dark:border-slate-700 hidden sm:inline-block">
             ${this.currentMode === 'services' ? '💆 Modo Servicios Activo' : '🎂 Modo Productos Activo'}
           </span>
+        </div>
+
+        <!-- Tarjeta de Ambiente de Operación (Cambiar entre Productos y Servicios) -->
+        <div id="settings-mode-card" class="bg-gradient-to-r from-pink-50/90 via-rose-50/70 to-teal-50/90 dark:from-slate-800/90 dark:via-slate-800/70 dark:to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-pink-200/90 dark:border-slate-700 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-12 h-12 rounded-2xl ${this.currentMode === 'services' ? 'bg-teal-600' : 'bg-pink-600'} text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+              ${this.currentMode === 'services' ? '💆' : '🎂'}
+            </div>
+            <div class="min-w-0">
+              <span class="text-[10px] font-black uppercase tracking-wider text-pink-700 dark:text-pink-300 block">
+                Ambiente de Operación Activo
+              </span>
+              <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-white leading-tight">
+                ${this.currentMode === 'services' ? 'Modo Servicios, Belleza & Spa' : 'Modo Pastelería & Productos'}
+              </h3>
+              <p class="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5">
+                ${this.currentMode === 'services' ? 'Costeo de sesiones, protocolos de cabina y honorarios por hora.' : 'Costeo al gramo, control de mermas y catálogo de recetas.'}
+              </p>
+            </div>
+          </div>
+          <button 
+            type="button" 
+            onclick="App.showModeSelectionModal()" 
+            class="w-full sm:w-auto px-4 py-2.5 rounded-xl font-extrabold text-xs bg-white dark:bg-slate-700 text-gray-800 dark:text-white border border-gray-200 dark:border-slate-600 hover:border-pink-400 dark:hover:border-teal-400 shadow-xs transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer shrink-0"
+          >
+            <span>🔄</span> <span>Cambiar Modo (Productos ⇄ Servicios)</span>
+          </button>
         </div>
 
         <!-- Selector de Pestañas (Pills) -->
