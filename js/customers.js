@@ -70,6 +70,7 @@ const CustomersModule = {
 
               <button 
                 type="button" 
+                id="btn-new-customer"
                 onclick="CustomersModule.openCustomerEditor()"
                 class="h-9 px-3.5 sm:px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:scale-95 text-white font-extrabold rounded-xl text-xs sm:text-sm shadow-md shadow-pink-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >

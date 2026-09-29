@@ -52,7 +52,7 @@ const QuotesModule = {
               </button>
             ` : ''}
           </div>
-          <button onclick="QuotesModule.openEditor()" class="${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold shadow-md transition active:scale-95 text-xs sm:text-sm whitespace-nowrap cursor-pointer">
+          <button id="btn-new-quote" onclick="QuotesModule.openEditor()" class="${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} shrink-0 flex items-center justify-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold shadow-md transition active:scale-95 text-xs sm:text-sm whitespace-nowrap cursor-pointer">
             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Nueva Cotización
           </button>

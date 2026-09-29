@@ -62,11 +62,11 @@ const RecipesModule = {
 
           <div class="flex items-center gap-2 shrink-0">
             ${!isServicesMode ? `
-              <button onclick="RecipeScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap">
+              <button id="btn-scan-recipe" onclick="RecipeScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer whitespace-nowrap">
                 <span>📸</span> Escanear Receta
               </button>
             ` : ''}
-            <button onclick="RecipesModule.openEditor()" class="flex-1 sm:flex-none ${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md transition active:scale-95 cursor-pointer whitespace-nowrap">
+            <button id="btn-new-recipe" onclick="RecipesModule.openEditor()" class="flex-1 sm:flex-none ${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md transition active:scale-95 cursor-pointer whitespace-nowrap">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
               ${isServicesMode ? 'Nuevo Servicio' : 'Nueva Receta'}
             </button>

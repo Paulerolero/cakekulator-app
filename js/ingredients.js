@@ -60,10 +60,10 @@ const IngredientsModule = {
           </div>
 
           <div class="flex items-center gap-2 shrink-0">
-            <button onclick="ReceiptScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl ${isServicesMode ? 'bg-teal-100 hover:bg-teal-200 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300' : 'bg-pink-100 hover:bg-pink-200 text-pink-700'} font-bold text-xs shadow-xs transition active:scale-95 whitespace-nowrap">
+            <button id="btn-scan-receipt" onclick="ReceiptScannerModule.openModal()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl ${isServicesMode ? 'bg-teal-100 hover:bg-teal-200 text-teal-800 dark:bg-teal-950/60 dark:text-teal-300' : 'bg-pink-100 hover:bg-pink-200 text-pink-700'} font-bold text-xs shadow-xs transition active:scale-95 whitespace-nowrap">
               <span>🧾</span> Agregar Boleta
             </button>
-            <button onclick="IngredientsModule.openModal()" class="flex-1 sm:flex-none ${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md transition active:scale-95 whitespace-nowrap">
+            <button id="btn-new-ingredient" onclick="IngredientsModule.openModal()" class="flex-1 sm:flex-none ${isServicesMode ? 'bg-teal-600 hover:bg-teal-700 text-white' : 'btn-primary'} flex items-center justify-center gap-1.5 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl text-white font-bold text-xs shadow-md transition active:scale-95 whitespace-nowrap">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
               ${isServicesMode ? 'Insumo de Cabina' : 'Nuevo Insumo'}
             </button>

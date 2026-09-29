@@ -1639,7 +1639,7 @@ const App = {
       </div>
 
       <!-- Barra de Acciones Rápidas (Personalizable) al Inicio -->
-      <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs mb-3.5">
+      <div id="dashboard-quick-actions" class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs mb-3.5">
         <div class="flex items-center justify-between gap-2 mb-2.5">
           <span class="text-[11px] font-extrabold uppercase tracking-wider text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
             <span>⚡</span> Acciones Rápidas

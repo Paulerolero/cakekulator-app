@@ -607,7 +607,7 @@ const MarketRadarModule = {
       </div>
 
       <!-- Selector de Pestañas / Sub-Tabs del Radar -->
-      <div class="flex items-center gap-2 p-1.5 bg-gray-100 dark:bg-slate-800/80 rounded-2xl mb-4 border border-gray-200/80 dark:border-slate-700 max-w-full overflow-x-auto custom-scrollbar">
+      <div id="radar-subtabs" class="flex items-center gap-2 p-1.5 bg-gray-100 dark:bg-slate-800/80 rounded-2xl mb-4 border border-gray-200/80 dark:border-slate-700 max-w-full overflow-x-auto custom-scrollbar">
         <button 
           onclick="MarketRadarModule.switchRadarTab('offers')"
           class="flex-1 min-w-[130px] py-2 px-3 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer ${this.activeRadarTab === 'offers' ? 'bg-white dark:bg-slate-900 text-pink-600 dark:text-pink-400 shadow-xs' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'}"
