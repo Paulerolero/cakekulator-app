@@ -8,6 +8,12 @@ const AuthModule = {
   syncStatusText: 'Local',
   hasCheckedAuth: false,
   isAuthenticating: false,
+  isAdmin: false,
+  MASTER_ADMIN_EMAILS: [
+    'p.salinaslueyza@gmail.com',
+    'admin@cakekulator.cl',
+    'contacto@cakekulator.cl'
+  ],
 
   init() {
     const isConfigured = FirebaseService.init();
@@ -16,7 +22,7 @@ const AuthModule = {
     this.initBackgroundSyncEvents();
 
     if (isConfigured && FirebaseService.auth) {
-      FirebaseService.auth.onAuthStateChanged(user => {
+      FirebaseService.auth.onAuthStateChanged(async user => {
         this.currentUser = user;
         this.hasCheckedAuth = true;
         this.isAuthenticating = false;
@@ -31,6 +37,9 @@ const AuthModule = {
           this.closeLoginModal();
           this.updateSyncStatus('syncing', 'Conectando con Firestore...');
           
+          // Sincronizar perfil de usuario, rol admin y membresías con Firestore
+          await this.syncUserProfileToCloud(user);
+
           if (typeof DB !== 'undefined' && DB.initCloudSync) {
             DB.initCloudSync(user.uid).then(() => {
               this.updateSyncStatus('synced', 'Sincronizado en tiempo real');
@@ -40,6 +49,7 @@ const AuthModule = {
             });
           }
         } else {
+          this.isAdmin = false;
           this.updateSyncStatus('local', 'Modo Local');
           // Detener listeners si se desloguea
           if (typeof DB !== 'undefined' && DB.stopRealtimeListeners) {
@@ -121,6 +131,87 @@ const AuthModule = {
     return `hoy a las ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
   },
 
+  async syncUserProfileToCloud(user) {
+    if (!FirebaseService.db || !user) return;
+    try {
+      const userDocRef = FirebaseService.db.collection('users').doc(user.uid);
+      const doc = await userDocRef.get();
+      const existingData = doc.exists ? doc.data() : {};
+      
+      const emailLower = (user.email || '').toLowerCase();
+      const isMasterAdmin = this.MASTER_ADMIN_EMAILS.some(adm => emailLower.includes(adm.toLowerCase()));
+      const role = existingData.role || (isMasterAdmin ? 'admin' : 'seller');
+      this.isAdmin = (role === 'admin' || isMasterAdmin);
+
+      // Si el usuario fue suspendido por un admin, alertar
+      if (existingData.status === 'suspended') {
+        alert('⚠️ Tu cuenta ha sido temporalmente suspendida por un administrador.');
+        this.logout();
+        return;
+      }
+
+      // Si el admin otorgó o modificó membresía PRO en Firestore, actualizar la app local de inmediato
+      if (existingData.plan && typeof SubscriptionModule !== 'undefined') {
+        let changed = false;
+        if (existingData.isPro !== undefined && SubscriptionModule.state.isPro !== existingData.isPro) {
+          SubscriptionModule.state.isPro = existingData.isPro;
+          changed = true;
+        }
+        if (existingData.plan && SubscriptionModule.state.plan !== existingData.plan) {
+          SubscriptionModule.state.plan = existingData.plan;
+          changed = true;
+        }
+        if (existingData.subscriptionExpiryDate !== undefined && SubscriptionModule.state.subscriptionExpiryDate !== existingData.subscriptionExpiryDate) {
+          SubscriptionModule.state.subscriptionExpiryDate = existingData.subscriptionExpiryDate;
+          changed = true;
+        }
+        if (existingData.trialExpiresDate !== undefined && SubscriptionModule.state.trialExpiresDate !== existingData.trialExpiresDate) {
+          SubscriptionModule.state.trialExpiresDate = existingData.trialExpiresDate;
+          changed = true;
+        }
+        if (changed) {
+          SubscriptionModule.saveState();
+          SubscriptionModule.renderProBadges();
+        }
+      }
+
+      const settings = (typeof DB !== 'undefined' && DB.getSettings) ? DB.getSettings() : {};
+      const recipesCount = (typeof DB !== 'undefined' && DB.getRecipes) ? DB.getRecipes().length : 0;
+      const quotesCount = (typeof DB !== 'undefined' && DB.getQuotes) ? DB.getQuotes().length : 0;
+      const subState = (typeof SubscriptionModule !== 'undefined') ? SubscriptionModule.state : {};
+
+      const profilePayload = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || settings.businessName || 'Usuario',
+        photoURL: user.photoURL || '',
+        businessName: settings.businessName || settings.businessNameProducts || '',
+        role: role,
+        plan: subState.plan || existingData.plan || 'trial',
+        isPro: subState.isPro !== undefined ? subState.isPro : (existingData.isPro !== undefined ? existingData.isPro : true),
+        trialExpiresDate: subState.trialExpiresDate || existingData.trialExpiresDate || null,
+        subscriptionExpiryDate: subState.subscriptionExpiryDate || existingData.subscriptionExpiryDate || null,
+        recipesCount: recipesCount,
+        quotesCount: quotesCount,
+        status: existingData.status || 'active',
+        lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      if (!existingData.createdAt) {
+        profilePayload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      }
+
+      await userDocRef.set(profilePayload, { merge: true });
+      this.renderAuthUI();
+      if (typeof App !== 'undefined' && App.renderAdminButton) {
+        App.renderAdminButton();
+      }
+    } catch (e) {
+      console.warn('Aviso al sincronizar perfil de usuario con Firestore:', e);
+    }
+  },
+
   renderAuthUI() {
     const container = document.getElementById('auth-header-container');
     if (!container) return;
@@ -195,6 +286,19 @@ const AuthModule = {
 
             <!-- Opciones y Acciones -->
             <div class="p-2 space-y-1">
+              ${this.isAdmin ? `
+                <a 
+                  href="/admin" 
+                  class="w-full text-left px-3 py-2 text-xs font-black text-amber-700 dark:text-amber-300 bg-amber-50/90 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 rounded-2xl transition flex items-center justify-between group cursor-pointer border border-amber-200 dark:border-amber-800/60 shadow-xs mb-1"
+                >
+                  <span class="flex items-center gap-2">
+                    <span class="group-hover:scale-110 transition-transform">🛡️</span>
+                    <span>Panel de Administración</span>
+                  </span>
+                  <span class="text-[9px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-black">ADMIN</span>
+                </a>
+              ` : ''}
+
               <button 
                 onclick="AuthModule.forceSyncNow()" 
                 id="btn-force-sync"

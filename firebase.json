@@ -36,6 +36,10 @@
         "destination": "/index-user.html"
       },
       {
+        "source": "/admin",
+        "destination": "/admin.html"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

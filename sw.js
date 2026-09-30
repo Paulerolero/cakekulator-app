@@ -2,13 +2,14 @@
 // Cakekulator - Service Worker para Soporte Offline & Push
 // ==========================================
 
-const CACHE_NAME = 'cakekulator-v8.3';
+const CACHE_NAME = 'cakekulator-v8.4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './index-app.html',
   './index-web.html',
   './index-user.html',
+  './admin.html',
   './manifest.json',
   './manifest-app.json',
   './manifest-user.json',
@@ -16,6 +17,7 @@ const ASSETS_TO_CACHE = [
   './css/user-styles.css',
   './js/firebase-config.js',
   './js/auth.js',
+  './js/admin-app.js',
   './js/templates.js',
   './js/db.js',
   './js/notifications.js',

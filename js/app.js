@@ -49,6 +49,9 @@ const App = {
       NotificationsModule.init();
     }
 
+    // Escuchar comunicados globales del sistema emitidos por administración
+    this.initSystemAnnouncements();
+
     // Inicializar Modo Oscuro / Claro
     this.initDarkMode();
 
@@ -2419,6 +2422,33 @@ const App = {
               ` : ''}
             </div>
 
+            <!-- Panel de Administración (Solo para Administradores) -->
+            ${typeof AuthModule !== 'undefined' && AuthModule.isAdmin ? `
+              <div class="bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-slate-900/10 dark:from-amber-950/40 dark:via-slate-900 dark:to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border-2 border-amber-400 dark:border-amber-600 shadow-md space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-600 text-white flex items-center justify-center text-xl shadow-xs shrink-0">
+                      🛡️
+                    </div>
+                    <div>
+                      <div class="flex items-center gap-1.5">
+                        <h3 class="font-black text-gray-900 dark:text-gray-100 text-sm">Consola de Administración</h3>
+                        <span class="text-[9px] bg-amber-500 text-white font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Super Admin</span>
+                      </div>
+                      <p class="text-[11px] text-gray-500 dark:text-gray-400">Gestiona usuarios, regala membresías PRO, envía comunicados y revisa métricas globales.</p>
+                    </div>
+                  </div>
+
+                  <a 
+                    href="/admin" 
+                    class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shadow-sm transition active:scale-95 flex items-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer"
+                  >
+                    <span>Abrir Panel</span> <span>↗</span>
+                  </a>
+                </div>
+              </div>
+            ` : ''}
+
             <!-- Conexión Nube & Cuenta Google -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
               <div class="flex items-center justify-between">
@@ -3431,6 +3461,97 @@ const App = {
         isScrolledPushed = false;
       }
     });
+  },
+
+  // ==========================================
+  // COMUNICADOS GLOBALES DEL SISTEMA (ADMIN)
+  // ==========================================
+  initSystemAnnouncements() {
+    if (typeof FirebaseService === 'undefined') return;
+    
+    const checkAndListen = () => {
+      if (!FirebaseService.db) return;
+      try {
+        FirebaseService.db.collection('system_announcements')
+          .where('active', '==', true)
+          .onSnapshot((snap) => {
+            if (!snap || snap.empty) {
+              const existing = document.getElementById('global-system-announcement-banner');
+              if (existing) existing.remove();
+              return;
+            }
+            const activeDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            activeDocs.sort((a, b) => {
+              const tA = a.createdAt ? (a.createdAt.toMillis ? a.createdAt.toMillis() : new Date(a.createdAt).getTime()) : 0;
+              const tB = b.createdAt ? (b.createdAt.toMillis ? b.createdAt.toMillis() : new Date(b.createdAt).getTime()) : 0;
+              return tB - tA;
+            });
+            const latest = activeDocs[0];
+            if (!latest) return;
+
+            if (sessionStorage.getItem('dismissed_ann_' + latest.id)) {
+              return;
+            }
+
+            this.renderSystemAnnouncementBanner(latest.id, latest);
+          }, (err) => {
+            // Silencioso si no hay permisos aún
+          });
+      } catch (e) {
+        console.warn('Error al suscribir anuncios:', e);
+      }
+    };
+
+    if (FirebaseService.db) {
+      checkAndListen();
+    } else {
+      setTimeout(checkAndListen, 1500);
+    }
+  },
+
+  renderSystemAnnouncementBanner(annId, ann) {
+    let banner = document.getElementById('global-system-announcement-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'global-system-announcement-banner';
+      const header = document.querySelector('header');
+      if (header && header.parentNode) {
+        header.parentNode.insertBefore(banner, header.nextSibling);
+      } else {
+        document.body.prepend(banner);
+      }
+    }
+
+    const typeStyles = {
+      info: 'bg-blue-600 text-white',
+      warning: 'bg-amber-500 text-slate-900',
+      alert: 'bg-red-600 text-white',
+      success: 'bg-emerald-600 text-white'
+    };
+    const style = typeStyles[ann.type] || typeStyles.info;
+
+    const safeTitle = this.escapeHtml ? this.escapeHtml(ann.title || '') : (ann.title || '');
+    const safeMsg = this.escapeHtml ? this.escapeHtml(ann.message || '') : (ann.message || '');
+
+    banner.className = `w-full py-2 px-3 sm:px-4 text-xs font-semibold shadow-md transition-all duration-300 z-30 flex items-center justify-between gap-3 ${style}`;
+    banner.innerHTML = `
+      <div class="max-w-4xl mx-auto w-full flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="text-base shrink-0">📢</span>
+          <div class="min-w-0 text-[11px] sm:text-xs">
+            <strong class="font-extrabold mr-1.5">${safeTitle}:</strong>
+            <span class="opacity-95">${safeMsg}</span>
+          </div>
+        </div>
+        <button onclick="App.dismissAnnouncement('${annId}')" class="p-1 rounded-lg hover:bg-black/10 shrink-0 text-sm font-bold opacity-80 hover:opacity-100 cursor-pointer" title="Cerrar aviso">✕</button>
+      </div>
+    `;
+  },
+
+  dismissAnnouncement(annId) {
+    sessionStorage.setItem('dismissed_ann_' + annId, 'true');
+    const banner = document.getElementById('global-system-announcement-banner');
+    if (banner) banner.remove();
   }
 };
 
