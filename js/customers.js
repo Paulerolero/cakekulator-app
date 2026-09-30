@@ -37,16 +37,73 @@ const CustomersModule = {
     const filteredCustomers = this.getFilteredCustomers(customers, upcomingEvents);
 
     container.innerHTML = `
-      <!-- Botón Superior: + Nuevo Cliente -->
-      <div class="flex items-center justify-end mb-4">
-        <button 
-          type="button" 
-          id="btn-new-customer"
-          onclick="CustomersModule.openCustomerEditor()"
-          class="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:scale-95 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md shadow-pink-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
-        >
-          <span class="text-base font-black leading-none">+</span> <span>Nuevo Cliente</span>
-        </button>
+      <!-- Barra Superior: Buscador + Botón Nuevo Cliente & Filtros -->
+      <div class="space-y-2.5 sm:space-y-3 mb-4 sm:mb-5">
+        <div class="flex items-center gap-2">
+          <!-- Input de Búsqueda -->
+          <div class="relative flex-1">
+            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🔍</span>
+            <input 
+              type="text" 
+              id="customer-search-input"
+              value="${this.searchQuery}" 
+              oninput="CustomersModule.handleSearch(event)" 
+              placeholder="Buscar por nombre, teléfono, notas o alérgenos..." 
+              class="w-full pl-9 pr-8 py-2 sm:py-2.5 rounded-xl border border-pink-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none transition shadow-xs"
+            >
+            ${this.searchQuery ? `
+              <button 
+                onclick="CustomersModule.clearSearch()" 
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs p-1 cursor-pointer"
+              >✕</button>
+            ` : ''}
+          </div>
+
+          <!-- Botón Nuevo Cliente -->
+          <button 
+            type="button" 
+            id="btn-new-customer"
+            onclick="CustomersModule.openCustomerEditor()"
+            class="h-9 sm:h-10 px-3.5 sm:px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:scale-95 text-white font-extrabold rounded-xl text-xs sm:text-sm shadow-md shadow-pink-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+          >
+            <span class="text-base font-black leading-none">+</span> <span>Nuevo Cliente</span>
+          </button>
+        </div>
+
+        <!-- Filtros por Píldoras -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none w-full">
+          <button 
+            type="button" 
+            onclick="CustomersModule.setFilter('all')" 
+            class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer shrink-0 ${this.activeFilter === 'all' ? 'bg-pink-600 text-white shadow-2xs' : 'bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'}"
+          >
+            Todos (${totalCustomers})
+          </button>
+
+          <button 
+            type="button" 
+            onclick="CustomersModule.setFilter('favorites')" 
+            class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'favorites' ? 'bg-amber-500 text-white shadow-2xs' : 'bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'}"
+          >
+            <span>⭐</span> Favoritos (${favoriteCount})
+          </button>
+
+          <button 
+            type="button" 
+            onclick="CustomersModule.setFilter('upcoming')" 
+            class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'upcoming' ? 'bg-rose-600 text-white shadow-2xs' : 'bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'}"
+          >
+            <span>🎂</span> Próximas Fechas (${upcomingCount})
+          </button>
+
+          <button 
+            type="button" 
+            onclick="CustomersModule.setFilter('this_month')" 
+            class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'this_month' ? 'bg-purple-600 text-white shadow-2xs' : 'bg-white dark:bg-slate-800 border border-gray-200/80 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'}"
+          >
+            <span>📅</span> Este Mes
+          </button>
+        </div>
       </div>
 
       <!-- Banner de Próximas Fechas Especiales & Alertas de Anticipación -->
@@ -102,65 +159,6 @@ const CustomersModule = {
           </div>
         </div>
       ` : ''}
-
-      <!-- Buscador y Filtros Rápidos -->
-      <div class="bg-white dark:bg-slate-800 p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-pink-100 dark:border-slate-700 mb-4 sm:mb-6 shadow-xs space-y-3">
-        <div class="customer-filter-bar flex flex-col gap-2.5 items-stretch">
-          <!-- Input de Búsqueda -->
-          <div class="relative w-full">
-            <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none">🔍</span>
-            <input 
-              type="text" 
-              id="customer-search-input"
-              value="${this.searchQuery}" 
-              oninput="CustomersModule.handleSearch(event)" 
-              placeholder="Buscar por nombre, teléfono, notas o alérgenos..." 
-              class="w-full pl-9 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 text-xs sm:text-sm focus:ring-2 focus:ring-pink-400 outline-none transition"
-            >
-            ${this.searchQuery ? `
-              <button 
-                onclick="CustomersModule.clearSearch()" 
-                class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs p-1"
-              >✕</button>
-            ` : ''}
-          </div>
-
-          <!-- Filtros por Píldoras -->
-          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none w-full">
-            <button 
-              type="button" 
-              onclick="CustomersModule.setFilter('all')" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer shrink-0 ${this.activeFilter === 'all' ? 'bg-pink-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
-            >
-              Todos (${totalCustomers})
-            </button>
-
-            <button 
-              type="button" 
-              onclick="CustomersModule.setFilter('favorites')" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'favorites' ? 'bg-amber-500 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
-            >
-              <span>⭐</span> Favoritos (${favoriteCount})
-            </button>
-
-            <button 
-              type="button" 
-              onclick="CustomersModule.setFilter('upcoming')" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'upcoming' ? 'bg-rose-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
-            >
-              <span>🎂</span> Próximas Fechas (${upcomingCount})
-            </button>
-
-            <button 
-              type="button" 
-              onclick="CustomersModule.setFilter('this_month')" 
-              class="px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer flex items-center gap-1 shrink-0 ${this.activeFilter === 'this_month' ? 'bg-purple-600 text-white shadow-2xs' : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200'}"
-            >
-              <span>📅</span> Este Mes
-            </button>
-          </div>
-        </div>
-      </div>
 
       <!-- Cuadrícula / Listado de Clientes -->
       ${filteredCustomers.length === 0 ? `
