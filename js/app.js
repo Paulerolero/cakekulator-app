@@ -116,6 +116,12 @@ const App = {
 
     if (this.lockBodyScroll) this.lockBodyScroll();
 
+    // Rastrear en pila de modales abiertos
+    this._modalStack = this._modalStack || [];
+    if (strId && !this._modalStack.includes(strId)) {
+      this._modalStack.push(strId);
+    }
+
     // Registrar estado en el historial del navegador para soporte de botón Atrás en Android/PWA
     try {
       if (strId && (!history.state || history.state.modalId !== strId)) {
@@ -133,6 +139,11 @@ const App = {
     if (!modal || modal.classList.contains('hidden')) return;
     const strId = typeof modalId === 'string' ? modalId : (modal.id || '');
 
+    // Actualizar stack de modales
+    if (this._modalStack) {
+      this._modalStack = this._modalStack.filter(id => id !== strId);
+    }
+
     modal.classList.add('modal-closing');
     const dialog = modal.querySelector(':scope > div:not(.cursor-pointer)') || modal.firstElementChild;
     if (dialog) {
@@ -144,13 +155,24 @@ const App = {
       modal.classList.add('hidden');
       modal.classList.remove('modal-closing');
       if (dialog) dialog.classList.remove('modal-animate-out');
-      if (this.unlockBodyScroll) this.unlockBodyScroll();
+      
+      // Solo desbloquear scroll si NO quedan otros modales abiertos
+      const hasOtherOpenModals = document.querySelector('#modals-root > div:not(.hidden), #recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #ingredient-modal:not(.hidden)');
+      if (!hasOtherOpenModals && this.unlockBodyScroll) {
+        this.unlockBodyScroll();
+      }
       if (callback) callback();
     }, 200);
 
     // Limpiar entrada del historial si corresponde
     if (strId && history.state && history.state.modalOpen && history.state.modalId === strId) {
-      try { history.back(); } catch (_) {}
+      try {
+        this._isProgrammaticHistoryBack = true;
+        history.back();
+        setTimeout(() => { this._isProgrammaticHistoryBack = false; }, 250);
+      } catch (_) {
+        this._isProgrammaticHistoryBack = false;
+      }
     }
   },
 
@@ -3448,9 +3470,35 @@ const App = {
 
     // Escuchar evento popstate (botón atrás físico o gesto de swipe en Android/iOS)
     window.addEventListener('popstate', (e) => {
-      // 1. Si hay algún modal abierto, cerrarlo inmediatamente y permanecer en la pantalla base
-      const closed = this.closeAllModals();
-      if (closed) {
+      // Si el retroceso de historial fue provocado programáticamente por closeModal(), ignorar
+      if (this._isProgrammaticHistoryBack) {
+        this._isProgrammaticHistoryBack = false;
+        return;
+      }
+
+      // 1. Si hay algún modal abierto, cerrar ÚNICAMENTE el modal superior del stack
+      if (this._modalStack && this._modalStack.length > 0) {
+        const topModalId = this._modalStack.pop();
+        if (topModalId) {
+          const el = document.getElementById(topModalId);
+          if (el && !el.classList.contains('hidden')) {
+            el.classList.add('hidden');
+            const hasOtherOpen = document.querySelector('#modals-root > div:not(.hidden), #recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #ingredient-modal:not(.hidden)');
+            if (!hasOtherOpen && this.unlockBodyScroll) {
+              this.unlockBodyScroll();
+            }
+            return;
+          }
+        }
+      }
+
+      const openModals = Array.from(document.querySelectorAll('#modals-root > div:not(.hidden), #recipe-editor-modal:not(.hidden), #quote-editor-modal:not(.hidden), #ingredient-modal:not(.hidden)'));
+      if (openModals.length > 0) {
+        const topModal = openModals[openModals.length - 1];
+        topModal.classList.add('hidden');
+        if (openModals.length === 1 && this.unlockBodyScroll) {
+          this.unlockBodyScroll();
+        }
         return;
       }
 

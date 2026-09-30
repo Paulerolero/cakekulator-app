@@ -166,6 +166,7 @@ const IngredientsModule = {
       modal.dataset.backdropBound = 'true';
       modal.addEventListener('click', (e) => {
         if (e.target === modal) {
+          if (Date.now() - (IngredientsModule._openedAt || 0) < 300) return;
           IngredientsModule.closeModal();
         }
       });
@@ -375,9 +376,9 @@ const IngredientsModule = {
       }
     }
 
+    this._openedAt = Date.now();
     this.updateLiveCostPreview();
     App.openModal('ingredient-modal');
-    if (typeof App !== 'undefined' && App.lockBodyScroll) App.lockBodyScroll();
   },
 
   closeModal() {
@@ -461,9 +462,13 @@ const IngredientsModule = {
     }
 
     const callback = this.onSavedCallback;
+    this.onSavedCallback = null;
     this.onCancelCallback = null; // No invocar cancel al guardar con éxito
     this.closeModal();
-    this.render();
+
+    if (typeof App !== 'undefined' && App.currentTab === 'ingredients') {
+      this.render();
+    }
 
     if (callback && typeof callback === 'function') {
       try {
