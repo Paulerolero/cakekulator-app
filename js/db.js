@@ -226,6 +226,17 @@ const DB = {
         AuthModule.updateSyncStatus('syncing', 'Conectando con Firestore...');
       }
 
+      // Asegurar que el documento raíz del usuario exista en Firestore para el panel de administración
+      if (typeof AuthModule !== 'undefined' && AuthModule.currentUser) {
+        AuthModule.syncUserProfileToCloud(AuthModule.currentUser);
+      } else {
+        FirebaseService.db.collection('users').doc(uid).set({
+          uid: uid,
+          lastLoginAt: firebase.firestore.FieldValue.serverTimestamp(),
+          status: 'active'
+        }, { merge: true }).catch(() => {});
+      }
+
       const userDocRef = FirebaseService.db.collection('users').doc(uid).collection('data');
 
       // Primera verificación inicial de datos en la nube

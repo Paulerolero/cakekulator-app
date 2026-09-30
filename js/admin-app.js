@@ -21,6 +21,8 @@ const AdminApp = {
   announcements: [],
   isLoading: true,
   selectedUser: null,
+  permissionDeniedError: false,
+  firestoreErrorMessage: '',
 
   init() {
     console.log('🛡️ Inicializando Cakekulator Admin Console...');
@@ -88,6 +90,26 @@ const AdminApp = {
 
       if (isMaster || isRoleAdmin) {
         this.isAuthorized = true;
+
+        // Auto-registrar admin físicamente en users/{uid} para que quede registrado
+        if (FirebaseService.db) {
+          try {
+            await FirebaseService.db.collection('users').doc(user.uid).set({
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || 'Administrador Principal',
+              photoURL: user.photoURL || '',
+              role: 'admin',
+              plan: 'pro',
+              isPro: true,
+              status: 'active',
+              lastLoginAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+          } catch (e) {
+            console.warn('Auto-registro admin:', e);
+          }
+        }
+
         await this.loadAllData();
         this.renderMainDashboard();
       } else {
@@ -107,24 +129,118 @@ const AdminApp = {
   // ==========================================
   async loadAllData() {
     if (!FirebaseService.db) return;
+    this.permissionDeniedError = false;
+    this.firestoreErrorMessage = '';
+
+    // 1. Cargar Vendedores (users)
     try {
-      // 1. Cargar Vendedores (users)
       const sellersSnap = await FirebaseService.db.collection('users').get();
       this.sellers = sellersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (err) {
+      console.error('Error al cargar users:', err);
+      if (err.code === 'permission-denied') {
+        this.permissionDeniedError = true;
+        this.firestoreErrorMessage = 'Las Reglas de Seguridad de Firestore en Firebase Console impiden listar la colección "users" (permission-denied).';
+      }
+    }
 
-      // 2. Cargar Clientes (client_users)
+    // 2. Cargar Clientes (client_users)
+    try {
       const clientsSnap = await FirebaseService.db.collection('client_users').get();
       this.clients = clientsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (err) {
+      console.error('Error al cargar client_users:', err);
+      if (err.code === 'permission-denied') {
+        this.permissionDeniedError = true;
+      }
+    }
 
-      // 3. Cargar Comunicados Globales (system_announcements)
+    // 3. Auto-descubrir usuarios históricos que guardaron datos en subcolecciones
+    // (En Firestore, si solo se escribió en users/{uid}/data/... el doc users/{uid} es virtual y get() no lo lista)
+    try {
+      const dataSnap = await FirebaseService.db.collectionGroup('data').get().catch(() => ({ docs: [] }));
+      if (dataSnap && dataSnap.docs && dataSnap.docs.length > 0) {
+        const uidMap = {};
+        dataSnap.docs.forEach(doc => {
+          const parentUser = doc.ref.parent.parent;
+          if (parentUser && parentUser.parent && parentUser.parent.id === 'users') {
+            const uid = parentUser.id;
+            if (!uidMap[uid]) uidMap[uid] = { settings: null, recipesCount: 0, quotesCount: 0 };
+            if (doc.id === 'settings') {
+              uidMap[uid].settings = doc.data()?.data || {};
+            } else if (doc.id === 'recipes') {
+              const d = doc.data()?.data;
+              uidMap[uid].recipesCount = Array.isArray(d) ? d.length : 0;
+            } else if (doc.id === 'quotes') {
+              const d = doc.data()?.data;
+              uidMap[uid].quotesCount = Array.isArray(d) ? d.length : 0;
+            }
+          }
+        });
+
+        for (const [uid, meta] of Object.entries(uidMap)) {
+          const existing = this.sellers.find(s => s.id === uid || s.uid === uid);
+          const st = meta.settings || {};
+          const email = st.email || st.contactEmail || `usuario-${uid.substring(0, 6)}@cakekulator.app`;
+          const name = st.businessName || st.businessNameProducts || `Pastelera (${uid.substring(0, 5)})`;
+          const role = (uid === this.currentAdmin?.uid || this.MASTER_ADMIN_EMAILS.some(m => email.toLowerCase().includes(m.toLowerCase()))) ? 'admin' : 'seller';
+
+          const reconstructed = {
+            id: uid,
+            uid: uid,
+            email: email,
+            displayName: name,
+            businessName: st.businessName || st.businessNameProducts || '',
+            role: role,
+            plan: 'trial',
+            isPro: true,
+            status: 'active',
+            recipesCount: meta.recipesCount,
+            quotesCount: meta.quotesCount,
+            lastLoginAt: new Date()
+          };
+
+          if (!existing) {
+            this.sellers.push(reconstructed);
+            // Auto-sanar en Firestore creando el documento físico en users/{uid}
+            FirebaseService.db.collection('users').doc(uid).set(reconstructed, { merge: true }).catch(() => {});
+          } else {
+            if (!existing.recipesCount && meta.recipesCount) existing.recipesCount = meta.recipesCount;
+            if (!existing.quotesCount && meta.quotesCount) existing.quotesCount = meta.quotesCount;
+            if (!existing.businessName && st.businessName) existing.businessName = st.businessName;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Auto-descubrimiento en subcolecciones:', e);
+    }
+
+    // 4. Si el admin actual está autenticado, asegurar que aparezca en la lista
+    if (this.currentAdmin && !this.sellers.some(s => s.id === this.currentAdmin.uid || s.email === this.currentAdmin.email)) {
+      this.sellers.unshift({
+        id: this.currentAdmin.uid,
+        uid: this.currentAdmin.uid,
+        email: this.currentAdmin.email,
+        displayName: this.currentAdmin.displayName || 'Administrador Principal',
+        photoURL: this.currentAdmin.photoURL || '',
+        role: 'admin',
+        plan: 'pro',
+        isPro: true,
+        status: 'active',
+        recipesCount: 0,
+        quotesCount: 0
+      });
+    }
+
+    // 5. Cargar Comunicados Globales (system_announcements)
+    try {
       const annSnap = await FirebaseService.db.collection('system_announcements').orderBy('createdAt', 'desc').get().catch(() => ({ docs: [] }));
       this.announcements = annSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-      console.log(`✅ Datos cargados: ${this.sellers.length} vendedores, ${this.clients.length} clientes, ${this.announcements.length} comunicados`);
-    } catch (err) {
-      console.error('Error al cargar datos en panel de admin:', err);
-      this.showToast('⚠️ Error al refrescar datos de Firestore', 'error');
+    } catch (e) {
+      this.announcements = [];
     }
+
+    console.log(`✅ Datos cargados: ${this.sellers.length} vendedores, ${this.clients.length} clientes, ${this.announcements.length} comunicados`);
   },
 
   async refreshData() {
@@ -250,6 +366,37 @@ const AdminApp = {
 
         <!-- Contenedor Dinámico de la Pestaña Activa -->
         <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+          
+          <!-- Alerta de Reglas de Seguridad si corresponde -->
+          ${this.permissionDeniedError ? `
+            <div class="bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-500 text-amber-950 dark:text-amber-200 p-4 sm:p-5 rounded-3xl space-y-3 shadow-md">
+              <div class="flex items-center gap-2 font-black text-sm text-amber-700 dark:text-amber-400">
+                <span class="text-xl">⚠️</span> 
+                <span>Reglas de Seguridad de Firestore en Firebase Console</span>
+              </div>
+              <p class="text-xs leading-relaxed">
+                Firestore rechazó la lectura con <strong>permisos insuficientes (permission-denied)</strong> al listar la colección de usuarios. Por defecto, Firebase solo permite que un usuario consulte su propio UID (<code>request.auth.uid == userId</code>).
+              </p>
+              <p class="text-xs font-bold text-amber-800 dark:text-amber-300">
+                👉 Para que este panel de administración pueda listar y gestionar usuarios, añade esta regla en <strong>Firebase Console &gt; Firestore Database &gt; Reglas</strong>:
+              </p>
+              <pre class="bg-slate-900 text-amber-300 font-mono text-[11px] p-3 rounded-2xl overflow-x-auto select-all">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}</pre>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-[11px] text-slate-500">Haz clic en "Publicar" en Firebase Console y luego presiona Refrescar:</span>
+                <button onclick="AdminApp.refreshData()" class="px-3 py-1.5 bg-amber-500 text-white rounded-xl font-black text-xs hover:bg-amber-600 transition cursor-pointer">
+                  🔄 Reintentar Lectura
+                </button>
+              </div>
+            </div>
+          ` : ''}
+
           <div id="admin-tab-content"></div>
         </main>
 
