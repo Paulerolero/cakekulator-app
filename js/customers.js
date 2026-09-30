@@ -37,117 +37,16 @@ const CustomersModule = {
     const filteredCustomers = this.getFilteredCustomers(customers, upcomingEvents);
 
     container.innerHTML = `
-      <!-- Header & KPIs Rediseñados: Estilo Moderno / Glassmorphism -->
-      <div class="rounded-3xl p-4 sm:p-5 mb-4 shadow-sm border border-pink-100/80 dark:border-slate-700/80 bg-gradient-to-br from-white via-pink-50/40 to-white dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-900 relative overflow-hidden">
-        <div class="relative z-10">
-          <!-- Fila Superior: Título con Icono + Botones de Acción -->
-          <div class="flex items-center justify-between gap-3 mb-3.5">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center text-lg shadow-md shrink-0">
-                👥
-              </div>
-              <div class="min-w-0">
-                <h2 class="text-base sm:text-lg font-black tracking-tight text-gray-900 dark:text-white truncate">
-                  Directorio de Clientes
-                </h2>
-                <p class="text-[11px] font-medium text-gray-500 dark:text-gray-400 truncate">
-                  CRM, fidelización y fechas especiales
-                </p>
-              </div>
-            </div>
-
-            <!-- Botones de Acción Superiores -->
-            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <button 
-                type="button" 
-                onclick="CustomersModule.toggleNotificationsPrompt()"
-                id="btn-customer-notif"
-                class="h-9 px-2.5 sm:px-3 bg-white/80 dark:bg-slate-700/80 hover:bg-pink-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-200 border border-gray-200/80 dark:border-slate-600 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer"
-                title="Configurar Alertas"
-              >
-                <span class="text-sm">🔔</span> <span class="hidden xs:inline">Alertas</span>
-              </button>
-
-              <button 
-                type="button" 
-                id="btn-new-customer"
-                onclick="CustomersModule.openCustomerEditor()"
-                class="h-9 px-3.5 sm:px-4 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:scale-95 text-white font-extrabold rounded-xl text-xs sm:text-sm shadow-md shadow-pink-500/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <span class="text-base font-black leading-none">+</span> <span>Nuevo Cliente</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Métricas Rápidas (KPIs) en Grid de 3 Columnas -->
-          <div class="grid grid-cols-3 gap-2 sm:gap-3">
-            <!-- 1. Total Clientes -->
-            <div 
-              onclick="CustomersModule.setFilter('all')" 
-              role="button" 
-              class="group p-2.5 sm:p-3 rounded-2xl bg-white/90 dark:bg-slate-900/60 border border-pink-100/90 dark:border-slate-700/80 hover:border-pink-300 dark:hover:border-pink-500/50 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div class="flex items-center justify-between gap-1 mb-1">
-                <span class="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider truncate">
-                  Clientes
-                </span>
-                <span class="w-6 h-6 rounded-lg bg-pink-100/80 dark:bg-pink-950/60 text-pink-600 dark:text-pink-400 flex items-center justify-center text-xs group-hover:scale-110 transition-transform shrink-0">
-                  👥
-                </span>
-              </div>
-              <div class="flex items-baseline gap-1">
-                <span class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white">
-                  ${totalCustomers}
-                </span>
-                <span class="text-[10px] text-gray-400 font-semibold hidden xs:inline">totales</span>
-              </div>
-            </div>
-
-            <!-- 2. Clientes VIP / Favoritos -->
-            <div 
-              onclick="CustomersModule.setFilter('favorites')" 
-              role="button" 
-              class="group p-2.5 sm:p-3 rounded-2xl bg-white/90 dark:bg-slate-900/60 border border-amber-100/90 dark:border-slate-700/80 hover:border-amber-300 dark:hover:border-amber-500/50 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div class="flex items-center justify-between gap-1 mb-1">
-                <span class="text-[10px] sm:text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider truncate">
-                  Favoritos VIP
-                </span>
-                <span class="w-6 h-6 rounded-lg bg-amber-100/80 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xs group-hover:scale-110 transition-transform shrink-0">
-                  ⭐
-                </span>
-              </div>
-              <div class="flex items-baseline gap-1">
-                <span class="text-xl sm:text-2xl font-black text-amber-500 dark:text-amber-400">
-                  ${favoriteCount}
-                </span>
-                <span class="text-[10px] text-amber-600/70 font-semibold hidden xs:inline">destacados</span>
-              </div>
-            </div>
-
-            <!-- 3. Próximos Eventos -->
-            <div 
-              onclick="CustomersModule.setFilter('upcoming')" 
-              role="button" 
-              class="group p-2.5 sm:p-3 rounded-2xl bg-white/90 dark:bg-slate-900/60 border ${upcomingCount > 0 ? 'border-rose-200 dark:border-rose-900/60 bg-rose-50/20' : 'border-pink-100/90 dark:border-slate-700/80'} hover:border-rose-300 dark:hover:border-rose-500/50 shadow-2xs hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between"
-            >
-              <div class="flex items-center justify-between gap-1 mb-1">
-                <span class="text-[10px] sm:text-[11px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider truncate">
-                  Eventos
-                </span>
-                <span class="w-6 h-6 rounded-lg bg-rose-100/80 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs group-hover:scale-110 transition-transform shrink-0">
-                  🎂
-                </span>
-              </div>
-              <div class="flex items-baseline gap-1">
-                <span class="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400">
-                  ${upcomingCount}
-                </span>
-                <span class="text-[10px] text-rose-500/70 font-semibold hidden xs:inline">30 días</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Botón Superior: + Nuevo Cliente -->
+      <div class="flex items-center justify-end mb-4">
+        <button 
+          type="button" 
+          id="btn-new-customer"
+          onclick="CustomersModule.openCustomerEditor()"
+          class="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 active:scale-95 text-white font-extrabold rounded-2xl text-xs sm:text-sm shadow-md shadow-pink-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span class="text-base font-black leading-none">+</span> <span>Nuevo Cliente</span>
+        </button>
       </div>
 
       <!-- Banner de Próximas Fechas Especiales & Alertas de Anticipación -->

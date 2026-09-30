@@ -112,14 +112,14 @@ const TutorialModule = {
     {
       id: 'customers_directory',
       tab: 'customers',
-      target: '#btn-new-customer, #btn-customer-notif',
+      target: '#btn-new-customer',
       icon: '👥',
       badge: 'Fidelización CRM',
       title: 'Directorio de Clientes & Alertas de Cumpleaños',
       subtitle: 'Anticípate a los pedidos y cuida a tus clientes VIP.',
       description: 'Tu agenda inteligente de fidelización. Guarda los teléfonos, gustos, alergias alimentarias y las fechas importantes de tus clientes (cumpleaños de sus hijos, aniversarios o eventos).',
       highlightText: 'Qué debes usar aquí:',
-      highlightDesc: 'Toca "+ Nuevo Cliente" para ingresar un contacto y sus fechas especiales, o usa el botón "🔔 Alertas" para habilitar las notificaciones push en tu dispositivo.',
+      highlightDesc: 'Toca "+ Nuevo Cliente" para ingresar un contacto y sus fechas especiales de cumpleaños o eventos.',
       quickTip: '🔔 La app te alertará con 7 días de anticipación antes de cada cumpleaños para que les ofrezcas su torta o regalo a tiempo.',
       preferredPosition: 'bottom'
     },
