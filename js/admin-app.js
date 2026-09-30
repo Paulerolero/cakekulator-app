@@ -19,6 +19,7 @@ const AdminApp = {
   sellers: [],
   clients: [],
   announcements: [],
+  notifications: [],
   isLoading: true,
   selectedUser: null,
   permissionDeniedError: false,
@@ -282,7 +283,15 @@ const AdminApp = {
       this.announcements = [];
     }
 
-    console.log(`✅ Datos cargados: ${this.sellers.length} vendedores, ${this.clients.length} clientes, ${this.announcements.length} comunicados`);
+    // 6. Cargar Notificaciones Push Enviadas (system_notifications)
+    try {
+      const notifSnap = await FirebaseService.db.collection('system_notifications').orderBy('createdAt', 'desc').limit(50).get().catch(() => ({ docs: [] }));
+      this.notifications = notifSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (e) {
+      this.notifications = [];
+    }
+
+    console.log(`✅ Datos cargados: ${this.sellers.length} vendedores, ${this.clients.length} clientes, ${this.announcements.length} comunicados, ${this.notifications.length} notificaciones`);
   },
 
   async refreshData() {
@@ -398,7 +407,7 @@ const AdminApp = {
               <span>👑</span> <span>Regalar Membresías PRO</span>
             </button>
             <button onclick="AdminApp.switchTab('broadcast')" id="tab-btn-broadcast" class="admin-tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer">
-              <span>📢</span> <span>Comunicados Globales</span>
+              <span>📢</span> <span>Comunicados & Notificaciones (${this.notifications.length + this.announcements.length})</span>
             </button>
             <button onclick="AdminApp.switchTab('config')" id="tab-btn-config" class="admin-tab-btn flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer">
               <span>⚙️</span> <span>Configuración & Admins</span>
@@ -942,102 +951,227 @@ service cloud.firestore {
   // ==========================================
   // PESTAÑA 5: COMUNICADOS GLOBALES (BROADCAST)
   // ==========================================
+  // ==========================================
+  // PESTAÑA 5: COMUNICADOS & NOTIFICACIONES PUSH
+  // ==========================================
   renderBroadcastTab(container) {
     container.innerHTML = `
       <div class="space-y-6">
         
-        <!-- Creador de Comunicados -->
-        <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+        <!-- SECCIÓN 1: ENVIAR NOTIFICACIÓN PUSH / DIRECTA -->
+        <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-pink-100 dark:border-slate-800 shadow-sm space-y-4">
           <div class="flex items-center justify-between">
-            <div>
-              <h4 class="font-black text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                <span>📢</span> Publicar Comunicado Global para Usuarios
-              </h4>
-              <p class="text-xs text-slate-400">Este mensaje aparecerá fijado en la parte superior de la aplicación para todos los usuarios.</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center text-xl shadow-xs">
+                🔔
+              </div>
+              <div>
+                <h4 class="font-black text-sm text-slate-900 dark:text-white">
+                  Enviar Notificación Push & Alerta a Dispositivos
+                </h4>
+                <p class="text-xs text-slate-400">Envía una alerta emergente a los teléfonos y pantallas de los usuarios, con sonido y acceso directo en la app.</p>
+              </div>
             </div>
-            <span class="p-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-500 text-xl">📢</span>
+            <span class="text-xs px-2.5 py-1 rounded-full font-bold bg-pink-50 dark:bg-pink-950/60 text-pink-700 dark:text-pink-300 border border-pink-200 dark:border-pink-800">
+              Web Push & In-App
+            </span>
           </div>
 
-          <form onsubmit="AdminApp.submitNewAnnouncement(event)" class="space-y-3 text-xs">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div class="sm:col-span-2">
-                <label class="block font-bold text-slate-500 mb-1">Título del Aviso</label>
-                <input type="text" id="ann-title" required placeholder="Ej. ¡Nueva función de Escáner OCR disponible!" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-400" />
+          <form onsubmit="AdminApp.submitNewNotification(event)" class="space-y-3.5 text-xs">
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Audiencia / Destinatario *</label>
+                <select id="push-target" required class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold outline-none focus:ring-2 focus:ring-pink-400">
+                  <option value="all">👥 Todos los usuarios (Vendedores y Clientes)</option>
+                  <option value="sellers" selected>👩‍🍳 Todos los Vendedores</option>
+                  <option value="clients">🛍️ Todos los Clientes</option>
+                  <optgroup label="Vendedor Específico">
+                    ${this.sellers.map(s => `
+                      <option value="${s.id}">
+                        👤 ${s.displayName || s.email} (${s.businessName || 'Pastelería'})
+                      </option>
+                    `).join('')}
+                  </optgroup>
+                </select>
               </div>
 
               <div>
-                <label class="block font-bold text-slate-500 mb-1">Tipo de Aviso</label>
-                <select id="ann-type" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-400">
-                  <option value="info">ℹ️ Informativo / Novedad</option>
-                  <option value="promo">🎁 Promoción / Membresía</option>
-                  <option value="warning">⚠️ Mantenimiento o Alerta</option>
+                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Categoría de la Notificación *</label>
+                <select id="push-type" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold outline-none focus:ring-2 focus:ring-pink-400">
+                  <option value="membership">👑 Membresía PRO / Regalo de Suscripción</option>
+                  <option value="promo">🎁 Promoción / Oferta Especial</option>
+                  <option value="system" selected>🔔 General / Nueva Actualización</option>
+                  <option value="alert">🚨 Alerta Importante / Mantenimiento</option>
+                  <option value="order">🎂 Pedidos & Cotizaciones</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="sm:col-span-2">
+                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Título de la Notificación *</label>
+                <input type="text" id="push-title" required placeholder="Ej. ¡Tienes 1 mes PRO de regalo en tu cuenta!" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold outline-none focus:ring-2 focus:ring-pink-400" />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Acción al pulsar (opcional)</label>
+                <select id="push-action" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold outline-none focus:ring-2 focus:ring-pink-400">
+                  <option value="">(Abrir Inicio de la App)</option>
+                  <option value="recipes">📖 Ir a Recetas</option>
+                  <option value="quotes">📋 Ir a Cotizaciones</option>
+                  <option value="simulator">🧮 Ir a Simulador de Precios</option>
+                  <option value="settings">⚙️ Ir a Ajustes / Suscripción</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label class="block font-bold text-slate-500 mb-1">Contenido / Mensaje</label>
-              <textarea id="ann-message" required rows="2" placeholder="Escribe el mensaje claro y conciso para los pasteleros..." class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-amber-400"></textarea>
+              <label class="block font-bold text-slate-600 dark:text-slate-300 mb-1">Mensaje de la Notificación *</label>
+              <textarea id="push-message" required rows="2" placeholder="Escribe el cuerpo del mensaje que verán en su celular o pantalla..." class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-pink-400"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end pt-2 border-t border-slate-100 dark:border-slate-800">
+              <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-700 hover:to-rose-600 text-white font-black text-xs rounded-xl shadow-md transition active:scale-95 cursor-pointer flex items-center gap-2">
+                <span>🚀</span> <span>Enviar Notificación Inmediata</span>
+              </button>
+            </div>
+          </form>
+
+          <!-- Historial de Notificaciones Push Enviadas -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <h5 class="font-bold text-xs text-slate-700 dark:text-slate-300 flex items-center justify-between">
+              <span>Historial de Notificaciones Push Enviadas (${this.notifications.length})</span>
+            </h5>
+
+            ${this.notifications.length === 0 ? `
+              <p class="text-xs text-slate-400 py-3 text-center">No has enviado notificaciones directas aún.</p>
+            ` : `
+              <div class="divide-y divide-slate-100 dark:divide-slate-800 max-h-60 overflow-y-auto custom-scrollbar">
+                ${this.notifications.map(n => {
+                  const typeIcon = n.type === 'membership' ? '👑' : (n.type === 'promo' ? '🎁' : (n.type === 'alert' ? '🚨' : '🔔'));
+                  const targetLabel = n.target === 'all' ? 'TODOS' : (n.target === 'sellers' ? 'VENDEDORES' : (n.target === 'clients' ? 'CLIENTES' : 'INDIVIDUAL'));
+                  const time = n.createdAt?.toDate ? n.createdAt.toDate().toLocaleString('es-CL') : new Date(n.createdAt || Date.now()).toLocaleString('es-CL');
+
+                  return `
+                    <div class="py-2.5 flex items-start justify-between gap-3 text-xs">
+                      <div class="flex items-start gap-2">
+                        <span class="text-base shrink-0 mt-0.5">${typeIcon}</span>
+                        <div>
+                          <div class="flex items-center gap-2">
+                            <span class="font-bold text-slate-900 dark:text-white">${n.title}</span>
+                            <span class="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">${targetLabel}</span>
+                          </div>
+                          <p class="text-[11px] text-slate-500 mt-0.5">${n.message}</p>
+                          <span class="text-[10px] text-slate-400">${time}</span>
+                        </div>
+                      </div>
+                      <button onclick="AdminApp.deleteNotification('${n.id}')" class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition cursor-pointer" title="Eliminar">🗑️</button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: PUBLICAR COMUNICADO GLOBAL (BANNER SUPERIOR) -->
+        <div class="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-xs">
+                📢
+              </div>
+              <div>
+                <h4 class="font-black text-sm text-slate-900 dark:text-white">
+                  Publicar Comunicado Superior (Banner Web Fijado)
+                </h4>
+                <p class="text-xs text-slate-400">Aparecerá como una franja fijada en la parte superior de toda la aplicación.</p>
+              </div>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+              Banner Superior
+            </span>
+          </div>
+
+          <form onsubmit="AdminApp.submitNewAnnouncement(event)" class="space-y-3 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="sm:col-span-2">
+                <label class="block font-bold text-slate-500 mb-1">Título del Aviso *</label>
+                <input type="text" id="ann-title" required placeholder="Ej. ¡Mantenimiento programado hoy a las 23:00!" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-400" />
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-500 mb-1">Tipo de Aviso *</label>
+                <select id="ann-type" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-semibold outline-none focus:ring-2 focus:ring-amber-400">
+                  <option value="info">ℹ️ Informativo / Novedad (Azul)</option>
+                  <option value="warning" selected>⚠️ Aviso Importante (Amarillo)</option>
+                  <option value="alert">🚨 Alerta Crítica (Rojo)</option>
+                  <option value="success">✅ Novedad Exitosa (Verde)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block font-bold text-slate-500 mb-1">Contenido del Comunicado *</label>
+              <textarea id="ann-message" required rows="2" placeholder="Escribe el mensaje claro y conciso para los usuarios..." class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-medium outline-none focus:ring-2 focus:ring-amber-400"></textarea>
             </div>
 
             <div class="flex items-center justify-between pt-1">
               <label class="flex items-center gap-2 font-bold cursor-pointer text-slate-600 dark:text-slate-300">
                 <input type="checkbox" id="ann-active" checked class="rounded text-amber-500 focus:ring-amber-400 w-4 h-4" />
-                <span>Activar inmediatamente al publicar</span>
+                <span>Activar banner en vivo inmediatamente</span>
               </label>
 
               <button type="submit" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5">
-                <span>🚀</span> <span>Publicar en Toda la App</span>
+                <span>🚀</span> <span>Fijar Comunicado Superior</span>
               </button>
             </div>
           </form>
-        </div>
 
-        <!-- Listado de Comunicados Existentes -->
-        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden space-y-3 p-5">
-          <h4 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-            <span>📋</span> Historial de Comunicados (${this.announcements.length})
-          </h4>
+          <!-- Listado de Comunicados Existentes -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+            <h5 class="font-bold text-xs text-slate-700 dark:text-slate-300">
+              Historial de Comunicados Superiores (${this.announcements.length})
+            </h5>
 
-          ${this.announcements.length === 0 ? `
-            <div class="p-8 text-center text-slate-400">
-              <p class="text-xs">No hay comunicados publicados aún.</p>
-            </div>
-          ` : `
-            <div class="space-y-2.5">
-              ${this.announcements.map(a => `
-                <div class="p-3.5 rounded-2xl border ${a.active ? 'border-amber-300 bg-amber-50/50 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40'} flex items-start justify-between gap-3">
-                  <div class="space-y-1">
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm">${a.type === 'promo' ? '🎁' : (a.type === 'warning' ? '⚠️' : 'ℹ️')}</span>
-                      <h5 class="font-bold text-xs text-slate-900 dark:text-white">${a.title}</h5>
-                      <span class="text-[9px] px-2 py-0.5 rounded-full font-black ${a.active ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}">
-                        ${a.active ? 'EN VIVO' : 'INACTIVO'}
-                      </span>
+            ${this.announcements.length === 0 ? `
+              <p class="text-xs text-slate-400 py-3 text-center">No hay comunicados superiores publicados.</p>
+            ` : `
+              <div class="space-y-2">
+                ${this.announcements.map(a => `
+                  <div class="p-3 rounded-2xl border ${a.active ? 'border-amber-300 bg-amber-50/50 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40'} flex items-start justify-between gap-3 text-xs">
+                    <div class="space-y-0.5">
+                      <div class="flex items-center gap-2">
+                        <span class="font-bold text-slate-900 dark:text-white">${a.title}</span>
+                        <span class="text-[9px] px-2 py-0.5 rounded-full font-black ${a.active ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'}">
+                          ${a.active ? 'EN VIVO' : 'PAUSADO'}
+                        </span>
+                      </div>
+                      <p class="text-[11px] text-slate-600 dark:text-slate-300">${a.message}</p>
+                      <span class="text-[10px] text-slate-400 block">${new Date(a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt || Date.now()).toLocaleDateString('es-CL')}</span>
                     </div>
-                    <p class="text-xs text-slate-600 dark:text-slate-300">${a.message}</p>
-                    <span class="text-[10px] text-slate-400 block">${new Date(a.createdAt?.toDate ? a.createdAt.toDate() : a.createdAt || Date.now()).toLocaleDateString('es-CL')}</span>
-                  </div>
 
-                  <div class="flex items-center gap-1.5 shrink-0">
-                    <button 
-                      onclick="AdminApp.toggleAnnouncementStatus('${a.id}', ${!a.active})" 
-                      class="px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition"
-                    >
-                      ${a.active ? 'Pausar' : 'Activar'}
-                    </button>
-                    <button 
-                      onclick="AdminApp.deleteAnnouncement('${a.id}')" 
-                      class="px-2 py-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition"
-                      title="Eliminar"
-                    >
-                      🗑️
-                    </button>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <button 
+                        onclick="AdminApp.toggleAnnouncementStatus('${a.id}', ${!a.active})" 
+                        class="px-2.5 py-1 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 transition cursor-pointer"
+                      >
+                        ${a.active ? 'Pausar' : 'Activar'}
+                      </button>
+                      <button 
+                        onclick="AdminApp.deleteAnnouncement('${a.id}')" 
+                        class="px-2 py-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition cursor-pointer"
+                        title="Eliminar"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
-                </div>
-              `).join('')}
-            </div>
-          `}
+                `).join('')}
+              </div>
+            `}
+          </div>
         </div>
 
       </div>
@@ -1687,6 +1821,62 @@ service cloud.firestore {
       this.showToast('🗑️ Comunicado eliminado');
     } catch (e) {
       this.showToast('Error al eliminar comunicado', 'error');
+    }
+  },
+
+  // ==========================================
+  // Notificaciones Push & Directas (system_notifications)
+  // ==========================================
+  async submitNewNotification(e) {
+    e.preventDefault();
+    if (!FirebaseService.db) return;
+
+    const title = document.getElementById('push-title').value.trim();
+    const type = document.getElementById('push-type').value;
+    const target = document.getElementById('push-target').value;
+    const actionTab = document.getElementById('push-action').value;
+    const message = document.getElementById('push-message').value.trim();
+
+    try {
+      const docRef = await FirebaseService.db.collection('system_notifications').add({
+        title,
+        message,
+        type,
+        target,
+        actionTab,
+        author: this.currentAdmin?.email || 'admin',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      this.notifications.unshift({
+        id: docRef.id,
+        title,
+        message,
+        type,
+        target,
+        actionTab,
+        author: this.currentAdmin?.email || 'admin',
+        createdAt: new Date()
+      });
+
+      this.renderActiveTab();
+      this.showToast('🔔 ¡Notificación enviada con éxito a los dispositivos!');
+    } catch (err) {
+      console.error(err);
+      this.showToast('Error al enviar notificación', 'error');
+    }
+  },
+
+  async deleteNotification(notifId) {
+    if (!confirm('¿Deseas eliminar esta notificación del historial?')) return;
+    if (!FirebaseService.db) return;
+    try {
+      await FirebaseService.db.collection('system_notifications').doc(notifId).delete();
+      this.notifications = this.notifications.filter(n => n.id !== notifId);
+      this.renderActiveTab();
+      this.showToast('Notificación eliminada');
+    } catch (e) {
+      this.showToast('Error al eliminar', 'error');
     }
   },
 

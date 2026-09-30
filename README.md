@@ -695,6 +695,7 @@ cakekulator-app/
 ├── index-app.html              # PWA Móvil del Pastelero (Optimizada para Cocina)
 ├── index-web.html              # Suite Desktop con Analítica Financiera Chart.js
 ├── index-user.html             # Portal Marketplace de Clientes y Ofertas Flash
+├── admin.html                  # Consola de Administración y Superusuario (/admin)
 ├── manifest.json               # Manifiesto PWA Suite Principal
 ├── manifest-app.json           # Manifiesto PWA Versión Móvil Taller
 ├── manifest-user.json          # Manifiesto PWA Versión Portal de Clientes
@@ -713,6 +714,7 @@ cakekulator-app/
 │   └── user-styles.css         # Hoja de estilos del Portal de Clientes
 │
 ├── js/
+│   ├── admin-app.js            # Consola de Superusuario, gestión de licencias, avisos y push
 │   ├── app.js                  # Router SPA principal, atajos de teclado y eventos
 │   ├── auth.js                 # Autenticación con Google y sincronización Firestore
 │   ├── config.local.js         # Llaves y credenciales locales (ignorado en git)

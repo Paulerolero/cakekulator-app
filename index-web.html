@@ -334,6 +334,13 @@
 
           <!-- Contenedor de Autenticación con Google -->
           <div id="auth-header-container"></div>
+
+          <!-- Botón Campana de Notificaciones -->
+          <button id="btn-header-notifs" onclick="NotificationsModule.openCenter()" title="Notificaciones"
+            class="relative p-2 text-gray-500 dark:text-gray-300 hover:text-pink-600 dark:hover:text-pink-400 hover:bg-pink-50 dark:hover:bg-slate-800 rounded-xl transition cursor-pointer">
+            <span class="text-base leading-none">🔔</span>
+            <span id="notif-badge-count" class="notif-badge-count hidden absolute -top-0.5 -right-0.5 bg-pink-600 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center animate-pulse">0</span>
+          </button>
         </div>
 
       </div>
@@ -396,7 +403,7 @@
   <script src="js/firebase-config.js?v=6.0"></script>
   <script src="js/config.local.js?v=6.0"></script>
   <script src="js/auth.js?v=6.0"></script>
-  <script src="js/notifications.js?v=6.0"></script>
+  <script src="js/notifications.js?v=8.7"></script>
   <script src="js/templates.js?v=6.0"></script>
   <script src="js/db.js?v=6.0"></script>
   <script src="js/gemini-service.js?v=6.0"></script>
