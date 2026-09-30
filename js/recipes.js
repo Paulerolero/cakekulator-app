@@ -328,8 +328,13 @@ const RecipesModule = {
                 <!-- Filas dinámicas generadas por JS -->
               </div>
 
-              <div class="text-right text-xs font-bold text-gray-700 dark:text-gray-300 pt-1">
-                Subtotal Insumos: <span id="rec-ingredients-subtotal" class="text-pink-600">$ 0</span>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs pt-1">
+                <button type="button" onclick="RecipesModule.promptNewIngredientForRow()" class="text-pink-600 hover:text-pink-700 dark:text-pink-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer w-fit">
+                  <span>➕</span> ¿No encuentras un insumo? Créalo aquí y se agregará a la receta
+                </button>
+                <div class="text-right font-bold text-gray-700 dark:text-gray-300">
+                  Subtotal Insumos: <span id="rec-ingredients-subtotal" class="text-pink-600">$ 0</span>
+                </div>
               </div>
             </div>
 
@@ -349,8 +354,13 @@ const RecipesModule = {
                 <!-- Filas dinámicas generadas por JS -->
               </div>
 
-              <div class="text-right text-xs font-bold text-gray-700 dark:text-gray-300 pt-1">
-                Subtotal Empaque: <span id="rec-packaging-subtotal" class="text-emerald-600">$ 0</span>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-xs pt-1">
+                <button type="button" onclick="RecipesModule.promptNewPackagingForRow()" class="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 font-semibold hover:underline flex items-center gap-1 cursor-pointer w-fit">
+                  <span>➕</span> ¿No encuentras un empaque? Créalo aquí y se agregará a la receta
+                </button>
+                <div class="text-right font-bold text-gray-700 dark:text-gray-300">
+                  Subtotal Empaque: <span id="rec-packaging-subtotal" class="text-emerald-600">$ 0</span>
+                </div>
               </div>
             </div>
 
@@ -806,35 +816,99 @@ const RecipesModule = {
     this.scaleFormIngredients(factor);
   },
 
+  isCurrentEditorService() {
+    const typeSelect = document.getElementById('rec-type');
+    const val = typeSelect ? typeSelect.value : '';
+    return ['service_session', 'service_hourly', 'service_person', 'service_fixed', 'service'].includes(val) || 
+           (typeof App !== 'undefined' && App.currentMode === 'services');
+  },
+
+  getIngredientOptionsHtml(selectedId = '') {
+    const isServ = this.isCurrentEditorService();
+    let allIngredients = DB.getIngredients('all');
+    if (isServ) {
+      allIngredients = allIngredients.filter(i => i.itemType === 'service' || i.mode === 'services' || i.yieldApplications > 0 || ['facial', 'corporal', 'massage', 'nails', 'hair', 'service', 'spa', 'crema', 'aceite', 'guantes', 'desechable'].some(c => (i.category || '').toLowerCase().includes(c)));
+    } else {
+      allIngredients = allIngredients.filter(i => (i.itemType || 'product') === 'product' && i.category !== 'Empaque');
+    }
+
+    if (selectedId && !allIngredients.some(i => i.id === selectedId)) {
+      const extra = DB.getIngredientById(selectedId);
+      if (extra) allIngredients.unshift(extra);
+    }
+
+    const newLabel = isServ ? '➕ + Crear nuevo insumo de cabina...' : '➕ + Crear nuevo insumo...';
+    const notInListLabel = isServ ? '➕ ¿No está en la lista? Crear nuevo insumo...' : '➕ ¿No está en la lista? Crear nuevo insumo...';
+
+    return `
+      <option value="">-- Seleccionar Insumo --</option>
+      <option value="__NEW_INGREDIENT__" class="font-bold text-pink-600 bg-pink-50 dark:bg-slate-800 dark:text-pink-400">${newLabel}</option>
+      ${allIngredients.map(ing => `
+        <option value="${ing.id}" ${ing.id === selectedId ? 'selected' : ''}>
+          ${ing.name} (${ing.packageQty}${ing.packageUnit})
+        </option>
+      `).join('')}
+      <option value="__NEW_INGREDIENT__" class="font-bold text-pink-600 bg-pink-50 dark:bg-slate-800 dark:text-pink-400">${notInListLabel}</option>
+    `;
+  },
+
+  getPackagingOptionsHtml(selectedId = '') {
+    let allPackaging = DB.getIngredients('all').filter(i => i.category === 'Empaque' || i.packageUnit === 'u' || i.itemType === 'service_disposable');
+
+    if (selectedId && !allPackaging.some(i => i.id === selectedId)) {
+      const extra = DB.getIngredientById(selectedId);
+      if (extra) allPackaging.unshift(extra);
+    }
+
+    return `
+      <option value="">-- Seleccionar Empaque --</option>
+      <option value="__NEW_PACKAGING__" class="font-bold text-emerald-600 bg-emerald-50 dark:bg-slate-800 dark:text-emerald-400">➕ + Crear nuevo empaque / insumo...</option>
+      ${allPackaging.map(ing => `
+        <option value="${ing.id}" ${ing.id === selectedId ? 'selected' : ''}>
+          ${ing.name} (${Calculator.formatCurrency(ing.packagePrice)} / ${ing.packageQty}${ing.packageUnit})
+        </option>
+      `).join('')}
+      <option value="__NEW_PACKAGING__" class="font-bold text-emerald-600 bg-emerald-50 dark:bg-slate-800 dark:text-emerald-400">➕ ¿No está en la lista? Crear nuevo...</option>
+    `;
+  },
+
   addIngredientRow(selectedId = '', qty = '', unit = 'g') {
     const container = document.getElementById('recipe-ingredients-table');
-    const allIngredients = DB.getIngredients().filter(i => i.category !== 'Empaque');
+    if (!container) return null;
     const rowId = 'ing_row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
 
     const row = document.createElement('div');
     row.id = rowId;
-    row.className = 'bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs space-y-2';
+    row.className = 'bg-white dark:bg-slate-850 p-3 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-xs space-y-2 transition';
     row.innerHTML = `
-      <!-- Fila 1: Selección del Insumo -->
-      <div class="w-full">
-        <select class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-pink-400 ing-select bg-white truncate" onchange="RecipesModule.onIngredientRowChange('${rowId}')">
-          <option value="">-- Seleccionar Insumo --</option>
-          ${allIngredients.map(ing => `
-            <option value="${ing.id}" ${ing.id === selectedId ? 'selected' : ''}>
-              ${ing.name} (${ing.packageQty}${ing.packageUnit})
-            </option>
-          `).join('')}
+      <!-- Fila 1: Selección del Insumo + Botón Rápido Crear Insumo -->
+      <div class="flex items-center gap-1.5 w-full">
+        <select 
+          class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-semibold text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-pink-400 ing-select bg-white dark:bg-slate-800 truncate cursor-pointer" 
+          data-previous-value="${selectedId}"
+          onfocus="this.dataset.previousValue = this.value"
+          onchange="RecipesModule.onIngredientRowChange('${rowId}')">
+          ${this.getIngredientOptionsHtml(selectedId)}
         </select>
+        <button 
+          type="button" 
+          onclick="RecipesModule.promptNewIngredientForRow('${rowId}')" 
+          title="Crear nuevo insumo si no está en la lista" 
+          class="px-2.5 py-1.5 text-pink-600 hover:text-pink-700 bg-pink-50 hover:bg-pink-100 active:scale-95 rounded-xl border border-pink-200 dark:border-slate-700 dark:bg-slate-800 dark:text-pink-300 transition shrink-0 flex items-center justify-center font-bold text-xs gap-1 shadow-2xs cursor-pointer"
+          style="height: 36px;">
+          <span>➕</span>
+          <span class="hidden sm:inline text-[11px]">Nuevo</span>
+        </button>
       </div>
 
       <!-- Fila 2: Cantidad, Unidad, Costo Calculado y Botón Eliminar -->
       <div class="flex items-center gap-2">
         <div class="flex-1 min-w-[70px]">
-          <input type="number" step="any" min="0" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 text-xs text-center font-bold ing-qty focus:ring-2 focus:ring-pink-400 bg-gray-50/50" oninput="RecipesModule.onIngredientRowChange('${rowId}')">
+          <input type="number" step="any" min="0" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-slate-700 text-xs text-center font-bold ing-qty focus:ring-2 focus:ring-pink-400 bg-gray-50/50 dark:bg-slate-800 dark:text-white" oninput="RecipesModule.onIngredientRowChange('${rowId}')">
         </div>
 
         <div class="w-20">
-          <select class="w-full px-2 py-1.5 rounded-xl border border-gray-200 text-xs font-medium ing-unit focus:ring-2 focus:ring-pink-400 bg-white" onchange="RecipesModule.onIngredientRowChange('${rowId}')">
+          <select class="w-full px-2 py-1.5 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-medium ing-unit focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 dark:text-white" onchange="RecipesModule.onIngredientRowChange('${rowId}')">
             <option value="g" ${unit === 'g' ? 'selected' : ''}>g</option>
             <option value="kg" ${unit === 'kg' ? 'selected' : ''}>kg</option>
             <option value="ml" ${unit === 'ml' ? 'selected' : ''}>ml</option>
@@ -847,10 +921,10 @@ const RecipesModule = {
         </div>
 
         <div class="flex-1 text-right px-1">
-          <span class="text-xs font-black text-pink-600 ing-cost truncate inline-block">$ 0</span>
+          <span class="text-xs font-black text-pink-600 dark:text-pink-400 ing-cost truncate inline-block">$ 0</span>
         </div>
 
-        <button type="button" onclick="document.getElementById('${rowId}').remove(); RecipesModule.recalculateLiveSummary();" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition shrink-0" title="Eliminar fila">
+        <button type="button" onclick="document.getElementById('${rowId}').remove(); RecipesModule.recalculateLiveSummary();" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition shrink-0 cursor-pointer" title="Eliminar fila">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
       </div>
@@ -858,37 +932,46 @@ const RecipesModule = {
 
     container.appendChild(row);
     this.onIngredientRowChange(rowId);
+    return rowId;
   },
 
   addPackagingRow(selectedId = '', qty = '', unit = 'u') {
     const container = document.getElementById('recipe-packaging-table');
-    const allPackaging = DB.getIngredients().filter(i => i.category === 'Empaque' || i.packageUnit === 'u');
+    if (!container) return null;
     const rowId = 'pack_row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
 
     const row = document.createElement('div');
     row.id = rowId;
-    row.className = 'bg-white p-3 rounded-2xl border border-gray-200/80 shadow-xs space-y-2';
+    row.className = 'bg-white dark:bg-slate-850 p-3 rounded-2xl border border-gray-200/80 dark:border-slate-700 shadow-xs space-y-2 transition';
     row.innerHTML = `
-      <!-- Fila 1: Selección del Empaque -->
-      <div class="w-full">
-        <select class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-800 focus:ring-2 focus:ring-emerald-400 pack-select bg-white truncate" onchange="RecipesModule.onPackagingRowChange('${rowId}')">
-          <option value="">-- Seleccionar Empaque --</option>
-          ${allPackaging.map(ing => `
-            <option value="${ing.id}" ${ing.id === selectedId ? 'selected' : ''}>
-              ${ing.name} (${Calculator.formatCurrency(ing.packagePrice)} / ${ing.packageQty}${ing.packageUnit})
-            </option>
-          `).join('')}
+      <!-- Fila 1: Selección del Empaque + Botón Rápido Crear Empaque -->
+      <div class="flex items-center gap-1.5 w-full">
+        <select 
+          class="flex-1 min-w-0 px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-semibold text-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-emerald-400 pack-select bg-white dark:bg-slate-800 truncate cursor-pointer" 
+          data-previous-value="${selectedId}"
+          onfocus="this.dataset.previousValue = this.value"
+          onchange="RecipesModule.onPackagingRowChange('${rowId}')">
+          ${this.getPackagingOptionsHtml(selectedId)}
         </select>
+        <button 
+          type="button" 
+          onclick="RecipesModule.promptNewPackagingForRow('${rowId}')" 
+          title="Crear nuevo empaque si no está en la lista" 
+          class="px-2.5 py-1.5 text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 active:scale-95 rounded-xl border border-emerald-200 dark:border-slate-700 dark:bg-slate-800 dark:text-emerald-300 transition shrink-0 flex items-center justify-center font-bold text-xs gap-1 shadow-2xs cursor-pointer"
+          style="height: 36px;">
+          <span>➕</span>
+          <span class="hidden sm:inline text-[11px]">Nuevo</span>
+        </button>
       </div>
 
       <!-- Fila 2: Cantidad, Unidad, Costo Calculado y Botón Eliminar -->
       <div class="flex items-center gap-2">
         <div class="flex-1 min-w-[70px]">
-          <input type="number" step="any" min="0" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 text-xs text-center font-bold pack-qty focus:ring-2 focus:ring-emerald-400 bg-gray-50/50" oninput="RecipesModule.onPackagingRowChange('${rowId}')">
+          <input type="number" step="any" min="0" placeholder="Cant." value="${qty}" class="w-full px-2.5 py-1.5 rounded-xl border border-gray-200 dark:border-slate-700 text-xs text-center font-bold pack-qty focus:ring-2 focus:ring-emerald-400 bg-gray-50/50 dark:bg-slate-800 dark:text-white" oninput="RecipesModule.onPackagingRowChange('${rowId}')">
         </div>
 
         <div class="w-20">
-          <select class="w-full px-2 py-1.5 rounded-xl border border-gray-200 text-xs font-medium pack-unit focus:ring-2 focus:ring-emerald-400 bg-white" onchange="RecipesModule.onPackagingRowChange('${rowId}')">
+          <select class="w-full px-2 py-1.5 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-medium pack-unit focus:ring-2 focus:ring-emerald-400 bg-white dark:bg-slate-800 dark:text-white" onchange="RecipesModule.onPackagingRowChange('${rowId}')">
             <option value="u" ${unit === 'u' ? 'selected' : ''}>un</option>
             <option value="g" ${unit === 'g' ? 'selected' : ''}>g</option>
             <option value="m" ${unit === 'm' ? 'selected' : ''}>m</option>
@@ -896,10 +979,10 @@ const RecipesModule = {
         </div>
 
         <div class="flex-1 text-right px-1">
-          <span class="text-xs font-black text-emerald-600 pack-cost truncate inline-block">$ 0</span>
+          <span class="text-xs font-black text-emerald-600 dark:text-emerald-400 pack-cost truncate inline-block">$ 0</span>
         </div>
 
-        <button type="button" onclick="document.getElementById('${rowId}').remove(); RecipesModule.recalculateLiveSummary();" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition shrink-0" title="Eliminar empaque">
+        <button type="button" onclick="document.getElementById('${rowId}').remove(); RecipesModule.recalculateLiveSummary();" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition shrink-0 cursor-pointer" title="Eliminar empaque">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
         </button>
       </div>
@@ -907,6 +990,171 @@ const RecipesModule = {
 
     container.appendChild(row);
     this.onPackagingRowChange(rowId);
+    return rowId;
+  },
+
+  promptNewIngredientForRow(rowId = null) {
+    let targetRowId = rowId;
+    if (!targetRowId || !document.getElementById(targetRowId)) {
+      targetRowId = this.addIngredientRow();
+    }
+
+    const row = document.getElementById(targetRowId);
+    const select = row ? row.querySelector('.ing-select') : null;
+    const prevVal = select ? (select.dataset.previousValue || '') : '';
+
+    if (typeof IngredientsModule !== 'undefined' && IngredientsModule.openModal) {
+      IngredientsModule.openModal(
+        null,
+        (createdIng) => {
+          if (!createdIng || !createdIng.id) return;
+
+          // 1. Refrescar opciones de insumos en todos los selects de la receta abierta
+          this.refreshAllIngredientSelects();
+
+          // 2. Asignar el nuevo insumo a la fila objetivo
+          const targetRow = document.getElementById(targetRowId);
+          if (targetRow) {
+            const targetSelect = targetRow.querySelector('.ing-select');
+            const qtyInput = targetRow.querySelector('.ing-qty');
+            const unitSelect = targetRow.querySelector('.ing-unit');
+
+            if (targetSelect) {
+              targetSelect.value = createdIng.id;
+              targetSelect.dataset.previousValue = createdIng.id;
+            }
+
+            // Seleccionar unidad recomendada
+            if (unitSelect && createdIng.packageUnit) {
+              const u = String(createdIng.packageUnit).toLowerCase();
+              if (['kg', 'g'].includes(u)) {
+                unitSelect.value = 'g';
+              } else if (['l', 'lt', 'ml', 'cc'].includes(u)) {
+                unitSelect.value = 'ml';
+              } else if (['un', 'unidad', 'caja', 'paquete'].includes(u)) {
+                unitSelect.value = 'u';
+              } else if (['taza', 'cup'].includes(u)) {
+                unitSelect.value = 'cup';
+              } else if (['cda', 'tbsp'].includes(u)) {
+                unitSelect.value = 'tbsp';
+              } else if (['cdta', 'tsp'].includes(u)) {
+                unitSelect.value = 'tsp';
+              }
+            }
+
+            // Recalcular costos
+            this.onIngredientRowChange(targetRowId);
+
+            // Enfocar campo de cantidad para rápida edición
+            if (qtyInput) {
+              qtyInput.focus();
+              qtyInput.select();
+            }
+
+            // Efecto visual de confirmación e incorporación
+            targetRow.classList.add('item-saved-glow');
+            targetRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(() => targetRow.classList.remove('item-saved-glow'), 1800);
+          }
+
+          if (typeof App !== 'undefined' && App.showToast) {
+            App.showToast(`✨ Insumo "${createdIng.name}" incorporado a la receta`);
+          }
+        },
+        null,
+        () => {
+          if (select) {
+            select.value = prevVal;
+            this.onIngredientRowChange(targetRowId);
+          }
+        }
+      );
+    }
+  },
+
+  promptNewPackagingForRow(rowId = null) {
+    let targetRowId = rowId;
+    if (!targetRowId || !document.getElementById(targetRowId)) {
+      targetRowId = this.addPackagingRow();
+    }
+
+    const row = document.getElementById(targetRowId);
+    const select = row ? row.querySelector('.pack-select') : null;
+    const prevVal = select ? (select.dataset.previousValue || '') : '';
+
+    if (typeof IngredientsModule !== 'undefined' && IngredientsModule.openModal) {
+      IngredientsModule.openModal(
+        null,
+        (createdIng) => {
+          if (!createdIng || !createdIng.id) return;
+
+          // 1. Refrescar opciones en todos los selects de empaque
+          this.refreshAllPackagingSelects();
+
+          // 2. Asignar el nuevo empaque a la fila objetivo
+          const targetRow = document.getElementById(targetRowId);
+          if (targetRow) {
+            const targetSelect = targetRow.querySelector('.pack-select');
+            const qtyInput = targetRow.querySelector('.pack-qty');
+            const unitSelect = targetRow.querySelector('.pack-unit');
+
+            if (targetSelect) {
+              targetSelect.value = createdIng.id;
+              targetSelect.dataset.previousValue = createdIng.id;
+            }
+
+            if (unitSelect && createdIng.packageUnit) {
+              const u = String(createdIng.packageUnit).toLowerCase();
+              if (['un', 'unidad', 'caja', 'paquete'].includes(u)) {
+                unitSelect.value = 'u';
+              } else if (['g', 'kg'].includes(u)) {
+                unitSelect.value = 'g';
+              } else if (['m', 'metro'].includes(u)) {
+                unitSelect.value = 'm';
+              }
+            }
+
+            this.onPackagingRowChange(targetRowId);
+
+            if (qtyInput) {
+              qtyInput.focus();
+              qtyInput.select();
+            }
+
+            targetRow.classList.add('item-saved-glow');
+            targetRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(() => targetRow.classList.remove('item-saved-glow'), 1800);
+          }
+
+          if (typeof App !== 'undefined' && App.showToast) {
+            App.showToast(`✨ Empaque "${createdIng.name}" incorporado a la receta`);
+          }
+        },
+        'Empaque',
+        () => {
+          if (select) {
+            select.value = prevVal;
+            this.onPackagingRowChange(targetRowId);
+          }
+        }
+      );
+    }
+  },
+
+  refreshAllIngredientSelects() {
+    document.querySelectorAll('#recipe-ingredients-table .ing-select').forEach(select => {
+      const currentVal = select.value;
+      select.innerHTML = this.getIngredientOptionsHtml(currentVal);
+      select.value = currentVal;
+    });
+  },
+
+  refreshAllPackagingSelects() {
+    document.querySelectorAll('#recipe-packaging-table .pack-select').forEach(select => {
+      const currentVal = select.value;
+      select.innerHTML = this.getPackagingOptionsHtml(currentVal);
+      select.value = currentVal;
+    });
   },
 
   onIngredientRowChange(rowId) {
@@ -916,6 +1164,13 @@ const RecipesModule = {
     const qtyInput = row.querySelector('.ing-qty');
     const unitSelect = row.querySelector('.ing-unit');
     const costSpan = row.querySelector('.ing-cost');
+
+    if (select.value === '__NEW_INGREDIENT__') {
+      this.promptNewIngredientForRow(rowId);
+      return;
+    }
+
+    select.dataset.previousValue = select.value;
 
     const ingId = select.value;
     const qty = parseFloat(qtyInput.value) || 0;
@@ -941,6 +1196,13 @@ const RecipesModule = {
     const qtyInput = row.querySelector('.pack-qty');
     const unitSelect = row.querySelector('.pack-unit');
     const costSpan = row.querySelector('.pack-cost');
+
+    if (select.value === '__NEW_PACKAGING__') {
+      this.promptNewPackagingForRow(rowId);
+      return;
+    }
+
+    select.dataset.previousValue = select.value;
 
     const ingId = select.value;
     const qty = parseFloat(qtyInput.value) || 0;
@@ -1054,7 +1316,7 @@ const RecipesModule = {
       const ingId = row.querySelector('.ing-select')?.value;
       const qty = parseFloat(row.querySelector('.ing-qty')?.value);
       const unit = row.querySelector('.ing-unit')?.value;
-      if (ingId && qty > 0) {
+      if (ingId && !ingId.startsWith('__NEW_') && qty > 0) {
         ingredients.push({ ingredientId: ingId, quantity: qty, unit });
       }
     });
@@ -1065,7 +1327,7 @@ const RecipesModule = {
       const ingId = row.querySelector('.pack-select')?.value;
       const qty = parseFloat(row.querySelector('.pack-qty')?.value);
       const unit = row.querySelector('.pack-unit')?.value;
-      if (ingId && qty > 0) {
+      if (ingId && !ingId.startsWith('__NEW_') && qty > 0) {
         packaging.push({ ingredientId: ingId, quantity: qty, unit });
       }
     });

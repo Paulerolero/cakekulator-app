@@ -162,7 +162,13 @@ const IngredientsModule = {
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'ingredient-modal';
-      modal.className = 'fixed inset-0 z-[60] bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
+      modal.className = 'fixed inset-0 z-[75] bg-slate-950/70 backdrop-blur-xs hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto';
+      modal.dataset.backdropBound = 'true';
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          IngredientsModule.closeModal();
+        }
+      });
       modal.innerHTML = `
         <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-md shadow-2xl overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto flex flex-col modal-animate-in border border-pink-100 dark:border-slate-800">
           <div class="bg-pink-600 dark:bg-slate-800 p-4 text-white flex items-center justify-between shrink-0">
@@ -184,13 +190,13 @@ const IngredientsModule = {
                 id="ing-name" 
                 required 
                 placeholder="Ej. Harina sin polvos, Mantequilla sin sal, Caja torta"
-                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 dark:text-white"
               />
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Categoría</label>
-              <select id="ing-category" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white">
+              <select id="ing-category" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 dark:text-white">
                 <option value="Secos">Secos (Harina, Azúcar, Polvos, Cacao)</option>
                 <option value="Lácteos y Grasas">Lácteos y Grasas (Mantequilla, Crema, Leche, Queso)</option>
                 <option value="Huevos">Huevos</option>
@@ -214,13 +220,13 @@ const IngredientsModule = {
                   id="ing-qty" 
                   required 
                   placeholder="Ej. 1000, 250, 30"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 dark:text-white"
                 />
               </div>
 
               <div>
                 <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">Unidad de Medida *</label>
-                <select id="ing-unit" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white">
+                <select id="ing-unit" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 dark:text-white">
                   <option value="g">Gramos (g)</option>
                   <option value="kg">Kilos (kg)</option>
                   <option value="ml">Mililitros (ml)</option>
@@ -244,7 +250,7 @@ const IngredientsModule = {
                   id="ing-price" 
                   required 
                   placeholder="Ej. 1290, 4500"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white font-bold"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 dark:text-white font-bold"
                 />
               </div>
 
@@ -258,7 +264,7 @@ const IngredientsModule = {
                   id="ing-waste" 
                   value="0" 
                   placeholder="0"
-                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white"
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-pink-400 bg-white dark:bg-slate-800 dark:text-white"
                 />
                 <span class="text-[10px] text-gray-400">Ej. 10% en cáscaras de frutas</span>
               </div>
@@ -334,11 +340,15 @@ const IngredientsModule = {
     this.render();
   },
 
-  openModal(id = null) {
+  openModal(id = null, onSavedCallback = null, defaultCategory = null, onCancelCallback = null) {
     this.editingId = id;
+    this.onSavedCallback = (typeof onSavedCallback === 'function') ? onSavedCallback : null;
+    this.onCancelCallback = (typeof onCancelCallback === 'function') ? onCancelCallback : null;
     this.ensureModal();
     const modal = document.getElementById('ingredient-modal');
     if (!modal) return;
+    modal.classList.remove('z-[60]');
+    modal.classList.add('z-[75]');
     const form = document.getElementById('ingredient-form');
     const title = document.getElementById('ingredient-modal-title');
     if (!form || !title) return;
@@ -359,6 +369,10 @@ const IngredientsModule = {
       form.reset();
       document.getElementById('ing-id').value = '';
       document.getElementById('ing-waste').value = 0;
+      if (defaultCategory) {
+        const catSelect = document.getElementById('ing-category');
+        if (catSelect) catSelect.value = defaultCategory;
+      }
     }
 
     this.updateLiveCostPreview();
@@ -367,9 +381,23 @@ const IngredientsModule = {
   },
 
   closeModal() {
+    if (this.onCancelCallback && typeof this.onCancelCallback === 'function') {
+      try {
+        this.onCancelCallback();
+      } catch (err) {
+        console.error('Error en onCancelCallback de insumo:', err);
+      }
+    }
     App.closeModal('ingredient-modal');
     this.editingId = null;
-    if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
+    this.onSavedCallback = null;
+    this.onCancelCallback = null;
+    if (typeof App !== 'undefined' && App.unlockBodyScroll) {
+      const recModal = document.getElementById('recipe-editor-modal');
+      if (!recModal || recModal.classList.contains('hidden')) {
+        App.unlockBodyScroll();
+      }
+    }
   },
 
   attachLiveCostListeners() {
@@ -423,31 +451,43 @@ const IngredientsModule = {
     };
 
     let targetId = id;
+    let savedIngredient = null;
     if (id) {
       DB.updateIngredient(id, data);
+      savedIngredient = DB.getIngredientById(id);
     } else {
-      const created = DB.addIngredient(data);
-      targetId = created ? created.id : null;
+      savedIngredient = DB.addIngredient(data);
+      targetId = savedIngredient ? savedIngredient.id : null;
     }
 
+    const callback = this.onSavedCallback;
+    this.onCancelCallback = null; // No invocar cancel al guardar con éxito
     this.closeModal();
     this.render();
 
-    // Resaltar con resplandor la tarjeta recién guardada o modificada
-    setTimeout(() => {
-      const finalId = targetId || (DB.getIngredients().slice(-1)[0]?.id);
-      if (finalId) {
-        const card = document.querySelector(`[data-ingredient-id="${finalId}"]`);
-        if (card) {
-          card.classList.add('item-saved-glow');
-          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
-        }
+    if (callback && typeof callback === 'function') {
+      try {
+        callback(savedIngredient);
+      } catch (err) {
+        console.error('Error en onSavedCallback de insumos:', err);
       }
-    }, 60);
+    } else {
+      // Resaltar con resplandor la tarjeta recién guardada o modificada en la vista de insumos
+      setTimeout(() => {
+        const finalId = targetId || (DB.getIngredients().slice(-1)[0]?.id);
+        if (finalId) {
+          const card = document.querySelector(`[data-ingredient-id="${finalId}"]`);
+          if (card) {
+            card.classList.add('item-saved-glow');
+            card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            setTimeout(() => card.classList.remove('item-saved-glow'), 1800);
+          }
+        }
+      }, 60);
 
-    // Notificación toast con confeti automático
-    App.showToast(id ? 'Insumo actualizado con éxito ✨' : '🎉 ¡Nuevo insumo agregado!');
+      // Notificación toast con confeti automático
+      App.showToast(id ? 'Insumo actualizado con éxito ✨' : '🎉 ¡Nuevo insumo agregado!');
+    }
   },
 
   deleteConfirm(id, name) {

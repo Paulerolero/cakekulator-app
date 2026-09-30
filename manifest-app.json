@@ -4,9 +4,9 @@
   "short_name": "Cake Vendedor",
   "description": "Calculadora de costos, cotizaciones y radar de oportunidades para pastelerías y servicios.",
   "start_url": "/app",
-  "scope": "/app",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#faf5f8",
   "theme_color": "#ec4899",
   "orientation": "portrait",
   "icons": [
