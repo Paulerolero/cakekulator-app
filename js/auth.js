@@ -219,9 +219,9 @@ const AuthModule = {
     if (!FirebaseService.isConfigured) {
       container.innerHTML = `
         <button 
-          onclick="AuthModule.showConfigModal()" 
-          title="Conectar con Firebase y Google Cloud"
-          class="flex items-center gap-1.5 bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 text-pink-700 border border-pink-200/80 px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs font-semibold shadow-xs transition duration-200 hover:scale-[1.02]"
+          onclick="AuthModule.loginWithGoogle()" 
+          title="Conectar con Google Cloud"
+          class="flex items-center gap-1.5 bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 text-pink-700 border border-pink-200/80 px-2.5 sm:px-3 py-1.5 rounded-2xl text-xs font-semibold shadow-xs transition duration-200 hover:scale-[1.02] cursor-pointer"
         >
           <span class="w-2 h-2 rounded-full bg-amber-400"></span>
           <span class="hidden sm:inline">Conectar Nube</span>
@@ -312,10 +312,10 @@ const AuthModule = {
               </button>
 
               <button 
-                onclick="AuthModule.showConfigModal()" 
+                onclick="AuthModule.showAccountStatusModal()" 
                 class="w-full text-left px-3 py-2 text-xs font-medium text-gray-700 dark:text-gray-300 hover:bg-pink-50 dark:hover:bg-slate-800 hover:text-pink-700 dark:hover:text-pink-300 rounded-2xl transition flex items-center gap-2 cursor-pointer"
               >
-                <span>⚙️</span> Estado de la Conexión
+                <span>☁️</span> Estado del Respaldo
               </button>
 
               <div class="border-t border-gray-100 dark:border-slate-800 my-1"></div>
@@ -607,8 +607,12 @@ const AuthModule = {
     if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
   },
 
-  // Modal de Diagnóstico / Configuración de Firebase
+  // Modal Seguro de Estado de Respaldo (Sin exponer credenciales de Firebase)
   showConfigModal() {
+    this.showAccountStatusModal();
+  },
+
+  showAccountStatusModal() {
     let modal = document.getElementById('firebase-config-modal');
     if (!modal) {
       modal = document.createElement('div');
@@ -616,85 +620,96 @@ const AuthModule = {
       const root = document.getElementById('modals-root') || document.body;
       root.appendChild(modal);
     }
-    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
+    modal.className = 'fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs overflow-y-auto';
 
-    const currentConfig = FirebaseService.getConfig();
     const isLive = FirebaseService.isConfigured && this.currentUser;
 
     modal.innerHTML = `
-      <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-7 shadow-2xl border border-pink-100 dark:border-slate-800 max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] my-auto overflow-y-auto space-y-4 modal-animate-in">
+      <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-gray-100 dark:border-slate-800 my-auto space-y-4 modal-animate-in">
+        
+        <!-- Cabecera -->
         <div class="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3">
-          <div class="flex items-center gap-2.5">
-            <span class="text-2xl">🔥</span>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center text-xl shadow-xs">
+              ☁️
+            </div>
             <div>
-              <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base font-heading">Estado de Conexión Nube</h3>
-              <p class="text-xs text-gray-400">Firebase Firestore & Google Authentication</p>
+              <h3 class="font-bold text-gray-900 dark:text-gray-100 text-base font-heading">Respaldo en la Nube</h3>
+              <p class="text-xs text-gray-400">Sincronización continua y segura</p>
             </div>
           </div>
-          <button onclick="AuthModule.closeConfigModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+          <button onclick="AuthModule.closeConfigModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-1 rounded-xl transition cursor-pointer">
             ✕
           </button>
         </div>
 
         <!-- Estado en tiempo real -->
-        <div class="p-3.5 rounded-2xl ${isLive ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'} text-xs space-y-1.5">
-          <div class="flex items-center justify-between font-bold ${isLive ? 'text-emerald-800' : 'text-amber-800'}">
-            <span class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full ${isLive ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-              ${isLive ? 'Conexión Activa y Sincronizando' : 'Pendiente de inicio de sesión'}
+        <div class="p-4 rounded-2xl ${isLive ? 'bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-200' : 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'} space-y-2">
+          <div class="flex items-center justify-between font-extrabold text-xs">
+            <span class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full ${isLive ? 'bg-emerald-500' : 'bg-slate-400'}"></span>
+              <span>${isLive ? 'Conexión Activa y Protegida' : 'Modo Local (Sin Respaldo)'}</span>
             </span>
-            <span class="text-[11px] font-mono">${currentConfig.projectId || 'Sin proyecto'}</span>
+            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${isLive ? 'bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'}">
+              ${isLive ? 'Sincronizado' : 'Offline'}
+            </span>
           </div>
-          <p class="text-[11px] ${isLive ? 'text-emerald-700' : 'text-amber-700'}">
+
+          <p class="text-xs leading-relaxed opacity-90">
             ${isLive 
-              ? `Sesión iniciada como <strong>${this.currentUser.email}</strong>. Sincronización continua en segundo plano cada 20 segundos y listeners en tiempo real.` 
-              : 'Las credenciales están cargadas. Inicia sesión con tu cuenta de Google para comenzar el respaldo.'}
+              ? `Sesión activa como <strong>${this.currentUser.email}</strong>. Tus recetas, insumos, costos y cotizaciones se guardan de forma instantánea en la nube cada vez que realizas un cambio.` 
+              : 'Tus datos se guardan solo en este dispositivo. Para no perder tus recetas y acceder desde cualquier teléfono o computador, inicia sesión con tu cuenta de Google.'}
           </p>
+
+          ${isLive ? `
+            <div class="pt-1.5 border-t border-emerald-200/60 dark:border-emerald-800/30 text-[11px] text-emerald-700 dark:text-emerald-400 flex items-center justify-between">
+              <span>Última sincronización:</span>
+              <span class="font-bold">${this.formatLastSync()}</span>
+            </div>
+          ` : ''}
         </div>
 
-        <div class="space-y-3">
-          <div>
-            <label class="block text-xs font-bold text-gray-700 mb-1">API Key</label>
-            <input type="text" id="fb-api-key" value="${currentConfig.apiKey || ''}" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-pink-400">
+        <!-- Garantías de Seguridad -->
+        <div class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+          <div class="flex items-start gap-2">
+            <span>🔒</span>
+            <span><strong>Privacidad total:</strong> Tus costos y recetas están vinculados únicamente a tu cuenta.</span>
           </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">Project ID</label>
-              <input type="text" id="fb-project-id" value="${currentConfig.projectId || ''}" placeholder="cakekulator-bd" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-pink-400">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-700 mb-1">Auth Domain</label>
-              <input type="text" id="fb-auth-domain" value="${currentConfig.authDomain || ''}" placeholder="cakekulator-bd.firebaseapp.com" class="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs font-mono focus:ring-2 focus:ring-pink-400">
-            </div>
+          <div class="flex items-start gap-2">
+            <span>📱</span>
+            <span><strong>Multi-dispositivo:</strong> Abre Cakekulator en cualquier lugar y tus datos estarán al día.</span>
           </div>
         </div>
 
-        <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+        <!-- Botones de Acción -->
+        <div class="pt-2 flex items-center justify-end gap-2 border-t border-gray-100 dark:border-slate-800">
           <button 
             type="button" 
-            onclick="FirebaseService.resetConfig()" 
-            class="text-xs text-gray-400 hover:text-red-500 underline"
+            onclick="AuthModule.closeConfigModal()" 
+            class="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition cursor-pointer"
           >
-            Restablecer credenciales
+            Cerrar
           </button>
-          <div class="flex items-center gap-2">
+          
+          ${isLive ? `
             <button 
               type="button" 
-              onclick="AuthModule.closeConfigModal()" 
-              class="px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+              onclick="AuthModule.forceSyncNow(); AuthModule.closeConfigModal();" 
+              class="px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold shadow-md shadow-pink-200/50 dark:shadow-none transition cursor-pointer flex items-center gap-1.5"
             >
-              Cerrar
+              <span>🔄</span> <span>Sincronizar Ahora</span>
             </button>
+          ` : `
             <button 
               type="button" 
-              onclick="AuthModule.saveConfigFromModal()" 
-              class="px-4 py-2 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold shadow-md shadow-pink-200 transition"
+              onclick="AuthModule.closeConfigModal(); AuthModule.loginWithGoogle();" 
+              class="px-4 py-2.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold shadow-md shadow-pink-200/50 dark:shadow-none transition cursor-pointer flex items-center gap-1.5"
             >
-              Guardar Cambios
+              <span>🚀</span> <span>Iniciar con Google</span>
             </button>
-          </div>
+          `}
         </div>
+
       </div>
     `;
 
@@ -708,27 +723,6 @@ const AuthModule = {
       modal.classList.add('hidden');
     }
     if (typeof App !== 'undefined' && App.unlockBodyScroll) App.unlockBodyScroll();
-  },
-
-  saveConfigFromModal() {
-    const apiKey = document.getElementById('fb-api-key')?.value.trim();
-    const projectId = document.getElementById('fb-project-id')?.value.trim();
-    const authDomain = document.getElementById('fb-auth-domain')?.value.trim() || `${projectId}.firebaseapp.com`;
-
-    if (!apiKey || !projectId) {
-      alert('Por favor ingresa al menos la API Key y el Project ID.');
-      return;
-    }
-
-    const current = FirebaseService.getConfig();
-    const config = {
-      ...current,
-      apiKey,
-      authDomain,
-      projectId
-    };
-
-    FirebaseService.saveCustomConfig(config);
   }
 };
 

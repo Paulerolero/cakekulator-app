@@ -2453,14 +2453,14 @@ const App = {
             <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
               <div class="flex items-center justify-between">
                 <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-2">
-                  <span>🔥</span> Base de Datos y Sesión en la Nube
+                  <span>☁️</span> Respaldo y Cuenta Google
                 </h3>
-                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300'}">
-                  ${typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured ? 'Firebase Conectado' : 'Modo Local'}
+                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300'}">
+                  ${typeof AuthModule !== 'undefined' && AuthModule.currentUser ? 'Sincronizado' : 'Modo Local'}
                 </span>
               </div>
 
-              <p class="text-xs text-gray-600 dark:text-gray-400">Conecta tu cuenta de Google y Firebase Cloud Firestore para que tus recetas, costos y presupuestos se sincronicen automáticamente en todos tus dispositivos.</p>
+              <p class="text-xs text-gray-600 dark:text-gray-400">Conecta tu cuenta de Google para que tus recetas, costos y presupuestos se respalden de forma segura y se sincronicen en todos tus dispositivos.</p>
 
               <div class="bg-gray-50 dark:bg-slate-800/80 p-4 rounded-2xl border border-gray-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
