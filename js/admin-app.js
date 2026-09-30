@@ -215,6 +215,48 @@ const AdminApp = {
       console.warn('Auto-descubrimiento en subcolecciones:', e);
     }
 
+    // 3.5. Sincronizar usuarios registrados en Firebase Authentication
+    const REGISTERED_AUTH_ACCOUNTS = [
+      {
+        uid: "EdjJDIkEP3RDRwbA24Vf06KRhmf1",
+        email: "j1515mk@gmail.com",
+        displayName: "Janis",
+        photoURL: "https://lh3.googleusercontent.com/a/ACg8ocKv4-kSiSbNL4VgQoimTw3iPKHUamrqJ21pjzqtx5M8OrQZ8qhl=s96-c",
+        role: "seller",
+        plan: "trial",
+        isPro: true,
+        status: "active",
+        recipesCount: 0,
+        quotesCount: 0,
+        createdAt: new Date(1787545744191),
+        lastLoginAt: new Date(1787546837368)
+      },
+      {
+        uid: "hA3KgIyHEmVBADOHN5GM27EW7wv2",
+        email: "virginia.saez.rojas@gmail.com",
+        displayName: "Virginia Saez",
+        photoURL: "https://lh3.googleusercontent.com/a/ACg8ocKtjMrxybatyOM-S2Z45Z6N9uc8mwxptahh4_Jpf5bT16Ii54c2=s96-c",
+        role: "seller",
+        plan: "trial",
+        isPro: true,
+        status: "active",
+        recipesCount: 0,
+        quotesCount: 0,
+        createdAt: new Date(1787622333800),
+        lastLoginAt: new Date(1787622333800)
+      }
+    ];
+
+    for (const authAcc of REGISTERED_AUTH_ACCOUNTS) {
+      const existing = this.sellers.find(s => s.id === authAcc.uid || (s.email && s.email.toLowerCase() === authAcc.email.toLowerCase()));
+      if (!existing) {
+        this.sellers.push({ id: authAcc.uid, ...authAcc });
+        if (FirebaseService.db) {
+          FirebaseService.db.collection('users').doc(authAcc.uid).set(authAcc, { merge: true }).catch(console.error);
+        }
+      }
+    }
+
     // 4. Si el admin actual está autenticado, asegurar que aparezca en la lista
     if (this.currentAdmin && !this.sellers.some(s => s.id === this.currentAdmin.uid || s.email === this.currentAdmin.email)) {
       this.sellers.unshift({
@@ -1076,6 +1118,11 @@ service cloud.firestore {
             >
               <span>📥</span> Exportar Clientes (.CSV)
             </button>
+
+            <label class="px-4 py-2.5 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800 font-bold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer">
+              <span>📥</span> Importar Cuentas Auth (.JSON)
+              <input type="file" accept=".json" onchange="AdminApp.handleImportAuthUsers(event)" class="hidden" />
+            </label>
           </div>
         </div>
 
@@ -1855,6 +1902,51 @@ service cloud.firestore {
       toast.style.opacity = '0';
       toast.style.transform = 'translateY(10px)';
     }, 3500);
+  },
+
+  handleImportAuthUsers(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const json = JSON.parse(e.target.result);
+        const users = json.users || (Array.isArray(json) ? json : []);
+        let count = 0;
+        for (const u of users) {
+          const uid = u.localId || u.uid;
+          if (!uid || !u.email) continue;
+          const userObj = {
+            id: uid,
+            uid: uid,
+            email: u.email,
+            displayName: u.displayName || 'Usuario Google',
+            photoURL: u.photoUrl || u.photoURL || '',
+            role: 'seller',
+            plan: 'trial',
+            isPro: true,
+            status: 'active',
+            recipesCount: 0,
+            quotesCount: 0,
+            lastLoginAt: u.lastSignedInAt ? new Date(parseInt(u.lastSignedInAt)) : new Date(),
+            createdAt: u.createdAt ? new Date(parseInt(u.createdAt)) : new Date()
+          };
+          if (FirebaseService.db) {
+            await FirebaseService.db.collection('users').doc(uid).set(userObj, { merge: true });
+          }
+          const idx = this.sellers.findIndex(s => s.id === uid);
+          if (idx >= 0) this.sellers[idx] = { ...this.sellers[idx], ...userObj };
+          else this.sellers.push(userObj);
+          count++;
+        }
+        this.renderActiveTab();
+        this.showToast(`✅ ${count} usuarios sincronizados en Firestore`);
+      } catch (err) {
+        console.error(err);
+        this.showToast('Error al importar archivo JSON', 'error');
+      }
+    };
+    reader.readAsText(file);
   }
 };
 
