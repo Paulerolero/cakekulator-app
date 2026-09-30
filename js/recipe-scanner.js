@@ -7,6 +7,9 @@ const RecipeScannerModule = {
   isProcessing: false,
 
   openModal() {
+    if (typeof SubscriptionModule !== 'undefined' && !SubscriptionModule.canScanRecipes()) {
+      return;
+    }
     let modal = document.getElementById('recipe-scanner-modal');
     if (!modal) {
       modal = document.createElement('div');

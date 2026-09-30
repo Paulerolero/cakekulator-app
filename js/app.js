@@ -2378,6 +2378,47 @@ const App = {
               </div>
             </div>
 
+            <!-- Suscripción Cakekulator PRO & Google Play -->
+            <div class="bg-gradient-to-br from-white via-pink-50/40 to-amber-50/40 dark:from-slate-900 dark:via-slate-850 dark:to-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-pink-200 dark:border-slate-800 shadow-sm space-y-3.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-amber-500 text-white flex items-center justify-center text-lg font-bold shadow-xs">
+                    👑
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-gray-900 dark:text-gray-100 text-sm flex items-center gap-1.5">
+                      <span>Cakekulator PRO</span>
+                      <span class="text-[10px] px-2 py-0.5 rounded-full font-black ${typeof SubscriptionModule !== 'undefined' && SubscriptionModule.isProActive() ? 'bg-gradient-to-r from-amber-400 to-pink-500 text-white' : 'bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-gray-300'}">
+                        ${typeof SubscriptionModule !== 'undefined' && SubscriptionModule.isProActive() ? (SubscriptionModule.state.plan === 'trial' ? 'Prueba Gratuita PRO' : 'PRO Activo') : 'Plan Gratuito'}
+                      </span>
+                    </h3>
+                    <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                      ${typeof SubscriptionModule !== 'undefined' && SubscriptionModule.isProActive() 
+                        ? (SubscriptionModule.state.plan === 'trial' ? `Tienes ${SubscriptionModule.getDaysLeftInTrial()} días restantes de prueba con todas las funciones.` : 'Acceso ilimitado a todas las herramientas profesionales.')
+                        : 'Límite de 3 recetas y 3 cotizaciones. Desbloquea todo con el plan PRO.'}
+                    </p>
+                  </div>
+                </div>
+
+                <button 
+                  type="button" 
+                  onclick="SubscriptionModule.showPaywallModal()" 
+                  class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-600 via-rose-600 to-amber-500 hover:opacity-90 text-white text-xs font-black shadow-xs transition active:scale-95 cursor-pointer shrink-0"
+                >
+                  ${typeof SubscriptionModule !== 'undefined' && SubscriptionModule.isProActive() ? 'Ver Plan ↗' : '⭐ Mejorar a PRO'}
+                </button>
+              </div>
+
+              ${typeof SubscriptionModule !== 'undefined' && SubscriptionModule.isProActive() && SubscriptionModule.state.plan === 'pro' ? `
+                <div class="pt-2 border-t border-gray-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                  <span class="text-[11px] text-gray-500">¿Deseas probar cómo se comporta la app en modo Free?</span>
+                  <button type="button" onclick="SubscriptionModule.cancelPro()" class="text-xs text-red-500 hover:underline font-bold cursor-pointer">
+                    Simular Plan Free
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+
             <!-- Conexión Nube & Cuenta Google -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
               <div class="flex items-center justify-between">

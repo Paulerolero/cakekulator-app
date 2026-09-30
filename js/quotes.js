@@ -481,6 +481,9 @@ const QuotesModule = {
   },
 
   openEditor(quoteId = null) {
+    if (!quoteId && typeof SubscriptionModule !== 'undefined' && !SubscriptionModule.canAddQuote()) {
+      return;
+    }
     this.editingQuoteId = quoteId;
     this.ensureEditorModal();
     const modal = document.getElementById('quote-editor-modal');

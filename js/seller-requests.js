@@ -142,9 +142,48 @@ const SellerRequestsModule = {
 
   // Renderizar la tarjeta del mapa interactivo en el Dashboard principal
   renderSellerMapCard() {
+    const isPro = typeof SubscriptionModule === 'undefined' || SubscriptionModule.isProActive();
     const rubroInfo = this.getSellerActiveRubroInfo();
     const activeRequests = this.getFilteredRequests();
     const isServices = rubroInfo.mode === 'services';
+
+    if (!isPro) {
+      return `
+        <!-- ==========================================
+             RADAR & MAPA BLOQUEADO (PLAN PRO)
+             ========================================== -->
+        <div class="bg-gradient-to-br from-pink-50 via-white to-rose-50 dark:from-slate-800 dark:via-slate-850 dark:to-slate-900 p-5 rounded-3xl border border-pink-200 dark:border-slate-700 shadow-sm relative overflow-hidden">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center text-2xl shadow-md shrink-0">
+                📍
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-black text-sm sm:text-base text-gray-900 dark:text-gray-100">
+                    Radar de Oportunidades & Clientes Cercanos
+                  </h3>
+                  <span class="px-2 py-0.5 text-[9px] font-black rounded-full bg-amber-400 text-gray-900 uppercase">
+                    PRO
+                  </span>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Hay <strong>${activeRequests.length} clientes buscando cotizaciones</strong> cerca de tu taller en este momento.
+                </p>
+              </div>
+            </div>
+
+            <button 
+              type="button" 
+              onclick="SubscriptionModule.canAccessRadar()" 
+              class="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 text-white font-black text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+            >
+              <span>👑</span> <span>Desbloquear Clientes con PRO</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
 
     return `
       <!-- ==========================================

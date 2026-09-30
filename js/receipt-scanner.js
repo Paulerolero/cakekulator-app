@@ -7,6 +7,9 @@ const ReceiptScannerModule = {
   isProcessing: false,
 
   openModal() {
+    if (typeof SubscriptionModule !== 'undefined' && !SubscriptionModule.canScanReceipts()) {
+      return;
+    }
     let modal = document.getElementById('receipt-scanner-modal');
     if (!modal) {
       modal = document.createElement('div');

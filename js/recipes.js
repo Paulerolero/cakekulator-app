@@ -608,6 +608,9 @@ const RecipesModule = {
   },
 
   openEditor(id = null) {
+    if (!id && typeof SubscriptionModule !== 'undefined' && !SubscriptionModule.canAddRecipe()) {
+      return;
+    }
     this.ensureEditorModal();
     const modal = document.getElementById('recipe-editor-modal');
     if (!modal) return;
