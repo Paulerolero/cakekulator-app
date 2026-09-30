@@ -1684,12 +1684,9 @@ const App = {
         </div>
       </div>
 
-      <!-- Contenedor Principal: Radar Map + Agenda Apilados -->
+      <!-- Contenedor Principal: Agenda + Radar Map Apilados -->
       <div class="space-y-4 mb-6">
         
-        <!-- Radar & Mapa de Oportunidades de Clientes -->
-        ${typeof SellerRequestsModule !== 'undefined' ? SellerRequestsModule.renderSellerMapCard() : ''}
-
         <!-- Agenda de Entregas & Citas -->
         <div class="bg-white dark:bg-slate-800 p-4 rounded-3xl border border-gray-200/80 dark:border-slate-700 shadow-xs">
           <div class="flex items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-100 dark:border-slate-700">
@@ -1777,6 +1774,9 @@ const App = {
             </div>
           `}
         </div>
+
+        <!-- Radar & Mapa de Oportunidades de Clientes -->
+        ${typeof SellerRequestsModule !== 'undefined' ? SellerRequestsModule.renderSellerMapCard() : ''}
 
       </div>
 
