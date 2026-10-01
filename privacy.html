@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Política de Privacidad - Cakekulator</title>
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #f43f5e;
+            --accent: #fb7185;
+            --border: #334155;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 800px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 24px;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: var(--accent);
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+        .last-updated {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        h2 {
+            color: #ffffff;
+            font-size: 1.3rem;
+            margin-top: 30px;
+            margin-bottom: 12px;
+        }
+        p {
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        ul {
+            margin-left: 20px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .contact-box {
+            background: rgba(244, 63, 94, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Política de Privacidad</h1>
+            <p class="last-updated">Última actualización: 30 de septiembre de 2026</p>
+        </header>
+
+        <section>
+            <h2>1. Introducción</h2>
+            <p>
+                Bienvenido a <strong>Cakekulator</strong> ("nosotros", "la aplicación"). Esta política de privacidad describe cómo recopilamos, utilizamos y protegemos la información de los usuarios que utilizan nuestra aplicación móvil y web.
+            </p>
+        </section>
+
+        <section>
+            <h2>2. Información que recopilamos</h2>
+            <p>
+                <strong>Cakekulator</strong> está diseñada con un enfoque de privacidad primero:
+            </p>
+            <ul>
+                <li><strong>Datos de recetas e insumos:</strong> Todas las recetas, precios de ingredientes, porciones y cálculos se almacenan localmente en su dispositivo mediante IndexedDB / LocalStorage, o en su cuenta de Firebase si decide iniciar sesión.</li>
+                <li><strong>Información de cuenta (opcional):</strong> Si inicia sesión mediante correo o Google, recopilamos únicamente su nombre, correo electrónico e identificador de usuario para sincronizar sus datos entre dispositivos.</li>
+                <li><strong>Datos de uso anónimos:</strong> No recopilamos datos de seguimiento invasivos ni vendemos su información a terceros.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>3. Uso de la información</h2>
+            <p>Utilizamos la información recopilada exclusivamente para:</p>
+            <ul>
+                <li>Proporcionar los servicios de costeo, calculadora de recetas y presupuesto para repostería.</li>
+                <li>Permitir la sincronización segura de recetas y configuraciones en la nube a través de Firebase.</li>
+                <li>Garantizar el correcto funcionamiento técnico de la aplicación.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>4. Almacenamiento y Seguridad de Datos</h2>
+            <p>
+                Implementamos estándares de seguridad modernos para proteger sus datos. La información transmitida está protegida mediante encriptación SSL/TLS (HTTPS). No compartimos, vendemos ni alquilamos su información personal a anunciantes ni a empresas externas.
+            </p>
+        </section>
+
+        <section>
+            <h2>5. Servicios de Terceros</h2>
+            <p>
+                Nuestra aplicación utiliza servicios de Google Firebase (Hosting, Firestore y Authentication) que cumplen estrictas normas internacionales de protección de datos (incluidas RGPD y normativas de Google Play).
+            </p>
+        </section>
+
+        <section>
+            <h2>6. Sus Derechos</h2>
+            <p>
+                Usted puede en cualquier momento exportar sus datos, eliminar sus recetas o solicitar la eliminación total de su cuenta y datos almacenados directamente desde la aplicación o contactándonos.
+            </p>
+        </section>
+
+        <section>
+            <h2>7. Contacto</h2>
+            <div class="contact-box">
+                <p>Si tiene dudas sobre esta Política de Privacidad o el tratamiento de sus datos en Cakekulator, puede contactarnos en:</p>
+                <p><strong>Correo electrónico:</strong> soporte@cakekulator.cl</p>
+                <p><strong>Sitio Web:</strong> <a href="https://cakekulator-bd.web.app">https://cakekulator-bd.web.app</a></p>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

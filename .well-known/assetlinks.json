@@ -3,6 +3,16 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
+      "package_name": "cl.cakekulator.pro",
+      "sha256_cert_fingerprints": [
+        "DD:96:73:43:CA:9B:D9:25:61:84:3E:EF:F7:42:F7:F3:16:A2:94:C1:70:BF:8B:D2:36:4C:94:4C:D0:44:93:3D"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
       "package_name": "cl.cakekulator.admin",
       "sha256_cert_fingerprints": [
         "DD:96:73:43:CA:9B:D9:25:61:84:3E:EF:F7:42:F7:F3:16:A2:94:C1:70:BF:8B:D2:36:4C:94:4C:D0:44:93:3D"
